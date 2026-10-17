@@ -182,6 +182,12 @@ test('Sauna: Statistik zählt Gänge und Minuten, Training bleibt unberührt', (
   eq(r.sessions.length, 1, 'Sauna ist kein zusätzliches Training');
 });
 
+// Abgleich gegen simulierten Server (asynchron)
+try {
+  const { runSyncTests } = await import('./tests-sync.js');
+  for (const [name, pass, msg] of await runSyncTests()) results.push([`Sync: ${name}`, pass, msg]);
+} catch (e) { results.push(['Sync-Tests liefen durch', false, e.message]); }
+
 const out = document.getElementById('out');
 out.innerHTML = results.map(([name, pass, msg]) => `<li class="${pass ? 'ok' : 'fail'}">${pass ? '✓' : '✗'} ${name}${msg ? ` – ${msg}` : ''}</li>`).join('');
 const failed = results.filter(r => !r[1]).length;

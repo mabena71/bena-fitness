@@ -30,7 +30,11 @@ export const status = { state: 'idle', lastSync: null, error: null, pending: 0 }
 export function onStatus(fn) { listeners.add(fn); return () => listeners.delete(fn); }
 function setStatus(patch) { Object.assign(status, patch); listeners.forEach(fn => { try { fn(status); } catch (e) { console.error(e); } }); }
 
+/** Nur für Tests: simulierten Server einsetzen. */
+export function __setClient(c) { client = c; }
+
 export async function getClient() {
+  if (client) return client;
   if (!cloudConfigured()) throw new Error('Supabase ist noch nicht eingerichtet.');
   if (!client) {
     const { createClient } = await import(SUPABASE_ESM);
@@ -40,7 +44,7 @@ export async function getClient() {
 }
 
 export async function currentSession() {
-  if (!cloudConfigured()) return null;
+  if (!cloudConfigured() && !client) return null;
   const c = await getClient();
   const { data } = await c.auth.getSession();
   return data.session || null;
@@ -136,9 +140,10 @@ async function pull(c) {
 export function sync() {
   if (running) return running;
   running = (async () => {
-    if (!navigator.onLine) { setStatus({ state: 'offline', pending: await db.pendingCount() }); return { offline: true }; }
-    setStatus({ state: 'syncing', error: null });
     try {
+      // innerhalb von try, damit "running" im finally immer zurückgesetzt wird
+      if (!navigator.onLine) { setStatus({ state: 'offline', pending: await db.pendingCount() }); return { offline: true }; }
+      setStatus({ state: 'syncing', error: null });
       const c = await getClient();
       const session = await currentSession();
       if (!session) throw new Error('Nicht angemeldet.');
