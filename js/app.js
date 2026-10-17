@@ -16,6 +16,7 @@ import motivation from './views/motivation.js';
 import review from './views/review.js';
 import settings from './views/settings.js';
 import login from './views/login.js';
+import challenge from './views/challenge.js';
 import { cloudConfigured } from './config.js';
 
 const MODE_KEY = 'fitness.mode';
@@ -38,13 +39,14 @@ const routes = [
   [/^\/rewards$/, motivation],
   [/^\/review\/(month|year)\/([\d-]+)$/, review],
   [/^\/settings$/, settings],
+  [/^\/challenge$/, challenge],
 ];
 
 const NAV = [
   ['#/', 'home', 'Start', /^\/($|gym|ex)/],
   ['#/body', 'scale', 'Körper', /^\/body/],
   ['#/stats', 'chart', 'Statistik', /^\/stats/],
-  ['#/rewards', 'trophy', 'Erfolge', /^\/(rewards|review)/],
+  ['#/rewards', 'trophy', 'Erfolge', /^\/(rewards|review|challenge)/],
   ['#/settings', 'sliders', 'Mehr', /^\/settings/],
 ];
 
@@ -67,7 +69,7 @@ function renderNav(path) {
 }
 
 async function route() {
-  let path = (location.hash || '#/').slice(1) || '/';
+  let path = ((location.hash || '#/').slice(1) || '/').split('?')[0] || '/';
   if (!mode && path !== '/welcome' && path !== '/login') { location.hash = '#/welcome'; return; }
   if (mode && (path === '/welcome' || path === '/login')) path = '/';
   renderNav(path);
@@ -107,6 +109,14 @@ async function boot() {
       await ensureDefaultSaunas();
     }
     await primeRewards();
+    try {
+      const pending = localStorage.getItem('fitness.pendingName');
+      if (pending) {
+        const { profile, saveProfile } = await import('./data.js');
+        if (!profile().display_name) await saveProfile({ display_name: pending });
+        localStorage.removeItem('fitness.pendingName');
+      }
+    } catch { /* egal */ }
     // Android/Chrome darf die Daten sonst bei knappem Speicher löschen
     try { if (navigator.storage?.persist && !(await navigator.storage.persisted())) await navigator.storage.persist(); } catch { /* egal */ }
   }

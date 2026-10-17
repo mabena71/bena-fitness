@@ -160,3 +160,175 @@ create policy "eigene Fotos ändern" on storage.objects for update to authentica
 drop policy if exists "eigene Fotos löschen" on storage.objects;
 create policy "eigene Fotos löschen" on storage.objects for delete to authenticated
   using (bucket_id = 'photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- =====================================================================================
+-- Etappe 6a: Paar-Challenge. Geteilt werden NUR Kennzahlen (Trainingstage, Schritte,
+-- Gewichtsveränderung in %), nie einzelne Sätze oder Messungen.
+-- =====================================================================================
+create table if not exists public.partner_invites (
+  code text primary key,
+  user_id uuid not null default auth.uid() references auth.users on delete cascade,
+  created_at timestamptz not null default now(),
+  expires_at timestamptz not null default now() + interval '7 days'
+);
+alter table public.partner_invites enable row level security;
+drop policy if exists "eigene Einladungen" on public.partner_invites;
+create policy "eigene Einladungen" on public.partner_invites for all to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+create table if not exists public.partnerships (
+  id uuid primary key default gen_random_uuid(),
+  user_a uuid not null references auth.users on delete cascade,
+  user_b uuid not null references auth.users on delete cascade,
+  created_at timestamptz not null default now(),
+  unique (user_a, user_b)
+);
+alter table public.partnerships enable row level security;
+drop policy if exists "eigene Partnerschaft lesen" on public.partnerships;
+create policy "eigene Partnerschaft lesen" on public.partnerships for select to authenticated
+  using (auth.uid() in (user_a, user_b));
+
+-- Partner der angemeldeten Person (oder null)
+create or replace function public.my_partner() returns uuid
+language sql stable security definer set search_path = public as $$
+  select case when user_a = auth.uid() then user_b else user_a end
+  from partnerships where auth.uid() in (user_a, user_b) limit 1;
+$$;
+
+create or replace function public.create_invite() returns text
+language plpgsql security definer set search_path = public as $$
+declare c text;
+begin
+  if public.my_partner() is not null then raise exception 'Es gibt schon eine Challenge.'; end if;
+  delete from partner_invites where user_id = auth.uid();
+  c := upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 6));
+  insert into partner_invites (code, user_id) values (c, auth.uid());
+  return c;
+end $$;
+
+create or replace function public.accept_invite(p_code text) returns void
+language plpgsql security definer set search_path = public as $$
+declare inv partner_invites;
+begin
+  select * into inv from partner_invites where code = upper(trim(p_code)) and expires_at > now();
+  if inv is null then raise exception 'Code ungültig oder abgelaufen.'; end if;
+  if inv.user_id = auth.uid() then raise exception 'Das ist dein eigener Code.'; end if;
+  if public.my_partner() is not null then raise exception 'Du hast schon eine Challenge.'; end if;
+  insert into partnerships (user_a, user_b) values (least(inv.user_id, auth.uid()), greatest(inv.user_id, auth.uid()));
+  delete from partner_invites where user_id = inv.user_id;
+end $$;
+
+create or replace function public.end_partnership() returns void
+language sql security definer set search_path = public as $$
+  delete from partnerships where auth.uid() in (user_a, user_b);
+$$;
+
+-- Kennzahlen einer Woche (Montag = p_week_start) für mich und den Partner
+create or replace function public.challenge_week(p_week_start date)
+returns table (user_id uuid, display_name text, is_me boolean, training_days int, steps bigint, weight_change_pct numeric)
+language sql stable security definer set search_path = public as $$
+  with people as (
+    select auth.uid() as uid
+    union
+    select public.my_partner() where public.my_partner() is not null
+  )
+  select
+    p.uid,
+    (select pr.display_name from profiles pr where pr.id = p.uid and pr.deleted_at is null),
+    p.uid = auth.uid(),
+    (select count(distinct (s.performed_at at time zone 'Europe/Zurich')::date)::int
+       from sets s join exercises e on e.id = s.exercise_id
+      where s.user_id = p.uid and s.deleted_at is null and not s.is_warmup and e.kind <> 'sauna'
+        and (s.performed_at at time zone 'Europe/Zurich')::date >= p_week_start
+        and (s.performed_at at time zone 'Europe/Zurich')::date < p_week_start + 7),
+    (select coalesce(sum(d.steps), 0) from daily_steps d
+      where d.user_id = p.uid and d.deleted_at is null and d.day >= p_week_start and d.day < p_week_start + 7),
+    (select case when prev.w is null or cur.w is null or prev.w = 0 then null
+                 else round((cur.w - prev.w) / prev.w * 100, 2) end
+       from (select avg(b.weight_kg) w from body_metrics b where b.user_id = p.uid and b.deleted_at is null and b.weight_kg is not null
+               and (b.measured_at at time zone 'Europe/Zurich')::date >= p_week_start and (b.measured_at at time zone 'Europe/Zurich')::date < p_week_start + 7) cur,
+            (select avg(b.weight_kg) w from body_metrics b where b.user_id = p.uid and b.deleted_at is null and b.weight_kg is not null
+               and (b.measured_at at time zone 'Europe/Zurich')::date >= p_week_start - 7 and (b.measured_at at time zone 'Europe/Zurich')::date < p_week_start) prev)
+  from people p;
+$$;
+
+grant execute on function public.my_partner(), public.create_invite(), public.accept_invite(text), public.end_partnership(), public.challenge_week(date) to authenticated;
+
+-- =====================================================================================
+-- Etappe 6b: Push-Benachrichtigungen
+-- =====================================================================================
+create table if not exists public.push_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users on delete cascade,
+  endpoint text not null unique,
+  p256dh text not null,
+  auth text not null,
+  created_at timestamptz not null default now()
+);
+alter table public.push_subscriptions enable row level security;
+drop policy if exists "eigene Abos" on public.push_subscriptions;
+create policy "eigene Abos" on public.push_subscriptions for all to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- Protokoll, damit jede Erinnerung nur einmal pro Fall kommt (nur für Edge Functions)
+create table if not exists public.notify_log (
+  user_id uuid not null references auth.users on delete cascade,
+  kind text not null,
+  ref text not null,
+  sent_at timestamptz not null default now(),
+  primary key (user_id, kind, ref)
+);
+alter table public.notify_log enable row level security;
+
+-- =====================================================================================
+-- Etappe 5: Withings (Tokens nur für Edge Functions lesbar: RLS an, keine Policy)
+-- =====================================================================================
+create table if not exists public.withings_tokens (
+  user_id uuid primary key references auth.users on delete cascade,
+  withings_userid text,
+  access_token text not null,
+  refresh_token text not null,
+  expires_at timestamptz not null,
+  scope text,
+  last_meas_update bigint not null default 0,
+  last_sync timestamptz,
+  last_error text
+);
+alter table public.withings_tokens enable row level security;
+
+create table if not exists public.withings_states (
+  state text primary key,
+  user_id uuid not null references auth.users on delete cascade,
+  created_at timestamptz not null default now()
+);
+alter table public.withings_states enable row level security;
+
+-- Für die App: nur sehen, ob Withings verbunden ist (ohne Tokens)
+create or replace function public.withings_status()
+returns table (connected boolean, last_sync timestamptz, last_error text)
+language sql stable security definer set search_path = public as $$
+  select true, t.last_sync, t.last_error from withings_tokens t where t.user_id = auth.uid()
+  union all
+  select false, null, null where not exists (select 1 from withings_tokens where user_id = auth.uid())
+  limit 1;
+$$;
+grant execute on function public.withings_status() to authenticated;
+
+create or replace function public.withings_disconnect() returns void
+language sql security definer set search_path = public as $$
+  delete from withings_tokens where user_id = auth.uid();
+$$;
+grant execute on function public.withings_disconnect() to authenticated;
+
+-- =====================================================================================
+-- Zeitpläne (erst ausführen, wenn die Edge Functions laufen; siehe docs/WITHINGS-UND-PUSH.md)
+-- Platzhalter <PROJEKT> und <CRON_SECRET> ersetzen.
+-- =====================================================================================
+-- create extension if not exists pg_cron;
+-- create extension if not exists pg_net;
+-- select cron.schedule('bena-stuendlich', '5 * * * *', $$
+--   select net.http_post(url := 'https://<PROJEKT>.supabase.co/functions/v1/notify',
+--     headers := jsonb_build_object('Content-Type', 'application/json', 'x-cron-secret', '<CRON_SECRET>'), body := '{}'::jsonb);
+--   select net.http_post(url := 'https://<PROJEKT>.supabase.co/functions/v1/withings-sync',
+--     headers := jsonb_build_object('Content-Type', 'application/json', 'x-cron-secret', '<CRON_SECRET>'), body := '{}'::jsonb);
+-- $$);

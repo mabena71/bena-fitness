@@ -5,4 +5,8 @@
 export const SUPABASE_URL = '';
 export const SUPABASE_ANON_KEY = '';
 
+// Öffentlicher VAPID-Schlüssel für Push-Benachrichtigungen (der private liegt nur in Supabase-Secrets)
+export const VAPID_PUBLIC_KEY = '';
+
 export const cloudConfigured = () => !!(SUPABASE_URL && SUPABASE_ANON_KEY);
+export const pushConfigured = () => cloudConfigured() && !!VAPID_PUBLIC_KEY;

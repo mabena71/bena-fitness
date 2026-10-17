@@ -178,3 +178,19 @@ export function startAutoSync() {
   sync();
 }
 export function stopAutoSync() { if (stopAutoSync.fn) { stopAutoSync.fn(); stopAutoSync.fn = null; } }
+
+/** Datenbank-Funktion aufrufen (Paar-Challenge usw.). */
+export async function rpc(name, args = {}) {
+  const c = await getClient();
+  const { data, error } = await c.rpc(name, args);
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+/** Edge Function aufrufen (Withings, Push). */
+export async function callFunction(name, body = {}) {
+  const c = await getClient();
+  const { data, error } = await c.functions.invoke(name, { body });
+  if (error) throw new Error(error.message || 'Fehler beim Aufruf');
+  return data;
+}

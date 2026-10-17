@@ -6,6 +6,7 @@ import { setsCsv, bodyCsv, stepsCsv } from '../csv.js';
 import { createBackup, restoreBackup } from '../backup.js';
 import { icon } from '../icons.js';
 import { cloudConfigured } from '../config.js';
+import { cloudExtrasHtml, wireCloudExtras } from './settings-cloud.js';
 
 export default {
   async render(el, _p, ctx) {
@@ -58,17 +59,16 @@ export default {
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-title"><h3>Bald verfügbar</h3></div>
+      ${mode === 'cloud' ? cloudExtrasHtml() : `<div class="card">
+        <div class="card-title"><h3>Mit Konto (bald)</h3></div>
         <ul class="list">
-          <li><span class="emoji">${icon('cloud', 18)}</span><div class="grow"><b>Login und Sync</b><div class="muted small">Gleiche Daten auf Handy und PC, getrennte Konten für Maurice und Sabine</div></div></li>
-          <li><span class="emoji">${icon('pin', 18)}</span><div class="grow"><b>Studio per Standort</b><div class="muted small">Öffnet automatisch das Studio, in dem du gerade bist</div></div></li>
+          <li><span class="emoji">${icon('cloud', 18)}</span><div class="grow"><b>Login und Abgleich</b><div class="muted small">Gleiche Daten auf Handy und PC, getrennte Konten für Maurice und Sabine</div></div></li>
           <li><span class="emoji">${icon('scale', 18)}</span><div class="grow"><b>Withings</b><div class="muted small">Gewicht, Fett und Schritte automatisch übernehmen</div></div></li>
-          <li><span class="emoji">${icon('crown', 18)}</span><div class="grow"><b>Paar-Challenge</b><div class="muted small">Wochenduell nur mit Kennzahlen</div></div></li>
+          <li><span class="emoji">${icon('crown', 18)}</span><div class="grow"><b><a href="#/challenge" style="color:inherit">Paar-Challenge</a></b><div class="muted small">Wochenduell nur mit Kennzahlen</div></div></li>
           <li><span class="emoji">${icon('bell', 18)}</span><div class="grow"><b>Benachrichtigungen</b><div class="muted small">Wochenbilanz am Sonntag und Erinnerungen</div></div></li>
         </ul>
-      </div>
-      <p class="muted small center">Fitness-Tagebuch · Version 0.5 (Etappen 1, 2, 4 und Sauna)</p>`;
+      </div>`}
+      <p class="muted small center">Fitness-Tagebuch · Version 0.6 (Etappen 1–6 vorbereitet)</p>`;
 
     el.querySelector('[data-save]').onclick = async () => {
       await saveProfile({ display_name: el.querySelector('[data-name]').value.trim() });
@@ -126,6 +126,7 @@ export default {
         setMode(null, '#/welcome');
       };
       cleanupFn = () => off();
+      wireCloudExtras(el, ctx);
     }
     el.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => setMode(b.dataset.mode));
     const reset = el.querySelector('[data-reset]');

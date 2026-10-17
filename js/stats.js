@@ -460,6 +460,28 @@ function relGain(r) {
 export function monthRange(y, m) { return [new Date(y, m, 1), new Date(y, m + 1, 0, 23, 59, 59, 999)]; }
 export function yearRange(y) { return [new Date(y, 0, 1), new Date(y, 11, 31, 23, 59, 59, 999)]; }
 
+// --- Paar-Challenge ------------------------------------------------------------
+/**
+ * Wertet eine Woche aus. a und b: { training_days, steps, weight_change_pct }.
+ * Mehr Trainingstage und Schritte gewinnen, beim Gewicht gewinnt die stärkere Abnahme in %.
+ * Ergebnis: { cats: [{key, label, winner: 'a'|'b'|null}], a, b, winner: 'a'|'b'|null }
+ */
+export function challengeScore(a, b) {
+  const cmp = (x, y, higherWins = true) => {
+    if (x == null || y == null) return null;
+    const d = higherWins ? x - y : y - x;
+    return Math.abs(d) < 1e-9 ? null : d > 0 ? 'a' : 'b';
+  };
+  const cats = [
+    { key: 'days', label: 'Trainingstage', winner: cmp(a.training_days, b.training_days) },
+    { key: 'steps', label: 'Schritte', winner: (a.steps || b.steps) ? cmp(+a.steps || 0, +b.steps || 0) : null },
+    { key: 'weight', label: 'Gewicht (%)', winner: cmp(a.weight_change_pct == null ? null : +a.weight_change_pct, b.weight_change_pct == null ? null : +b.weight_change_pct, false) },
+  ];
+  const pa = cats.filter(c => c.winner === 'a').length;
+  const pb = cats.filter(c => c.winner === 'b').length;
+  return { cats, a: pa, b: pb, winner: pa > pb ? 'a' : pb > pa ? 'b' : null };
+}
+
 // --- Sauna -------------------------------------------------------------------
 /** Saunagänge im Zeitraum: Anzahl, Minuten, Saunatage, pro Woche und pro Sauna-Art. */
 export function saunaStats(data, from, to = new Date()) {

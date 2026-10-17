@@ -57,7 +57,7 @@ export default {
             </div>
           </div>
           <div class="row spread" style="margin-top:14px">
-            <div><div class="muted small">${esc(fmtMonth(now))}</div><b>${month.days} Trainings · ${tons(month.volume)}</b></div>
+            <div><div class="muted small">${esc(fmtMonth(now))}</div><b>${month.days} Trainings · ${tons(month.volume)}${month.sauna?.count ? ` · ${month.sauna.count} Sauna` : ''}</b></div>
             <div class="muted small" style="text-align:right">${r.earned.length} Abzeichen<br>${r.records.length} Rekorde</div>
           </div>
         </div>

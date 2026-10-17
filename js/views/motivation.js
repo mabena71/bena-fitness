@@ -40,6 +40,7 @@ export default {
         </div>
         <div class="card">
           <div class="card-title"><h3>Rückblicke</h3></div>
+          <a class="btn block" style="margin-bottom:10px" href="#/challenge">${icon('crown', 18)} Paar-Challenge</a>
           ${years.map(y => `<a class="btn block accent" style="margin-bottom:10px" href="#/review/year/${y}">${icon('sparkle', 18)} Jahresrückblick ${y}</a>`).join('')}
           ${monthList.length ? `<ul class="list">${monthList.map(m => {
             const [y, mo] = m.split('-').map(Number);

@@ -1,7 +1,7 @@
 // Tests für die reinen Rechenfunktionen. Aufruf: tests.html im Browser öffnen.
 import {
   sessions, isRecord, recordEvents, ghostCompare, comeback, prefill, rolling, bodyRecordEvents,
-  weekStreak, sinkingWeekStreak, roundStep, dayKey, addDays, analyze, saunaStats,
+  weekStreak, sinkingWeekStreak, roundStep, dayKey, addDays, analyze, saunaStats, challengeScore,
 } from './stats.js';
 import { levelNeed, computeRewards } from './rewards.js';
 import * as fun from './fun.js';
@@ -180,6 +180,14 @@ test('Sauna: Statistik zählt Gänge und Minuten, Training bleibt unberührt', (
   const r = computeRewards(data);
   ok(r.earned.some(b => b.id === 'sauna_1'), 'Abzeichen erster Saunagang');
   eq(r.sessions.length, 1, 'Sauna ist kein zusätzliches Training');
+});
+
+test('Paar-Challenge: Wertung der drei Kategorien', () => {
+  const r = challengeScore({ training_days: 3, steps: 50000, weight_change_pct: -0.8 }, { training_days: 2, steps: 60000, weight_change_pct: -0.3 });
+  eq(r.cats.map(c => c.winner), ['a', 'b', 'a']);
+  eq([r.a, r.b, r.winner], [2, 1, 'a']);
+  const tie = challengeScore({ training_days: 2, steps: 0, weight_change_pct: null }, { training_days: 2, steps: 0, weight_change_pct: -1 });
+  eq([tie.a, tie.b, tie.winner], [0, 0, null], 'gleich und fehlende Werte ergeben keine Krone');
 });
 
 // Abgleich gegen simulierten Server (asynchron)
