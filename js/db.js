@@ -175,6 +175,11 @@ export async function photoUrl(key) {
   photoUrls.set(key, u);
   return u;
 }
+/** Alle Fotos (für die Datensicherung). */
+export async function allPhotos() { return req(idb.transaction('photos').objectStore('photos').getAll()); }
+/** Alle Zeilen einer Tabelle inkl. gelöschter (für die Datensicherung). */
+export function rawAll(table) { return [...mem[table].values()]; }
+
 export async function savePhotoFromRemote(key, blob) {
   const tx = idb.transaction('photos', 'readwrite');
   tx.objectStore('photos').put({ key, blob, at: new Date().toISOString() });

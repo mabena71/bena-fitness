@@ -96,6 +96,8 @@ async function boot() {
     }
     await ensureDefaultGyms();
     await primeRewards();
+    // Android/Chrome darf die Daten sonst bei knappem Speicher löschen
+    try { if (navigator.storage?.persist && !(await navigator.storage.persisted())) await navigator.storage.persist(); } catch { /* egal */ }
   }
   window.addEventListener('hashchange', route);
   window.addEventListener('scroll', () => document.getElementById('topbar').classList.toggle('scrolled', window.scrollY > 4), { passive: true });

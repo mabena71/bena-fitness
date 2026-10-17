@@ -3,6 +3,7 @@ import { profile, saveProfile } from '../data.js';
 import { setTop, esc, toast, confirmDialog, downloadFile } from '../ui.js';
 import { getMode, setMode, MODES } from '../app.js';
 import { setsCsv, bodyCsv, stepsCsv } from '../csv.js';
+import { createBackup, restoreBackup } from '../backup.js';
 
 const EMOJIS = ['💪', '🏋️', '🔥', '⚡', '🦁', '🐻', '🦊', '🌟', '🚀', '🧘'];
 
@@ -33,6 +34,16 @@ export default {
       </div>
 
       <div class="card">
+        <div class="card-title"><h3>Datensicherung</h3></div>
+        <p class="muted small">Alle Trainings, Messungen und Fotos als eine Datei. Auf dem Handy landet sie im Ordner „Downloads“. Mach ab und zu eine Sicherung, solange die Daten nur auf diesem Gerät liegen.</p>
+        <div class="row wrap">
+          <button class="btn primary" data-backup>💾 Sicherung herunterladen</button>
+          <label class="btn" style="cursor:pointer">📂 Sicherung einspielen<input type="file" accept=".json,application/json" data-restore hidden></label>
+        </div>
+        <p class="muted small" data-persist></p>
+      </div>
+
+      <div class="card">
         <div class="card-title"><h3>Speicherort</h3></div>
         <p class="small">Aktuell: <b>${esc(MODES[mode].label)}</b>${mode === 'demo' ? ' – mit Beispieldaten' : ''}</p>
         ${mode === 'local' ? `<p class="muted small">Die Daten liegen nur in diesem Browser. Mit dem Login (Etappe 3) werden sie auf Handy und PC synchronisiert; ${pending} Einträge sind dafür vorgemerkt.</p>` : ''}
@@ -51,7 +62,7 @@ export default {
           <li><span class="emoji">🔔</span><div class="grow"><b>Benachrichtigungen</b><div class="muted small">Wochenbilanz am Sonntag und Erinnerungen</div></div></li>
         </ul>
       </div>
-      <p class="muted small center">Fitness-Tagebuch · Version 0.2 (Etappen 1–2)</p>`;
+      <p class="muted small center">Fitness-Tagebuch · Version 0.3 (Etappen 1–2, Datensicherung)</p>`;
 
     let emoji = p.avatar_emoji || '💪';
     el.querySelectorAll('[data-emoji]').forEach(b => b.onclick = () => { emoji = b.dataset.emoji; el.querySelectorAll('[data-emoji]').forEach(x => x.classList.toggle('on', x === b)); });
@@ -65,6 +76,27 @@ export default {
       const content = k === 'sets' ? setsCsv() : k === 'body' ? bodyCsv() : stepsCsv();
       downloadFile(`fitness-${k === 'sets' ? 'trainings' : k === 'body' ? 'koerper' : 'schritte'}-${stamp}.csv`, content);
     });
+    el.querySelector('[data-backup]').onclick = async () => {
+      const json = await createBackup();
+      downloadFile(`bena-fitness-sicherung-${stamp}.json`, json, 'application/json');
+      toast('Sicherung erstellt');
+    };
+    el.querySelector('[data-restore]').onchange = async e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (!(await confirmDialog('Sicherung einspielen? Einträge aus der Datei ersetzen gleiche Einträge auf diesem Gerät.', 'Einspielen'))) return;
+      try {
+        const r = await restoreBackup(await file.text());
+        toast(`Eingespielt: ${r.sets} Sätze, ${r.body_metrics} Messungen, ${r.photos} Fotos`, '', 4000);
+        ctx.refresh();
+      } catch (err) { toast(esc(err.message), '', 4000); }
+    };
+    try {
+      if (navigator.storage?.persisted) {
+        const p = await navigator.storage.persisted();
+        el.querySelector('[data-persist]').textContent = p ? '✓ Der Browser speichert die Daten dauerhaft.' : 'Hinweis: Der Browser hat dauerhaften Speicher nicht bestätigt. Als App auf dem Startbildschirm ist er meist sicherer.';
+      }
+    } catch { /* egal */ }
     el.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => setMode(b.dataset.mode));
     const reset = el.querySelector('[data-reset]');
     if (reset) reset.onclick = async () => {
