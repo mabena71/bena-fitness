@@ -15,16 +15,20 @@ import stats from './views/stats.js';
 import motivation from './views/motivation.js';
 import review from './views/review.js';
 import settings from './views/settings.js';
+import login from './views/login.js';
+import { cloudConfigured } from './config.js';
 
 const MODE_KEY = 'fitness.mode';
 export const MODES = {
   demo: { db: 'fitness-demo', user: 'demo', label: 'Demo' },
   local: { db: 'fitness-local', user: 'local', label: 'Nur dieses Gerät' },
+  cloud: { db: null, user: null, label: 'Konto (Handy und PC synchron)' },
 };
 
 const routes = [
   [/^\/$/, home],
   [/^\/welcome$/, welcome],
+  [/^\/login$/, login],
   [/^\/gym\/([^/]+)$/, gym],
   [/^\/ex\/new\/([^/]+)$/, exerciseEdit, { isNew: true }],
   [/^\/ex\/([^/]+)\/edit$/, exerciseEdit],
@@ -49,9 +53,9 @@ let mode = null;
 
 export function getMode() { return mode; }
 
-export async function setMode(m) {
+export async function setMode(m, hash = '#/') {
   if (m) localStorage.setItem(MODE_KEY, m); else localStorage.removeItem(MODE_KEY);
-  location.hash = '#/';
+  location.hash = hash;
   location.reload();
 }
 
@@ -64,8 +68,8 @@ function renderNav(path) {
 
 async function route() {
   let path = (location.hash || '#/').slice(1) || '/';
-  if (!mode && path !== '/welcome') { location.hash = '#/welcome'; return; }
-  if (mode && path === '/welcome') path = '/';
+  if (!mode && path !== '/welcome' && path !== '/login') { location.hash = '#/welcome'; return; }
+  if (mode && (path === '/welcome' || path === '/login')) path = '/';
   renderNav(path);
   const el = document.getElementById('view');
   if (cleanup) { try { cleanup(); } catch (e) { console.error(e); } cleanup = null; }
@@ -88,15 +92,20 @@ async function route() {
 async function boot() {
   mode = localStorage.getItem(MODE_KEY);
   if (mode && !MODES[mode]) mode = null;
-  if (mode) {
+  if (mode === 'cloud' && !(await openCloud())) mode = null;
+  if (mode && mode !== 'cloud') {
     const cfg = MODES[mode];
     await db.open(cfg.db, cfg.user);
+  }
+  if (mode) {
     if (mode === 'demo' && !(await db.getMeta('seeded'))) {
       await seedDemo();
       await db.setMeta('seeded', true);
     }
-    await ensureDefaultGyms();
-    await ensureDefaultSaunas();
+    if (mode !== 'cloud' || (await db.getMeta('initialPullDone'))) {
+      await ensureDefaultGyms();
+      await ensureDefaultSaunas();
+    }
     await primeRewards();
     // Android/Chrome darf die Daten sonst bei knappem Speicher löschen
     try { if (navigator.storage?.persist && !(await navigator.storage.persisted())) await navigator.storage.persist(); } catch { /* egal */ }
@@ -106,6 +115,50 @@ async function boot() {
   route();
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('sw.js').catch(e => console.warn('Service Worker:', e));
+  }
+}
+
+/**
+ * Konto-Modus: Sitzung prüfen, eigene lokale Datenbank pro Konto öffnen, beim ersten Mal
+ * Daten vom Server holen (und auf Wunsch die bisherigen Daten dieses Geräts übernehmen),
+ * danach automatisch abgleichen.
+ */
+async function openCloud() {
+  if (!cloudConfigured()) return false;
+  const sync = await import('./sync.js');
+  let session = null;
+  try { session = await sync.currentSession(); } catch (e) { console.warn(e); }
+  if (!session) { localStorage.removeItem(MODE_KEY); return false; }
+  const uid = session.user.id;
+  await db.open(`fitness-u-${uid}`, uid);
+  if (!(await db.getMeta('localImportOffered'))) await offerLocalImport(uid);
+  if (!(await db.getMeta('initialPullDone')) && navigator.onLine) await Promise.race([sync.sync(), new Promise(r => setTimeout(r, 15000))]);
+  sync.onStatus(async s => {
+    if (s.state === 'ok' && !db.all('gyms').length) { await ensureDefaultGyms(); await ensureDefaultSaunas(); }
+  });
+  db.onChange(t => { if (t === 'remote' && !document.querySelector('.modal-back')) route(); });
+  sync.startAutoSync();
+  return true;
+}
+
+/** Einmalig: bisherige Daten aus „Nur dieses Gerät“ ins Konto übernehmen. */
+async function offerLocalImport(uid) {
+  await db.setMeta('localImportOffered', true);
+  const { createBackup, restoreBackup } = await import('./backup.js');
+  const { confirmDialog, toast } = await import('./ui.js');
+  const target = db.currentDbName();
+  await db.open(MODES.local.db, MODES.local.user);
+  db.clearMetaCache();
+  const hasData = db.all('sets').length + db.all('body_metrics').length + db.all('daily_steps').length > 0;
+  const backup = hasData ? await createBackup() : null;
+  await db.open(target, uid);
+  db.clearMetaCache();
+  await db.setMeta('localImportOffered', true);
+  if (!backup) return;
+  if (await confirmDialog('Auf diesem Gerät gibt es schon Trainingsdaten. Sollen sie in dein Konto übernommen werden?', 'Übernehmen')) {
+    const r = await restoreBackup(backup, { userId: uid });
+    await db.setMeta('initialPullDone', true);
+    toast(`Übernommen: ${r.sets} Sätze, ${r.body_metrics} Messungen`, '', 4000);
   }
 }
 

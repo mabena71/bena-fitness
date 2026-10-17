@@ -5,6 +5,7 @@ import { getMode, setMode, MODES } from '../app.js';
 import { setsCsv, bodyCsv, stepsCsv } from '../csv.js';
 import { createBackup, restoreBackup } from '../backup.js';
 import { icon } from '../icons.js';
+import { cloudConfigured } from '../config.js';
 
 export default {
   async render(el, _p, ctx) {
@@ -41,12 +42,19 @@ export default {
         <p class="muted small" data-persist></p>
       </div>
 
-      <div class="card">
+      ${mode === 'cloud' ? `<div class="card">
+        <div class="card-title"><h3>${icon('cloud', 18)} Konto und Abgleich</h3></div>
+        <p class="small" data-account>Angemeldet.</p>
+        <p class="muted small" data-sync-status></p>
+        <div class="row wrap"><button class="btn primary" data-sync-now>Jetzt abgleichen</button><button class="btn" data-logout>Abmelden</button></div>
+      </div>` : ''}
+            <div class="card">
         <div class="card-title"><h3>Speicherort</h3></div>
         <p class="small">Aktuell: <b>${esc(MODES[mode].label)}</b>${mode === 'demo' ? ' – mit Beispieldaten' : ''}</p>
         ${mode === 'local' ? `<p class="muted small">Die Daten liegen nur in diesem Browser. Mit dem Login (Etappe 3) werden sie auf Handy und PC synchronisiert; ${pending} Einträge sind dafür vorgemerkt.</p>` : ''}
         <div class="row wrap">
           ${mode === 'demo' ? '<button class="btn primary" data-mode="local">Eigenes Tagebuch starten</button><button class="btn" data-reset>Demo zurücksetzen</button>' : '<button class="btn" data-mode="demo">Demo ansehen</button>'}
+          ${cloudConfigured() && mode !== 'cloud' ? '<button class="btn primary" data-to-login>Mit Konto anmelden</button>' : ''}
         </div>
       </div>
 
@@ -93,6 +101,32 @@ export default {
         el.querySelector('[data-persist]').textContent = p ? 'Der Browser speichert die Daten dauerhaft.' : 'Hinweis: Der Browser hat dauerhaften Speicher nicht bestätigt. Als App auf dem Startbildschirm ist er meist sicherer.';
       }
     } catch { /* egal */ }
+    let cleanupFn = null;
+    const toLogin = el.querySelector('[data-to-login]');
+    if (toLogin) toLogin.onclick = () => setMode(null, '#/login');
+    if (mode === 'cloud') {
+      const sync = await import('../sync.js');
+      const session = await sync.currentSession();
+      if (session) el.querySelector('[data-account]').innerHTML = `Angemeldet als <b>${esc(session.user.email)}</b>`;
+      const show = st => {
+        const box = el.querySelector('[data-sync-status]');
+        if (!box) return;
+        const when = st.lastSync ? new Date(st.lastSync).toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit' }) : null;
+        box.textContent = st.state === 'syncing' ? 'Gleiche ab …'
+          : st.state === 'offline' ? `Offline – ${st.pending} Einträge warten auf Upload.`
+          : st.state === 'error' ? `Fehler beim Abgleich: ${st.error}`
+          : `${when ? `Zuletzt abgeglichen um ${when}.` : 'Noch nicht abgeglichen.'} ${st.pending ? `${st.pending} Einträge warten auf Upload.` : 'Alles hochgeladen.'}`;
+      };
+      show(sync.status);
+      const off = sync.onStatus(show);
+      el.querySelector('[data-sync-now]').onclick = () => sync.sync();
+      el.querySelector('[data-logout]').onclick = async () => {
+        if (!(await confirmDialog('Abmelden? Die Daten bleiben im Konto gespeichert.', 'Abmelden'))) return;
+        await sync.signOut();
+        setMode(null, '#/welcome');
+      };
+      cleanupFn = () => off();
+    }
     el.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => setMode(b.dataset.mode));
     const reset = el.querySelector('[data-reset]');
     if (reset) reset.onclick = async () => {
@@ -100,5 +134,6 @@ export default {
       await db.deleteDatabase(MODES.demo.db);
       location.reload();
     };
+    return cleanupFn;
   },
 };

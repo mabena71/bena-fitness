@@ -22,6 +22,7 @@ export async function open(name, uid) {
   if (idb) idb.close();
   dbName = name;
   userId = uid;
+  metaCache.clear();
   photoUrls.forEach(u => URL.revokeObjectURL(u));
   photoUrls.clear();
   const r = indexedDB.open(name, 1);
