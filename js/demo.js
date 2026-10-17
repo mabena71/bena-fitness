@@ -3,6 +3,19 @@ import * as db from './db.js';
 import { addDays, dayKey } from './stats.js';
 
 export const DEFAULT_GYMS = ['Bellevue', 'Archhöfe', 'Win4'];
+export const WIN4_SAUNAS = ['Bio-Sauna', 'Dampfbad', 'Hot-Sauna'];
+
+/** Legt die drei Saunen im Win4 einmalig an (auch bei bestehenden Tagebüchern). */
+export async function ensureDefaultSaunas() {
+  if (await db.getMeta('saunasSeeded')) return;
+  const win = db.all('gyms').find(g => g.name.trim().toLowerCase() === 'win4');
+  if (!win) return;
+  const existing = new Set(db.all('exercises').filter(e => e.gym_id === win.id).map(e => e.name.toLowerCase()));
+  const rows = WIN4_SAUNAS.filter(n => !existing.has(n.toLowerCase()))
+    .map(name => ({ id: db.uuid(), gym_id: win.id, name, kind: 'sauna', muscle_group: 'recovery', photo_path: null, notes: '', settings: [], sort_order: null, archived: false }));
+  if (rows.length) await db.bulkPut('exercises', rows);
+  await db.setMeta('saunasSeeded', true);
+}
 
 /** Legt für einen neuen Benutzer die drei Studios an (falls noch keine existieren). */
 export async function ensureDefaultGyms() {
@@ -41,6 +54,9 @@ export async function seedDemo() {
     E(win, 'Latzug', 'machine', 'back', 35, 5, []),
     E(win, 'Rückenstrecker', 'machine', 'back', 30, 4, [], { reps: 15 }),
     E(win, 'Crosstrainer', 'cardio', 'cardio', 20, 0, []),
+    E(win, 'Bio-Sauna', 'sauna', 'recovery', 0, 0, []),
+    E(win, 'Dampfbad', 'sauna', 'recovery', 0, 0, []),
+    E(win, 'Hot-Sauna', 'sauna', 'recovery', 0, 0, []),
     E(null, 'Liegestütze', 'bodyweight', 'chest', 0, 0, [], { reps: 15 }),
     E(null, 'Klimmzüge', 'bodyweight', 'back', 0, 0, [], { reps: 4 }),
   ];
@@ -67,7 +83,7 @@ export async function seedDemo() {
     if (R() < 0.8) checks.push({ id: db.uuid(), day: dayKey(t0), gym_id: gym.id, energy });
     const perf = 0.94 + energy * 0.025;
     const progress = Math.min(1, dayIdx / 72);
-    const list = [...byGym(gym)].sort(() => R() - 0.5).slice(0, 5 + Math.floor(R() * 2));
+    const list = [...byGym(gym)].filter(e => e.kind !== 'sauna').sort(() => R() - 0.5).slice(0, 5 + Math.floor(R() * 2));
     if (R() < 0.3) list.push(exercises.find(e => e.name === 'Liegestütze'));
     list.sort((a, b) => (a.sort_order ?? 99) - (b.sort_order ?? 99));
     for (const ex of list) {
@@ -93,6 +109,17 @@ export async function seedDemo() {
       }
       ts += 120000;
     }
+    if (gym === win && R() < 0.75) {
+      ts += 15 * 60000;
+      const saunas = exercises.filter(e => e.kind === 'sauna');
+      const n = 2 + Math.floor(R() * 2);
+      for (let i = 0; i < n; i++) {
+        const sx = saunas[Math.floor(R() * saunas.length)];
+        const min = sx.name === 'Dampfbad' ? 10 + Math.floor(R() * 6) : 8 + Math.floor(R() * 8);
+        sets.push({ id: db.uuid(), exercise_id: sx.id, performed_at: new Date(ts).toISOString(), duration_min: min, weight_kg: null, reps: null, is_warmup: false, feel: null });
+        ts += (min + 15) * 60000;
+      }
+    }
   }
 
   // Körper: Gewicht von ~86 auf ~82.8 mit Schwankungen, Fett 25 → 23
@@ -117,4 +144,5 @@ export async function seedDemo() {
   await db.bulkPut('day_checks', checks);
   await db.bulkPut('body_metrics', body);
   await db.bulkPut('daily_steps', steps);
+  await db.setMeta('saunasSeeded', true);
 }

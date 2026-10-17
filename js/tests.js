@@ -1,7 +1,7 @@
 // Tests für die reinen Rechenfunktionen. Aufruf: tests.html im Browser öffnen.
 import {
   sessions, isRecord, recordEvents, ghostCompare, comeback, prefill, rolling, bodyRecordEvents,
-  weekStreak, sinkingWeekStreak, roundStep, dayKey, addDays, analyze,
+  weekStreak, sinkingWeekStreak, roundStep, dayKey, addDays, analyze, saunaStats,
 } from './stats.js';
 import { levelNeed, computeRewards } from './rewards.js';
 import * as fun from './fun.js';
@@ -169,6 +169,17 @@ test('Standort: Entfernung und nächstes Studio', () => {
   const gyms = [{ id: 'x', ...a }, { id: 'y', lat: 47.4, lng: 8.5 }, { id: 'z', lat: null, lng: null }];
   eq(nearestGym(gyms, { lat: 47.5005, lng: 8.724, acc: 10 }).gym.id, 'x');
   eq(nearestGym(gyms, { lat: 47.52, lng: 8.724, acc: 10 }), null);
+});
+
+test('Sauna: Statistik zählt Gänge und Minuten, Training bleibt unberührt', () => {
+  const sx = { id: 'sx', kind: 'sauna', gym_id: 'g1', name: 'Bio-Sauna' };
+  const data = { gyms: [{ id: 'g1' }], exercises: [ex('a')], sets: [set('a', at(2), 50, 10)], saunaExercises: [sx],
+    sauna: [set('sx', at(2, 20), null, null, { duration_min: 12 }), set('sx', at(2, 21), null, null, { duration_min: 10 })], body: [], steps: [], checks: [] };
+  const sa = saunaStats(data, addDays(new Date(), -7));
+  eq([sa.count, sa.minutes, sa.days], [2, 22, 1]);
+  const r = computeRewards(data);
+  ok(r.earned.some(b => b.id === 'sauna_1'), 'Abzeichen erster Saunagang');
+  eq(r.sessions.length, 1, 'Sauna ist kein zusätzliches Training');
 });
 
 const out = document.getElementById('out');

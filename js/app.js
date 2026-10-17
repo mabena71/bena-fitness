@@ -1,6 +1,6 @@
 // Einstieg: Modus wählen (Demo / lokal), Datenbank öffnen, Router und Navigation.
 import * as db from './db.js';
-import { seedDemo, ensureDefaultGyms } from './demo.js';
+import { seedDemo, ensureDefaultGyms, ensureDefaultSaunas } from './demo.js';
 import { primeRewards } from './data.js';
 import { esc } from './ui.js';
 import { icon } from './icons.js';
@@ -96,6 +96,7 @@ async function boot() {
       await db.setMeta('seeded', true);
     }
     await ensureDefaultGyms();
+    await ensureDefaultSaunas();
     await primeRewards();
     // Android/Chrome darf die Daten sonst bei knappem Speicher löschen
     try { if (navigator.storage?.persist && !(await navigator.storage.persisted())) await navigator.storage.persist(); } catch { /* egal */ }

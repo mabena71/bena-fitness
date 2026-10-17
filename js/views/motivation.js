@@ -28,14 +28,14 @@ export default {
           </div>
         </div>
         <details style="margin-top:12px"><summary class="muted small" style="cursor:pointer">Wie bekomme ich Punkte?</summary>
-          <p class="small muted">Satz ${XP.set} · Aufwärmsatz ${XP.warmup} · Training ${XP.session} · Messtag ${XP.measure} · Schritte bis 15 pro Tag · Rekord ${XP.record} · Körper-Rekord ${XP.bodyRecord} · Abzeichen ${XP.badge}</p>
+          <p class="small muted">Satz ${XP.set} · Aufwärmsatz ${XP.warmup} · Training ${XP.session} · Messtag ${XP.measure} · Schritte bis 15 pro Tag · Rekord ${XP.record} · Körper-Rekord ${XP.bodyRecord} · Abzeichen ${XP.badge} · Saunagang ${XP.sauna}</p>
         </details>
       </div>
 
       <div class="grid two" style="margin-top:12px">
         <div class="card">
           <div class="card-title"><h3>Level pro Muskelgruppe</h3></div>
-          ${r.muscles.filter(m => m.key !== 'cardio').map(m => `<div class="hbar" style="grid-template-columns:120px 1fr 64px"><span class="name">${MUSCLES[m.key].label}</span>
+          ${r.muscles.filter(m => m.key !== 'cardio' && m.key !== 'recovery').map(m => `<div class="hbar" style="grid-template-columns:120px 1fr 64px"><span class="name">${MUSCLES[m.key].label}</span>
             <div class="bar teal"><i style="width:${m.pct.toFixed(1)}%"></i></div><span class="v">Lvl ${m.level}</span></div>`).join('')}
         </div>
         <div class="card">

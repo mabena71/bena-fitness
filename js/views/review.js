@@ -28,6 +28,7 @@ function renderMonth(el, data, key) {
   if (s.volume) lines.push(`${icon('weight', 18)} ${tons(s.volume)} bewegt – ${esc(fun.heavy(s.volume))}.`);
   if (w != null && w < -0.1) lines.push(`${icon('trendDown', 18)} ${n1(-w)} kg leichter – das ist ${esc(fun.loss(-w))}.`);
   if (s.cardioKm) lines.push(`${icon('route', 18)} ${n1(s.cardioKm)} km Cardio – ${esc(fun.distance(s.cardioKm))}.`);
+  if (s.sauna.count) lines.push(`${icon('steam', 18)} ${s.sauna.count} Saunagänge, zusammen ${n0(s.sauna.minutes)} Minuten.`);
   if (s.stepsTotal) lines.push(`${icon('steps', 18)} ${n0(s.stepsTotal)} Schritte – etwa ${esc(fun.steps(s.stepsTotal))}.`);
 
   el.innerHTML = `
@@ -69,6 +70,7 @@ function renderYear(el, data, y) {
     s.topProgress && s.topProgress.pct > 0 ? { e: 'trendUp', k: 'Stärkste Steigerung', mid: `${esc(s.topProgress.ex.name)}`, big: `+${n0(s.topProgress.pct)} %`, sub: `von ${n1(s.topProgress.first)} auf ${n1(s.topProgress.last)}` } : null,
     w != null && w < -0.1 ? { e: 'trendDown', k: 'Leichter geworden', big: `−${n1(-w)} kg`, sub: `Das ist ${esc(fun.loss(-w))}${f != null && f < -0.1 ? ` – und ${n1(-f)} Prozentpunkte weniger Fett!` : '.'}` } : null,
     s.stepsTotal ? { e: 'steps', k: 'Schritte', big: n0(s.stepsTotal), sub: `Damit bist du ${esc(fun.steps(s.stepsTotal))} gelaufen.` } : null,
+    s.sauna.count ? { e: 'steam', k: 'Sauna', big: n0(s.sauna.count), sub: `Saunagänge mit zusammen ${n0(s.sauna.minutes)} Minuten${s.sauna.byType[0] ? ` – am liebsten ${esc(s.sauna.byType[0].ex.name)}` : ''}.` } : null,
     s.cardioKm ? { e: 'route', k: 'Cardio', big: `${n1(s.cardioKm)} km`, sub: `${esc(fun.distance(s.cardioKm))}` } : null,
     { e: 'trophy', k: 'Dein Level', big: r.level, mid: `${esc(r.title)}${name ? '-' + esc(name) : ''}`, sub: `${r.earned.length} von ${r.badges.length} Abzeichen gesammelt.` },
     { e: 'arrow', k: `Auf ${y + 1}!`, mid: 'Weiter so!', sub: 'Tippe, um den Rückblick zu schliessen.' },

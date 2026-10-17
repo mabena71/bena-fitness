@@ -78,6 +78,7 @@ export function sessions(sets, exById) {
 // --- Rekorde ---------------------------------------------------------------
 /** >0 wenn a besser ist als b. */
 export function compareSets(a, b, kind) {
+  if (kind === 'sauna') return (a.duration_min || 0) - (b.duration_min || 0);
   if (kind === 'cardio') {
     const d = (a.distance_km || 0) - (b.distance_km || 0);
     if (Math.abs(d) > 1e-9) return d;
@@ -170,6 +171,7 @@ export function prefill(exSets, ex, now = new Date()) {
   const todays = sorted.filter(s => dayKey(s.performed_at) === today);
   const ref = [...(todays.length ? todays : sorted)].reverse().find(s => !s.is_warmup) || sorted[sorted.length - 1];
   const step = ex.step || (ex.kind === 'free' ? 1 : 2.5);
+  if (ex.kind === 'sauna') return { duration_min: ref ? ref.duration_min : 12 };
   if (!ref) {
     return ex.kind === 'cardio' ? { duration_min: 20, distance_km: null } : { weight_kg: ex.kind === 'bodyweight' ? null : 20, reps: 10 };
   }
@@ -442,8 +444,9 @@ export function periodSummary(data, from, to) {
   let bestMonth = null;
   for (const [m, d] of monthDays) if (!bestMonth || d.size > bestMonth.days) bestMonth = { month: m, days: d.size };
   const biggestRecord = records.length ? [...records].sort((x, y) => relGain(y) - relGain(x))[0] : null;
+  const sauna = saunaStats(data, from, to);
   return {
-    ...a, records, bodyIn, bodyDelta, stepsTotal, stepsDays: steps.length, cardioKm, cardioMin, bestMonth, biggestRecord,
+    ...a, records, bodyIn, bodyDelta, sauna, stepsTotal, stepsDays: steps.length, cardioKm, cardioMin, bestMonth, biggestRecord,
     topProgress: a.progress[0] || null, favorite: a.favorites[0] || null,
   };
 }
@@ -456,3 +459,22 @@ function relGain(r) {
 
 export function monthRange(y, m) { return [new Date(y, m, 1), new Date(y, m + 1, 0, 23, 59, 59, 999)]; }
 export function yearRange(y) { return [new Date(y, 0, 1), new Date(y, 11, 31, 23, 59, 59, 999)]; }
+
+// --- Sauna -------------------------------------------------------------------
+/** Saunagänge im Zeitraum: Anzahl, Minuten, Saunatage, pro Woche und pro Sauna-Art. */
+export function saunaStats(data, from, to = new Date()) {
+  const exById = new Map((data.saunaExercises || []).map(e => [e.id, e]));
+  const fromIso = from.toISOString(), toIso = to.toISOString();
+  const list = (data.sauna || []).filter(s => exById.has(s.exercise_id) && s.performed_at >= fromIso && s.performed_at <= toIso);
+  const perWeek = [];
+  for (let w = dayFromKey(weekKey(from)); w <= to; w = addDays(w, 7)) {
+    const k = dayKey(w);
+    const inWeek = list.filter(s => weekKey(s.performed_at) === k);
+    perWeek.push({ week: k, count: inWeek.length, min: inWeek.reduce((a, s) => a + (s.duration_min || 0), 0) });
+  }
+  const byType = [...groupBy(list, s => s.exercise_id).entries()]
+    .map(([id, l]) => ({ ex: exById.get(id), count: l.length, min: l.reduce((a, s) => a + (s.duration_min || 0), 0) }))
+    .sort((a, b) => b.count - a.count);
+  const minutes = list.reduce((a, s) => a + (s.duration_min || 0), 0);
+  return { count: list.length, minutes, days: new Set(list.map(s => dayKey(s.performed_at))).size, avg: list.length ? minutes / list.length : null, perWeek, byType };
+}

@@ -22,18 +22,20 @@ export default {
     const step = ex.step || (ex.kind === 'free' ? 1 : 2.5);
     const isCardio = ex.kind === 'cardio';
     const isBody = ex.kind === 'bodyweight';
+    const isSauna = ex.kind === 'sauna';
+    const unit = isSauna ? 'Gang' : 'Satz';
 
     const init = prefill(exerciseSets(ex.id), ex);
     const entry = {
       weight_kg: init.weight_kg ?? null, reps: init.reps ?? 10,
-      duration_min: init.duration_min ?? 20, distance_km: init.distance_km ?? null,
+      duration_min: init.duration_min ?? (isSauna ? 12 : 20), distance_km: init.distance_km ?? null,
       feel: 2, is_warmup: false, note: '', at: null,
     };
     const comebackInfo = init.comeback || null;
     let showNote = false;
     let historyLimit = 12;
 
-    maybeAskEnergy(ex);
+    if (!isSauna) maybeAskEnergy(ex);
 
     const paint = () => {
       charts.destroyAll();
@@ -41,7 +43,7 @@ export default {
       const today = dayKey(new Date());
       const todays = sets.filter(s => dayKey(s.performed_at) === today);
       const g = ghost(sets, today);
-      const pb = best(sets, ex.kind);
+      const pb = isSauna ? null : best(sets, ex.kind);
       const order = orderedExercises(ex.gym_id || null);
       const hasOrder = order.some(e => e.sort_order != null);
       const next = hasOrder ? order[order.findIndex(e => e.id === ex.id) + 1] : null;
@@ -63,33 +65,33 @@ export default {
 
             <div class="card">
               ${comebackInfo && !todays.length ? `<div class="notice warn">${icon('sprout', 16)} <b>Sanfter Wiedereinstieg:</b> ${comebackInfo.days} Tage Pause. Gewicht um ${Math.round((1 - comebackInfo.factor) * 100)} % reduziert vorgeschlagen.</div>` : ''}
-              <div class="entry">
-                ${isCardio ? stepperHtml('duration_min', 'Minuten', entry.duration_min) + stepperHtml('distance_km', 'km', entry.distance_km, 'decimal')
+              <div class="entry" ${isSauna ? 'style="grid-template-columns:1fr"' : ''}>
+                ${isSauna ? stepperHtml('duration_min', 'Minuten', entry.duration_min) : isCardio ? stepperHtml('duration_min', 'Minuten', entry.duration_min) + stepperHtml('distance_km', 'km', entry.distance_km, 'decimal')
                   : stepperHtml('weight_kg', isBody ? 'Zusatz-kg' : 'kg', entry.weight_kg, 'decimal') + stepperHtml('reps', 'Wdh.', entry.reps)}
               </div>
-              <div class="seg" style="margin-top:12px" data-feel>
+              ${isSauna ? '' : `<div class="seg" style="margin-top:12px" data-feel>
                 ${[1, 2, 3].map(f => `<button type="button" data-v="${f}" class="${entry.feel === f ? 'on' : ''}">${FEEL[f]}</button>`).join('')}
-              </div>
+              </div>`}
               <div class="row spread" style="margin-top:6px">
-                ${isCardio ? '<span></span>' : `<label class="toggle"><input type="checkbox" data-warm ${entry.is_warmup ? 'checked' : ''}> Aufwärmsatz</label>`}
+                ${isCardio || isSauna ? '<span></span>' : `<label class="toggle"><input type="checkbox" data-warm ${entry.is_warmup ? 'checked' : ''}> Aufwärmsatz</label>`}
                 <button class="btn ghost sm" data-note-toggle>${showNote || entry.note ? '− Notiz' : '+ Notiz'}</button>
               </div>
-              ${showNote || entry.note ? `<input class="input" data-note placeholder="Notiz zu diesem Satz" value="${esc(entry.note)}" style="margin-top:6px">` : ''}
+              ${showNote || entry.note ? `<input class="input" data-note placeholder="Notiz zu diesem ${unit}" value="${esc(entry.note)}" style="margin-top:6px">` : ''}
               ${entry.at ? `<label class="field" style="margin-top:10px"><span>Zeitpunkt</span><input class="input" type="datetime-local" data-at value="${localInput(entry.at)}"></label>` : ''}
-              <button class="btn primary big block" style="margin-top:12px" data-save>${icon('check', 22)} Satz speichern</button>
+              <button class="btn primary big block" style="margin-top:12px" data-save>${icon('check', 22)} ${unit} speichern</button>
               ${!entry.at ? '<button class="btn ghost sm block" style="margin-top:6px" data-at-toggle>Für einen anderen Tag nachtragen</button>' : ''}
             </div>
 
             <div class="card">
-              <div class="card-title"><h3>Heute</h3>${g ? `<span class="muted small">${icon('history', 14)} letztes Mal: ${fmtDay(dayFromKeyLocal(g.day))}</span>` : ''}</div>
-              ${todaysList(todays, g, ex)}
+              <div class="card-title"><h3>Heute</h3>${g && !isSauna ? `<span class="muted small">${icon('history', 14)} letztes Mal: ${fmtDay(dayFromKeyLocal(g.day))}</span>` : ''}</div>
+              ${todaysList(todays, isSauna ? null : g, ex)}
             </div>
             ${next ? `<a class="next-link" href="#/ex/${next.id}"><span>Weiter: ${esc(next.name)}</span><span>→</span></a>` : ''}
           </div>
 
           <div>
             <div class="card">
-              <div class="card-title"><h3>Entwicklung</h3><span class="muted small">${sets.length ? `${new Set(sets.map(s => dayKey(s.performed_at))).size} Trainingstage` : ''}</span></div>
+              <div class="card-title"><h3>Entwicklung</h3><span class="muted small">${sets.length ? `${new Set(sets.map(s => dayKey(s.performed_at))).size} ${isSauna ? 'Saunatage' : 'Trainingstage'}` : ''}</span></div>
               ${sets.length >= 2 ? `<div class="chips" data-modes>${chartModes(ex, sets).map(([k, l]) => `<button class="chip ${k === chartMode(ex, sets) ? 'on' : ''}" data-mode="${k}">${l}</button>`).join('')}</div>` : ''}
               <div class="chart-box" data-chart>${sets.length < 2 ? '<p class="muted small center" style="padding-top:80px">Ab dem zweiten Training siehst du hier deine Entwicklung.</p>' : ''}</div>
             </div>
@@ -141,8 +143,11 @@ export default {
     };
 
     const save = async () => {
-      const row = { exercise_id: ex.id, performed_at: (entry.at || new Date()).toISOString(), feel: entry.feel, is_warmup: isCardio ? false : entry.is_warmup, note: entry.note.trim() };
-      if (isCardio) {
+      const row = { exercise_id: ex.id, performed_at: (entry.at || new Date()).toISOString(), feel: isSauna ? null : entry.feel, is_warmup: isCardio || isSauna ? false : entry.is_warmup, note: entry.note.trim() };
+      if (isSauna) {
+        if (!entry.duration_min) { toast('Bitte die Minuten eingeben'); return; }
+        Object.assign(row, { duration_min: entry.duration_min, distance_km: null, weight_kg: null, reps: null });
+      } else if (isCardio) {
         if (!entry.duration_min && !entry.distance_km) { toast('Bitte Minuten oder km eingeben'); return; }
         Object.assign(row, { duration_min: entry.duration_min || null, distance_km: entry.distance_km || null, weight_kg: null, reps: null });
       } else {
@@ -152,7 +157,7 @@ export default {
       const previous = exerciseSets(ex.id);
       const saved = await db.put('sets', row);
       vibrate(25);
-      if (isRecord(saved, previous, ex.kind)) {
+      if (!isSauna && isRecord(saved, previous, ex.kind)) {
         confetti(); vibrate([80, 40, 80]);
         toast(`${icon('award', 18)} Neuer Rekord: <b>${setText(saved, ex.kind)}</b>`, 'record', 4000);
       } else {
@@ -167,29 +172,30 @@ export default {
     const editSet = async (s) => {
       if (!s) return;
       const res = await modal((m, close) => {
-        m.innerHTML = `<h2>Satz bearbeiten</h2>
-          ${isCardio ? `
+        m.innerHTML = `<h2>${unit} bearbeiten</h2>
+          ${isSauna ? `<label class="field"><span>Minuten</span><input class="input" inputmode="decimal" data-e="duration_min" value="${fmtInput(s.duration_min)}"></label>` : isCardio ? `
             <div class="grid two"><label class="field"><span>Minuten</span><input class="input" inputmode="decimal" data-e="duration_min" value="${fmtInput(s.duration_min)}"></label>
             <label class="field"><span>km</span><input class="input" inputmode="decimal" data-e="distance_km" value="${fmtInput(s.distance_km)}"></label></div>` : `
             <div class="grid two" style="grid-template-columns:1fr 1fr"><label class="field"><span>${isBody ? 'Zusatz-kg' : 'kg'}</span><input class="input" inputmode="decimal" data-e="weight_kg" value="${fmtInput(s.weight_kg)}"></label>
             <label class="field"><span>Wiederholungen</span><input class="input" inputmode="numeric" data-e="reps" value="${fmtInput(s.reps)}"></label></div>`}
-          <label class="field"><span>Gefühl</span><select class="input" data-e="feel">${[1, 2, 3].map(f => `<option value="${f}" ${s.feel === f ? 'selected' : ''}>${FEEL[f]}</option>`).join('')}</select></label>
-          ${isCardio ? '' : `<label class="toggle"><input type="checkbox" data-e="is_warmup" ${s.is_warmup ? 'checked' : ''}> Aufwärmsatz</label>`}
+          ${isSauna ? '' : `<label class="field"><span>Gefühl</span><select class="input" data-e="feel">${[1, 2, 3].map(f => `<option value="${f}" ${s.feel === f ? 'selected' : ''}>${FEEL[f]}</option>`).join('')}</select></label>`}
+          ${isCardio || isSauna ? '' : `<label class="toggle"><input type="checkbox" data-e="is_warmup" ${s.is_warmup ? 'checked' : ''}> Aufwärmsatz</label>`}
           <label class="field"><span>Zeitpunkt</span><input class="input" type="datetime-local" data-e="performed_at" value="${localInput(s.performed_at)}"></label>
           <label class="field"><span>Notiz</span><input class="input" data-e="note" value="${esc(s.note || '')}"></label>
           <div class="actions"><button class="btn danger" data-del>Löschen</button><button class="btn primary" data-ok>Speichern</button></div>`;
         m.querySelector('[data-del]').onclick = () => close('delete');
         m.querySelector('[data-ok]').onclick = () => {
           const v = k => m.querySelector(`[data-e="${k}"]`);
-          const upd = { id: s.id, feel: +v('feel').value, note: v('note').value.trim() };
+          const upd = { id: s.id, feel: isSauna ? null : +v('feel').value, note: v('note').value.trim() };
           if (v('performed_at').value) upd.performed_at = new Date(v('performed_at').value).toISOString();
-          if (isCardio) { upd.duration_min = parseNum(v('duration_min').value); upd.distance_km = parseNum(v('distance_km').value); }
+          if (isSauna) upd.duration_min = parseNum(v('duration_min').value);
+          else if (isCardio) { upd.duration_min = parseNum(v('duration_min').value); upd.distance_km = parseNum(v('distance_km').value); }
           else { upd.weight_kg = parseNum(v('weight_kg').value); upd.reps = parseNum(v('reps').value); upd.is_warmup = v('is_warmup').checked; }
           close(upd);
         };
       });
       if (res === 'delete') {
-        if (await confirmDialog('Diesen Satz löschen?')) { await db.remove('sets', s.id); toast('Satz gelöscht'); paint(); }
+        if (await confirmDialog(`Diesen ${unit} löschen?`)) { await db.remove('sets', s.id); toast(`${unit} gelöscht`); paint(); }
       } else if (res) { await db.put('sets', res); paint(); announceRewards(); }
     };
 
@@ -210,7 +216,7 @@ function stepperHtml(key, label, value, mode = 'numeric') {
 
 function todaysList(todays, g, ex) {
   const prevWork = g ? g.sets : [];
-  if (!todays.length && !prevWork.length) return '<p class="muted small">Noch keine Sätze heute.</p>';
+  if (!todays.length && !prevWork.length) return `<p class="muted small">${ex.kind === 'sauna' ? 'Noch kein Saunagang heute.' : 'Noch keine Sätze heute.'}</p>`;
   let wi = 0; // Index der Arbeitssätze, für den Vergleich mit dem letzten Mal
   const prevWorking = working(prevWork);
   const rows = todays.map((s, i) => {
@@ -250,6 +256,7 @@ function historyHtml(sets, ex, today, limit) {
 // Diagramm: immer nur eine Kennzahl mit beschrifteter Skala, wählbar über Knöpfe.
 const modeByKind = {};
 function chartModes(ex, sets) {
+  if (ex.kind === 'sauna') return [['min', 'Minuten'], ['gaenge', 'Gänge']];
   if (ex.kind === 'cardio') return [['km', 'Distanz'], ['min', 'Minuten']];
   if (ex.kind === 'bodyweight' && !sets.some(s => s.weight_kg)) return [['reps', 'Wiederholungen']];
   return [['weight', 'Gewicht'], ['volume', 'Volumen'], ['reps', 'Wiederholungen']];
@@ -263,6 +270,7 @@ const MODE_INFO = {
   volume: { title: 'Volumen pro Tag: Gewicht × Wiederholungen (kg)', f: l => l.reduce((a, s) => a + volume(s), 0) },
   reps: { title: 'Meiste Wiederholungen in einem Satz', f: l => Math.max(...l.map(s => s.reps || 0)) },
   km: { title: 'Weiteste Distanz pro Tag (km)', f: l => Math.max(...l.map(s => s.distance_km || 0)) || null },
+  gaenge: { title: 'Saunagänge pro Tag', f: l => l.length },
   min: { title: 'Minuten pro Tag', f: l => l.reduce((a, s) => a + (s.duration_min || 0), 0) },
 };
 

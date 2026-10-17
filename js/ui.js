@@ -5,6 +5,7 @@ export const KINDS = {
   free: { label: 'Freie Gewichte', icon: 'dumbbell' },
   bodyweight: { label: 'Eigengewicht', icon: 'person' },
   cardio: { label: 'Cardio', icon: 'activity' },
+  sauna: { label: 'Sauna', icon: 'steam' },
 };
 
 export const MUSCLES = {
@@ -16,6 +17,7 @@ export const MUSCLES = {
   core: { label: 'Bauch' },
   full: { label: 'Ganzkörper' },
   cardio: { label: 'Ausdauer' },
+  recovery: { label: 'Erholung' },
 };
 
 export const FEEL = { 1: 'leicht', 2: 'passend', 3: 'schwer' };
@@ -44,6 +46,7 @@ export function tons(kg) {
 
 /** Text für einen Satz je nach Übungsart. */
 export function setText(s, kind) {
+  if (kind === 'sauna') return `${n0(s.duration_min)} Min.`;
   if (kind === 'cardio') {
     const parts = [];
     if (s.duration_min) parts.push(`${n0(s.duration_min)} Min.`);

@@ -1,5 +1,5 @@
 import { snapshot, gymName } from '../data.js';
-import { analyze, rangeStart, RANGES, dayKey, dayFromKey } from '../stats.js';
+import { analyze, rangeStart, RANGES, dayKey, dayFromKey, saunaStats } from '../stats.js';
 import { setTop, esc, n0, n1, tons, fmtDay, fmtMonth, MUSCLES, ENERGY, ago } from '../ui.js';
 import * as charts from '../charts.js';
 import * as fun from '../fun.js';
@@ -18,7 +18,7 @@ export default {
     const a = analyze(data, from, new Date());
     const weeks = a.perWeek.length || 1;
 
-    const muscleEntries = Object.keys(MUSCLES).filter(k => k !== 'cardio').map(k => [k, a.muscles.get(k) || 0]);
+    const muscleEntries = Object.keys(MUSCLES).filter(k => k !== 'cardio' && k !== 'recovery').map(k => [k, a.muscles.get(k) || 0]);
     const maxMuscle = Math.max(1, ...muscleEntries.map(([, v]) => v));
     const avgMuscle = muscleEntries.reduce((s, [, v]) => s + v, 0) / muscleEntries.length;
     const weak = muscleEntries.filter(([k, v]) => k !== 'full' && v < avgMuscle * 0.4).map(([k]) => MUSCLES[k].label);
@@ -28,6 +28,8 @@ export default {
     const maxPct = Math.max(1, ...prog.map(p => Math.abs(p.pct)));
     const e = a.energy;
     const cardioKm = a.cardio.reduce((s, c) => s + c.km, 0);
+    const sa = saunaStats(data, from, new Date());
+    const maxSauna = Math.max(1, ...sa.byType.map(t => t.count));
 
     el.innerHTML = `
       <div class="chips">${Object.entries(RANGES).map(([k, l]) => `<button class="chip ${range === k ? 'on' : ''}" data-r="${k}">${l}</button>`).join('')}</div>
@@ -77,6 +79,16 @@ export default {
         </div>
         <div class="card"><div class="card-title"><h3>Trainingsdauer</h3><span class="muted small">Minuten, erster bis letzter Satz</span></div><div class="chart-box" data-c="dur"></div></div>
         <div class="card"><div class="card-title"><h3>Cardio pro Woche</h3><span class="muted small">${cardioKm ? `${n1(cardioKm)} km gesamt` : ''}</span></div><div class="chart-box" data-c="cardio"></div></div>
+        ${data.saunaExercises.length ? `<div class="card">
+          <div class="card-title"><h3>${icon('steam', 18)} Sauna</h3><span class="muted small">${sa.days} Saunatage</span></div>
+          <div class="kpis" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+            <div class="kpi"><div class="l">Gänge</div><div class="v">${sa.count}</div></div>
+            <div class="kpi"><div class="l">Minuten</div><div class="v">${n0(sa.minutes)}</div></div>
+            <div class="kpi"><div class="l">Ø pro Gang</div><div class="v">${sa.avg ? n0(sa.avg) : '–'}</div></div>
+          </div>
+          <div style="margin-top:10px">${sa.byType.length ? sa.byType.map(t => `<div class="hbar"><span class="name">${esc(t.ex.name)}</span><div class="bar teal"><i style="width:${t.count / maxSauna * 100}%"></i></div><span class="v">${t.count}×</span></div><div class="muted small" style="margin:-4px 0 6px 118px">${n0(t.min)} Min. · ${esc(gymName(t.ex.gym_id))}</div>`).join('') : '<p class="muted small">Noch keine Saunagänge im Zeitraum.</p>'}</div>
+          ${sa.count ? '<div class="chart-box" data-c="sauna" style="margin-top:6px"></div>' : ''}
+        </div>` : ''}
       </div>`;
 
     const wl = a.perWeek.map(w => short(dayFromKey(w.week)));
@@ -85,6 +97,8 @@ export default {
     const dur = el.querySelector('[data-c="dur"]');
     if (a.durations.length >= 2) charts.line(dur, a.durations.map(d => short(dayFromKey(d.day))), [{ label: 'Minuten', data: a.durations.map(d => d.min), points: 3 }]);
     else dur.innerHTML = '<p class="muted small center" style="padding-top:80px">Noch zu wenige Trainings.</p>';
+    const sb = el.querySelector('[data-c="sauna"]');
+    if (sb) charts.bar(sb, sa.perWeek.map(w => short(dayFromKey(w.week))), [{ label: 'Gänge', data: sa.perWeek.map(w => w.count), color: charts.COLORS.accent }]);
     const cb = el.querySelector('[data-c="cardio"]');
     if (cardioKm || a.cardio.some(c => c.min)) charts.bar(cb, wl, [{ label: 'Minuten', data: a.cardio.map(c => c.min), color: charts.COLORS.primary }, { label: 'km', data: a.cardio.map(c => Math.round(c.km * 10) / 10), color: charts.COLORS.accent }]);
     else cb.innerHTML = '<p class="muted small center" style="padding-top:80px">Noch kein Cardio im Zeitraum.</p>';

@@ -1,4 +1,5 @@
 // CSV-Export für Excel (Semikolon als Trennzeichen, UTF-8 mit BOM für Umlaute).
+import * as db from './db.js';
 import { snapshot, gymName } from './data.js';
 import { KINDS, MUSCLES, FEEL } from './ui.js';
 import { byTime } from './stats.js';
@@ -15,9 +16,9 @@ const date = iso => { const d = new Date(iso); return `${d.getFullYear()}-${Stri
 const time = iso => new Date(iso).toTimeString().slice(0, 5);
 
 export function setsCsv() {
-  const d = snapshot();
-  const ex = new Map(d.exercises.map(e => [e.id, e]));
-  const rows = d.sets.filter(s => ex.has(s.exercise_id)).sort(byTime).map(s => {
+  // inkl. Saunagänge (die snapshot() für die Statistik herausfiltert)
+  const ex = new Map(db.all('exercises').map(e => [e.id, e]));
+  const rows = db.all('sets').filter(s => ex.has(s.exercise_id)).sort(byTime).map(s => {
     const e = ex.get(s.exercise_id);
     return [date(s.performed_at), time(s.performed_at), gymName(e.gym_id), e.name, KINDS[e.kind]?.label, MUSCLES[e.muscle_group]?.label,
       s.weight_kg, s.reps, s.duration_min, s.distance_km, FEEL[s.feel] || '', s.is_warmup ? 'ja' : '', s.note || ''];

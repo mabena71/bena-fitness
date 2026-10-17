@@ -5,11 +5,20 @@ import { computeRewards } from './rewards.js';
 import { toast, confetti, vibrate, esc } from './ui.js';
 import { icon } from './icons.js';
 
+/**
+ * Daten für Statistik und Belohnungen. Saunagänge sind getrennt (sauna, saunaExercises),
+ * damit sie nicht als Training, Volumen oder Rekord zählen.
+ */
 export function snapshot() {
+  const allEx = db.all('exercises');
+  const saunaIds = new Set(allEx.filter(e => e.kind === 'sauna').map(e => e.id));
+  const allSets = db.all('sets');
   return {
     gyms: db.all('gyms').sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0)),
-    exercises: db.all('exercises'),
-    sets: db.all('sets'),
+    exercises: allEx.filter(e => e.kind !== 'sauna'),
+    sets: allSets.filter(s => !saunaIds.has(s.exercise_id)),
+    saunaExercises: allEx.filter(e => e.kind === 'sauna'),
+    sauna: allSets.filter(s => saunaIds.has(s.exercise_id)),
     checks: db.all('day_checks'),
     body: db.all('body_metrics'),
     steps: db.all('daily_steps'),

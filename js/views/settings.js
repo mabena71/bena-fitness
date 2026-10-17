@@ -60,7 +60,7 @@ export default {
           <li><span class="emoji">${icon('bell', 18)}</span><div class="grow"><b>Benachrichtigungen</b><div class="muted small">Wochenbilanz am Sonntag und Erinnerungen</div></div></li>
         </ul>
       </div>
-      <p class="muted small center">Fitness-Tagebuch · Version 0.4 (Etappen 1, 2 und 4)</p>`;
+      <p class="muted small center">Fitness-Tagebuch · Version 0.5 (Etappen 1, 2, 4 und Sauna)</p>`;
 
     el.querySelector('[data-save]').onclick = async () => {
       await saveProfile({ display_name: el.querySelector('[data-name]').value.trim() });

@@ -3,7 +3,7 @@ import { setTop, esc, KINDS, MUSCLES, toast, confirmDialog, parseNum } from '../
 import { resizeImage } from '../photo.js';
 import { icon } from '../icons.js';
 
-const DEFAULT_MUSCLE = { machine: 'legs', free: 'arms', bodyweight: 'chest', cardio: 'cardio' };
+const DEFAULT_MUSCLE = { machine: 'legs', free: 'arms', bodyweight: 'chest', cardio: 'cardio', sauna: 'recovery' };
 
 export default {
   async render(el, [param], ctx) {
@@ -80,7 +80,7 @@ export default {
       el.querySelectorAll('[data-sx]').forEach(b => b.onclick = () => { st.settings.splice(+b.dataset.sx, 1); drawSettings(); });
     };
     drawSettings();
-    const stepVisible = () => { $('[data-step-field]').hidden = st.kind === 'cardio'; };
+    const stepVisible = () => { $('[data-step-field]').hidden = st.kind === 'cardio' || st.kind === 'sauna'; };
     stepVisible();
 
     $('[data-add-setting]').onclick = () => {

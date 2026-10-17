@@ -5,7 +5,7 @@ import {
 } from './stats.js';
 import { MUSCLES } from './ui.js';
 
-export const XP = { set: 10, warmup: 2, session: 50, measure: 15, record: 50, bodyRecord: 50, badge: 100 };
+export const XP = { set: 10, warmup: 2, session: 50, measure: 15, record: 50, bodyRecord: 50, badge: 100, sauna: 5 };
 
 export const levelNeed = L => 100 * (L - 1) * L;
 export const muscleNeed = L => 25 * (L - 1) * L;
@@ -46,6 +46,7 @@ export function computeRewards(data) {
   xp += steps.reduce((a, s) => a + Math.min(15, 5 + Math.floor((s.steps || 0) / 2000) * 2), 0);
   xp += recs.length * XP.record + bodyRecs.length * XP.bodyRecord;
   xp += earned.length * XP.badge;
+  xp += (data.sauna || []).length * XP.sauna;
 
   const muscleXp = {};
   for (const k of Object.keys(MUSCLES)) muscleXp[k] = 0;
@@ -68,7 +69,7 @@ function computeBadges(c) {
   for (const n of [2, 4, 8, 12, 26]) add(`streak_${n}`, n >= 12 ? 'zap' : 'calendar', `${n} Wochen am Stück`, `${n} Wochen in Folge trainiert`, streak.best >= n, 'Training');
   for (const n of [1, 10, 50]) add(`rec_${n}`, 'award', n === 1 ? 'Erster Rekord' : `${n} Rekorde`, `${n} persönliche Rekorde`, c.recs.length >= n, 'Rekorde');
   for (const [k, m] of Object.entries(MUSCLES)) {
-    if (k === 'cardio' || k === 'full') continue;
+    if (k === 'cardio' || k === 'full' || k === 'recovery') continue;
     add(`recmg_${k}`, 'target', `Rekord ${m.label}`, `Erster Rekord bei ${m.label}`, c.recs.some(r => (r.ex.muscle_group || 'full') === k), 'Rekorde');
   }
   const gymsVisited = new Set(c.sess.filter(s => s.gym_id).map(s => s.gym_id));
@@ -88,6 +89,11 @@ function computeBadges(c) {
   for (const n of [4, 8, 12]) add(`sink_${n}`, 'calendar', `${n} Wochen leichter`, `${n} Wochen in Folge sinkender Wochenschnitt`, sink.best >= n, 'Körper');
   for (const n of [30, 100]) add(`measure_${n}`, 'scale', `${n} Messtage`, `An ${n} Tagen gewogen`, c.measureDays.size >= n, 'Körper');
   add('bodyrec_1', 'gem', 'Körper-Rekord', 'Erster Rekord bei Gewicht, Fett oder Muskeln', c.bodyRecs.length >= 1, 'Körper');
+
+  const saunaCount = (c.data.sauna || []).length;
+  for (const n of [1, 10, 25, 50, 100]) add(`sauna_${n}`, 'steam', n === 1 ? 'Erster Saunagang' : `${n} Saunagänge`, n === 1 ? '1 Saunagang' : `${n} Saunagänge`, saunaCount >= n, 'Sauna');
+  const saunaTypes = new Set((c.data.sauna || []).map(s => s.exercise_id));
+  add('sauna_all', 'steam', 'Sauna-Kenner', 'Alle Saunen ausprobiert', (c.data.saunaExercises || []).length >= 2 && (c.data.saunaExercises || []).every(e => saunaTypes.has(e.id)), 'Sauna');
 
   const maxSteps = c.steps.reduce((a, s) => Math.max(a, s.steps || 0), 0);
   const totalSteps = c.steps.reduce((a, s) => a + (s.steps || 0), 0);

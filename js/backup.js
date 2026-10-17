@@ -21,13 +21,17 @@ export async function createBackup() {
 }
 
 /** Spielt eine Sicherung ein. Vorhandene Einträge mit gleicher ID werden überschrieben. */
-export async function restoreBackup(text) {
+export async function restoreBackup(text, { userId = null } = {}) {
   let data;
   try { data = JSON.parse(text); } catch { throw new Error('Die Datei ist keine gültige Sicherung.'); }
   if (data.format !== FORMAT) throw new Error('Die Datei ist keine Sicherung dieser App.');
   const counts = {};
   for (const t of db.TABLES) {
-    const rows = data.tables?.[t] || [];
+    let rows = data.tables?.[t] || [];
+    if (userId) {
+      // Beim Übernehmen in ein Konto: Besitzer und Foto-Pfade auf das Konto umschreiben
+      rows = rows.map(r => ({ ...r, user_id: userId, ...(t === 'profiles' ? { id: userId } : {}), ...(r.photo_path ? { photo_path: r.photo_path.replace(/^[^/]+\//, `${userId}/`) } : {}) }));
+    }
     if (rows.length) await db.bulkPut(t, rows);
     counts[t] = rows.filter(r => !r.deleted_at).length;
   }

@@ -47,6 +47,8 @@ export async function deleteDatabase(name) {
 }
 
 export function onChange(fn) { listeners.add(fn); return () => listeners.delete(fn); }
+/** Nach einem Abruf vom Server: Ansichten neu zeichnen lassen (Tabelle 'remote'). */
+export function notifyRemote() { emit('remote', null); }
 function emit(table, row) { listeners.forEach(fn => { try { fn(table, row); } catch (e) { console.error(e); } }); }
 
 /** Alle nicht gelöschten Zeilen einer Tabelle. */
