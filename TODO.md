@@ -1,43 +1,43 @@
 # To-do Fitness-App
 
 Aufwand in Minuten = Schätzung. Modell = Empfehlung für den jeweiligen Auftrag.
+App: https://mabena71.github.io/bena-fitness/ · Repo: https://github.com/mabena71/bena-fitness
 
 ## Offen
 
 | Nr | Thema | Details | Wer | Modell | Aufwand (Min.) | Prio | Status | Abhängig von |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Demo testen | `http://localhost:8000` am PC öffnen, Demo durchklicken, Feedback zu Bedienung und Texten | Maurice | — | 30 | hoch | offen | — |
-| 2 | Studio-Logos bereitlegen | Active-Fit-Logos bzw. Fotos der drei Studios aufs Handy/den PC speichern, um sie in der App hochzuladen | Maurice | — | 10 | mittel | offen | — |
-| 3 | Supabase-Konto | Konto und Projekt anlegen (kostenlos), Region Zürich/Frankfurt. Ich führe Schritt für Schritt | Maurice | — | 20 | hoch | offen | 1 |
-| 5 | Etappe 3: Cloud | `supabase/schema.sql` (Tabellen, RLS, Foto-Bucket), Login, Sync und Offline-Warteschlange, Übernahme der lokalen Daten | Claude | Opus | 120 | hoch | offen | 3 |
-| 6 | Benutzer anlegen | Im Supabase-Dashboard Benutzer für Maurice und Sabine anlegen, URL und anon key durchgeben | Maurice | — | 10 | hoch | offen | 5 |
-| 7 | Updates online stellen | Nach jeder Etappe committen und pushen (GitHub Pages aktualisiert sich selbst) | Claude | Sonnet | 5 | hoch | laufend | — |
-| 8 | Test auf den Handys | App auf beiden Android-Handys öffnen, auf den Startbildschirm legen, offline im Studio testen | Maurice + Sabine | — | 30 | hoch | offen | 7 |
-| 9 | Etappe 4: Standort | „Standort dieses Studios speichern“ und automatisches Öffnen im Umkreis von ca. 150 m | Claude | Sonnet | 30 | mittel | offen | 7 |
-| 10 | Standort vor Ort | In jedem Studio einmal „Standort speichern“ tippen und testen | Maurice | — | 10 | mittel | offen | 9 |
-| 11 | Withings-Entwicklerkonto | App bei Withings registrieren (Freigabe dauert eventuell einige Tage) | Maurice | — | 20 | mittel | offen | 7 |
-| 12 | Etappe 5: Withings | OAuth, Edge Function, nächtlicher Import von Gewicht/Fett/Muskeln (beide) und Schritten (Sabine, ggf. Maurice) | Claude | Opus | 120 | mittel | offen | 11 |
-| 13 | Etappe 6: Paar-Challenge | Einladungscode, Wochenduell nur mit Kennzahlen (`challenge_week()`), Kronen-Bilanz | Claude | Opus | 60 | niedrig | offen | 6 |
-| 14 | Etappe 6: Push | Wochen-Push am Sonntag, Erinnerungen (5 Tage kein Training, 7 Tage nicht gewogen) | Claude | Opus | 60 | niedrig | offen | 7 |
-| 16 | Professionelle Icons | Bunte Emojis in der App (Navigation, Kacheln, Listen, Abzeichen) durch schlichte, einfarbige Linien-Icons ersetzen | Claude | Sonnet | 60 | mittel | offen | — |
-| 17 | Geräte-Diagramm | Umschalter Gewicht · Volumen · Wiederholungen statt zwei Skalen (Entscheid Maurice offen) | Claude | Sonnet | 30 | mittel | offen | Entscheid |
-| 15 | Später/optional | Pausen-Timer, Steigerungs-Vorschlag, Ziele, Trainingspläne, Sprach-Eingabe | — | Sonnet | — | niedrig | Idee | — |
+| 1 | Studio-Test | App auf dem Handy neu laden, installieren, „Eigenes Tagebuch starten“, Checkliste abarbeiten, Feedback mit Screenshots | Maurice | — | 60 | hoch | offen | — |
+| 2 | Studio-Logos und -Standorte | In jedem Studio: Logo/Bild hochladen (⋯) und „Standort hier speichern“ | Maurice | — | 10 | mittel | offen | 1 |
+| 3 | Feedback einarbeiten | Anpassungen nach dem Studio-Test | Claude | Sonnet | 60 | hoch | offen | 1 |
+| 4 | Supabase einrichten | Anleitung: `docs/SUPABASE-EINRICHTEN.md` (Konto, Projekt, schema.sql, Benutzer Maurice + Sabine, URL + anon key an Claude) | Maurice | — | 20 | hoch | offen | — |
+| 5 | Etappe 3 einschalten | `js/config.js` füllen, online stellen, gemeinsamer Test Handy ↔ PC, Datenübernahme vom Handy | Claude + Maurice | Opus | 30 | hoch | offen | 4 |
+| 6 | Sabine einrichten | Sabine öffnet die App auf ihrem Handy und meldet sich mit ihrem Konto an | Sabine | — | 10 | hoch | offen | 5 |
+| 7 | Withings-Entwicklerkonto | App bei Withings registrieren (Freigabe eventuell einige Tage), Anleitung folgt | Maurice | — | 20 | mittel | offen | 5 |
+| 8 | Etappe 5: Withings | OAuth, Edge Function, nächtlicher Import von Gewicht/Fett/Muskeln (beide) und Schritten (Sabine, ggf. Maurice) | Claude | Opus | 120 | mittel | offen | 7 |
+| 9 | Etappe 6: Paar-Challenge | Einladungscode, Wochenduell nur mit Kennzahlen (`challenge_week()`), Kronen-Bilanz | Claude | Opus | 60 | niedrig | offen | 6 |
+| 10 | Etappe 6: Push | Wochen-Push am Sonntag, Erinnerungen (5 Tage kein Training, 7 Tage nicht gewogen) | Claude | Opus | 60 | niedrig | offen | 5 |
+| 11 | Später/optional | Pausen-Timer, Steigerungs-Vorschlag, Ziele, Trainingspläne, Sprach-Eingabe | — | Sonnet | — | niedrig | Idee | — |
 
 ## Erledigt
 
 | Nr | Thema | Details | Wer | Modell | Datum |
 |---|---|---|---|---|---|
-| E1 | Planung | Funktionsumfang, Etappen, Datenmodell (siehe Plan) | Maurice + Claude | Opus | 17.10.2026 |
+| E1 | Planung | Funktionsumfang, Etappen, Datenmodell | Maurice + Claude | Opus | 17.10.2026 |
 | E2 | Etappe 1: Kern | Studios, Übungen aller Arten, Gerätefotos, Einstellungen, Laufweg (optional), Sätze mit Gefühl/Aufwärmen, Geister-Training, Comeback-Hilfe, Energie-Check, Verlauf und Diagramm | Claude | Opus | 17.10.2026 |
 | E3 | Etappe 2: Auswertung | Rekorde, Statistik, Körper mit 7-Tage-Schnitt, Rekorden und Belohnungen, Schritte, Level, Abzeichen, lustige Vergleiche, Monats- und Jahresrückblick, CSV-Export | Claude | Opus | 17.10.2026 |
-| E4 | Studio-Bilder | Logo/Bild pro Studio hochladen (Liste und Studio-Ansicht) | Claude | Opus | 17.10.2026 |
-| E5 | App-Symbol | Sachliches BENA-Symbol mit Hantel (Variante D) | Claude | Opus | 17.10.2026 |
-| E7 | Online gestellt | Repo mabena71/bena-fitness, GitHub Pages: https://mabena71.github.io/bena-fitness/ | Maurice + Claude | Opus | 17.10.2026 |
-| E6 | Tests | `tests.html` mit 23 Tests der Rechenlogik, Test im Browser (Handy- und PC-Ansicht) | Claude | Opus | 17.10.2026 |
+| E4 | Studio-Bilder | Logo/Bild pro Studio hochladen | Claude | Opus | 17.10.2026 |
+| E5 | App-Symbol | Sachliches BENA-Symbol mit Hantel | Claude | Opus | 17.10.2026 |
+| E6 | Online gestellt | GitHub-Repo und GitHub Pages | Maurice + Claude | Opus | 17.10.2026 |
+| E7 | Datensicherung | Sicherung inkl. Fotos herunterladen und einspielen, dauerhafter Speicher | Claude | Opus | 17.10.2026 |
+| E8 | Professionelle Icons | Linien-Icons statt Emojis, Energie-Check als Skala 1–5 | Claude | Opus | 18.10.2026 |
+| E9 | Geräte-Diagramm | Umschalter Gewicht · Volumen · Wiederholungen mit beschrifteter Skala | Claude | Opus | 18.10.2026 |
+| E10 | Etappe 4: Standort | Standort pro Studio speichern, automatisches Öffnen im Umkreis von ca. 150 m | Claude | Opus | 18.10.2026 |
+| E11 | Sauna | Bio-Sauna, Dampfbad, Hot-Sauna im Win4; Gänge mit Minuten; eigene Statistik, Abzeichen, Rückblick; zählt nicht als Training | Claude | Opus | 18.10.2026 |
+| E12 | Etappe 3 vorbereitet | Supabase-Schema, Login, Konto-Modus, automatischer Abgleich, Datenübernahme; mit simuliertem Server getestet (dabei einen Offline-Fehler gefunden und behoben); noch ausgeschaltet | Claude | Opus | 18.10.2026 |
+| E13 | Tests | `tests.html`: 44 automatische Tests (Rechenlogik, Standort, Sauna, Abgleich mit zwei Geräten) | Claude | Opus | 18.10.2026 |
 
 ## Rückfragen
 
 - Soll die App einen anderen Namen bekommen (z. B. „BENA Fitness“ statt „Fitness-Tagebuch“)?
-- Möchtest du die App schon vor Etappe 3 auf dem Handy ausprobieren? Das geht im
-  gleichen WLAN über die IP des PCs, ohne Offline-Betrieb (dafür ist HTTPS nötig). Dazu
-  müsste der Server für das Heimnetz freigegeben werden.
+- Sollen Saunagänge auch auf dem Startbildschirm (Monatskarte) erscheinen?

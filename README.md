@@ -5,8 +5,11 @@ Bellevue, Archhöfe und Win4 festhalten, dazu Körpergewicht, Fett, Schritte, St
 Rekorde, Level und Rückblicke. Sie läuft im Browser am PC und auf Android (auf den
 Startbildschirm legen).
 
-Stand: **Etappen 1–2 fertig**, die Daten liegen vorerst nur im jeweiligen Browser. Login und
-Sync (Supabase) folgen in Etappe 3, siehe `TODO.md`.
+Online: https://mabena71.github.io/bena-fitness/
+
+Stand: **Etappen 1, 2 und 4 fertig, dazu Sauna.** Etappe 3 (Login und Sync über Supabase) ist
+eingebaut, aber ausgeschaltet, solange `js/config.js` leer ist. Einrichtung:
+`docs/SUPABASE-EINRICHTEN.md`. Offene Punkte stehen in `TODO.md`.
 
 ## Starten (am PC)
 
@@ -24,7 +27,8 @@ Dann im Browser `http://localhost:8000` öffnen, „Demo ausprobieren“ (Beispi
 ## Tests
 
 `http://localhost:8000/tests.html` prüft die Rechenlogik (Trainings, Rekorde, Geister,
-Comeback, 7-Tage-Schnitt, Level, Statistik). Erwartet wird: „Alle 23 Tests bestanden“.
+Comeback, 7-Tage-Schnitt, Level, Statistik, Standort, Sauna) und den Abgleich mit zwei Geräten
+gegen einen simulierten Server (`js/tests-sync.js`). Erwartet wird: „Alle 44 Tests bestanden“.
 
 ## Aufbau
 
@@ -38,7 +42,12 @@ Comeback, 7-Tage-Schnitt, Level, Statistik). Erwartet wird: „Alle 23 Tests bes
 | `js/stats.js` | Reine Rechenfunktionen: Trainings, Rekorde, Geister, Comeback, Körper, Statistik, Rückblicke |
 | `js/rewards.js` | Erfahrungspunkte, Level, Abzeichen |
 | `js/fun.js` | Lustige Vergleiche („so schwer wie 25 Autos“) |
-| `js/demo.js` | Beispieldaten und die Standard-Studios |
+| `js/demo.js` | Beispieldaten, Standard-Studios und die Saunen im Win4 |
+| `js/sync.js`, `js/config.js` | Login und Abgleich mit Supabase (Etappe 3) |
+| `js/geo.js` | Standort-Erkennung der Studios |
+| `js/icons.js` | Linien-Icons |
+| `js/backup.js` | Datensicherung |
+| `supabase/schema.sql` | Tabellen, Zugriffsregeln, Foto-Speicher |
 | `js/views/*.js` | Ein Bildschirm pro Datei |
 
 ## Regeln, die man kennen sollte
@@ -50,6 +59,10 @@ Comeback, 7-Tage-Schnitt, Level, Statistik). Erwartet wird: „Alle 23 Tests bes
   weitere Distanz). Der allererste Trainingstag setzt nur die Basis. Aufwärmsätze zählen nie.
 - **Körper-Rekord:** neuer Bestwert des 7-Tage-Schnitts, höchstens einer pro Woche und
   Wert. Erfolg heißt weniger Gewicht, weniger Fett, mehr Muskeln.
+- **Sauna:** Ein Gang wird mit Minuten erfasst. Sauna zählt nicht als Training, Volumen oder
+  Rekord und hat eine eigene Statistik.
+- **Sync:** Alles wird zuerst lokal gespeichert. Die Outbox wird hochgeladen, danach holt die App
+  alles mit `synced_at` > letztem Abruf. Bei Konflikten gewinnt die jüngere Änderung.
 - **Comeback:** ab 14 Tagen Pause an einem Gerät wird das Gewicht um 10 % tiefer
   vorgeschlagen, ab 28 Tagen um 20 %.
 - Studio-Logos sind **nicht** im Code enthalten (fremde Marke, öffentliches Repo). Jede
