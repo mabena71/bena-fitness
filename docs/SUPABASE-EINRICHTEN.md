@@ -1,6 +1,6 @@
 # Supabase einrichten (Etappe 3)
 
-Damit Handy und PC dieselben Daten haben und Sabine ihr eigenes Login bekommt. Dauer etwa
+Damit Handy und PC dieselben Daten haben und Sabine (und bei Bedarf Remy) ein eigenes Login bekommen. Dauer etwa
 20 Minuten, kostenlos. Passwörter behältst du für dich, Claude braucht nur die
 **Project URL** und den **anon/publishable key** aus Schritt 6.
 
@@ -28,10 +28,11 @@ Damit Handy und PC dieselben Daten haben und Sabine ihr eigenes Login bekommt. D
 2. **Email** muss eingeschaltet sein.
 3. **Allow new users to sign up** ausschalten. So kann sich niemand Fremdes ein Konto anlegen.
 
-## 5. Benutzer anlegen (Maurice und Sabine)
+## 5. Benutzer anlegen (Maurice, Sabine und bei Bedarf Remy)
 1. **Authentication** → **Users** → **Add user** → **Create new user**.
 2. E-Mail und Passwort eingeben, **Auto Confirm User** anhaken und dann auf **Create user** klicken.
-3. Das Gleiche für Sabine wiederholen. Sabine kann ihr Passwort auch selbst wählen.
+3. Das Gleiche für Sabine wiederholen und, falls er mitmacht, für Remy. Alle wählen ihr Passwort selbst.
+   Jede Person sieht nur ihre eigenen Daten. Weitere Personen lassen sich jederzeit so hinzufügen.
 
 ## 6. Zugangsdaten an Claude
 1. Links auf **Project Settings** (Zahnrad) → **Data API** bzw. **API Keys**.
