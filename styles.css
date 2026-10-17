@@ -304,3 +304,26 @@ textarea.input { min-height: 70px; resize: vertical; }
 
 .empty { text-align: center; color: var(--muted); padding: 28px 12px; }
 .empty .e { font-size: 2.4rem; margin-bottom: 6px; }
+
+/* Linien-Icons */
+.ic { display: inline-block; vertical-align: -0.2em; flex: 0 0 auto; }
+.btn .ic { vertical-align: middle; }
+.nav a .ico { display: flex; }
+.list .emoji { color: var(--primary); display: flex; justify-content: center; }
+.gym-ico { color: var(--primary); }
+.tile .ph { color: #94a3b8; }
+.hero .ph { color: #94a3b8; }
+.empty .e { color: #94a3b8; }
+.badge .e { width: 48px; height: 48px; margin: 0 auto; border-radius: 50%; background: var(--primary-soft); color: var(--primary); display: flex; align-items: center; justify-content: center; }
+.badge.locked .e { background: var(--surface-2); color: var(--muted); }
+.badge.locked { opacity: .55; filter: none; }
+.story .slide .e { color: #fff; opacity: .9; }
+.toast .ic { vertical-align: -0.25em; margin-right: 4px; }
+.energy button { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+.energy button span { font-size: .68rem; margin-top: 2px; }
+.seg button .ic { margin-bottom: 2px; }
+.notice .ic { vertical-align: -0.2em; }
+.ghost .ic { vertical-align: -0.15em; }
+.energy { gap: 6px; }
+.energy button { min-width: 0; aspect-ratio: auto; padding: 12px 2px; }
+.energy button span { white-space: normal; line-height: 1.1; }

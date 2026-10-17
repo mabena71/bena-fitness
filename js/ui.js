@@ -1,25 +1,25 @@
 // Kleine Helfer für Oberfläche, Formatierung und Konstanten.
 
 export const KINDS = {
-  machine: { label: 'Gerät', emoji: '🏋️' },
-  free: { label: 'Freie Gewichte', emoji: '💪' },
-  bodyweight: { label: 'Eigengewicht', emoji: '🤸' },
-  cardio: { label: 'Cardio', emoji: '🏃' },
+  machine: { label: 'Gerät', icon: 'machine' },
+  free: { label: 'Freie Gewichte', icon: 'dumbbell' },
+  bodyweight: { label: 'Eigengewicht', icon: 'person' },
+  cardio: { label: 'Cardio', icon: 'activity' },
 };
 
 export const MUSCLES = {
-  legs: { label: 'Beine', emoji: '🦵' },
-  back: { label: 'Rücken', emoji: '🔙' },
-  chest: { label: 'Brust', emoji: '🫁' },
-  shoulders: { label: 'Schultern', emoji: '🙆' },
-  arms: { label: 'Arme', emoji: '💪' },
-  core: { label: 'Bauch', emoji: '🎯' },
-  full: { label: 'Ganzkörper', emoji: '🧍' },
-  cardio: { label: 'Ausdauer', emoji: '❤️' },
+  legs: { label: 'Beine' },
+  back: { label: 'Rücken' },
+  chest: { label: 'Brust' },
+  shoulders: { label: 'Schultern' },
+  arms: { label: 'Arme' },
+  core: { label: 'Bauch' },
+  full: { label: 'Ganzkörper' },
+  cardio: { label: 'Ausdauer' },
 };
 
 export const FEEL = { 1: 'leicht', 2: 'passend', 3: 'schwer' };
-export const ENERGY = { 1: '😩', 2: '😕', 3: '😐', 4: '🙂', 5: '🤩' };
+export const ENERGY = { 1: 'sehr müde', 2: 'müde', 3: 'normal', 4: 'fit', 5: 'top' };
 
 export function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

@@ -59,41 +59,41 @@ export function computeRewards(data) {
 
 function computeBadges(c) {
   const out = [];
-  const add = (id, emoji, title, desc, done, cat) => out.push({ id, emoji, title, desc, done: !!done, cat });
+  const add = (id, icon, title, desc, done, cat) => out.push({ id, icon, title, desc, done: !!done, cat });
   const nSess = c.days.size;
-  for (const n of [1, 10, 25, 50, 100, 200]) add(`train_${n}`, n === 1 ? '🎉' : n >= 100 ? '🏆' : '🔥', n === 1 ? 'Erstes Training' : `${n}. Training`, `${n} Trainingstage`, nSess >= n, 'Training');
+  for (const n of [1, 10, 25, 50, 100, 200]) add(`train_${n}`, n >= 100 ? 'trophy' : 'flame', n === 1 ? 'Erstes Training' : `${n}. Training`, n === 1 ? '1 Trainingstag' : `${n} Trainingstage`, nSess >= n, 'Training');
   const t = c.totalVol / 1000;
-  for (const n of [10, 50, 100, 500, 1000]) add(`tons_${n}`, n >= 500 ? '🐋' : n >= 100 ? '🐘' : '🚗', `${n} Tonnen`, `${n} t bewegt`, t >= n, 'Training');
+  for (const n of [10, 50, 100, 500, 1000]) add(`tons_${n}`, 'weight', `${n} Tonnen`, `${n} t bewegt`, t >= n, 'Training');
   const streak = weekStreak(c.days);
-  for (const n of [2, 4, 8, 12, 26]) add(`streak_${n}`, n >= 12 ? '⚡' : '📅', `${n} Wochen am Stück`, `${n} Wochen in Folge trainiert`, streak.best >= n, 'Training');
-  for (const n of [1, 10, 50]) add(`rec_${n}`, n === 1 ? '🥇' : '🏅', n === 1 ? 'Erster Rekord' : `${n} Rekorde`, `${n} persönliche Rekorde`, c.recs.length >= n, 'Rekorde');
+  for (const n of [2, 4, 8, 12, 26]) add(`streak_${n}`, n >= 12 ? 'zap' : 'calendar', `${n} Wochen am Stück`, `${n} Wochen in Folge trainiert`, streak.best >= n, 'Training');
+  for (const n of [1, 10, 50]) add(`rec_${n}`, 'award', n === 1 ? 'Erster Rekord' : `${n} Rekorde`, `${n} persönliche Rekorde`, c.recs.length >= n, 'Rekorde');
   for (const [k, m] of Object.entries(MUSCLES)) {
     if (k === 'cardio' || k === 'full') continue;
-    add(`recmg_${k}`, m.emoji, `Rekord ${m.label}`, `Erster Rekord bei ${m.label}`, c.recs.some(r => (r.ex.muscle_group || 'full') === k), 'Rekorde');
+    add(`recmg_${k}`, 'target', `Rekord ${m.label}`, `Erster Rekord bei ${m.label}`, c.recs.some(r => (r.ex.muscle_group || 'full') === k), 'Rekorde');
   }
   const gymsVisited = new Set(c.sess.filter(s => s.gym_id).map(s => s.gym_id));
-  add('gyms_all', '🗺️', 'Studio-Hopper', 'In allen Studios trainiert', c.data.gyms.length >= 2 && c.data.gyms.every(g => gymsVisited.has(g.id)), 'Training');
+  add('gyms_all', 'map', 'Studio-Hopper', 'In allen Studios trainiert', c.data.gyms.length >= 2 && c.data.gyms.every(g => gymsVisited.has(g.id)), 'Training');
   const early = c.sess.some(s => new Date(s.startTs).getHours() < 7);
   const late = c.sess.some(s => new Date(s.endTs).getHours() >= 21);
-  add('early', '🌅', 'Frühaufsteher', 'Training vor 7 Uhr', early, 'Training');
-  add('late', '🌙', 'Nachteule', 'Training nach 21 Uhr', late, 'Training');
+  add('early', 'sunrise', 'Frühaufsteher', 'Training vor 7 Uhr', early, 'Training');
+  add('late', 'moon', 'Nachteule', 'Training nach 21 Uhr', late, 'Training');
   const km = c.ws.filter(s => c.exById.get(s.exercise_id).kind === 'cardio').reduce((a, s) => a + (s.distance_km || 0), 0);
-  for (const n of [10, 50, 100]) add(`km_${n}`, '🏃', `${n} km Cardio`, `${n} km auf Cardio-Geräten`, km >= n, 'Training');
+  for (const n of [10, 50, 100]) add(`km_${n}`, 'route', `${n} km Cardio`, `${n} km auf Cardio-Geräten`, km >= n, 'Training');
 
   const loss = bodyLoss(c.data.body, 'weight_kg');
-  for (const n of [1, 2, 3, 5, 10]) add(`loss_${n}`, n >= 5 ? '🌟' : '⚖️', `−${n} kg`, `${n} kg leichter seit Beginn (7-Tage-Schnitt)`, loss >= n - 1e-9, 'Körper');
+  for (const n of [1, 2, 3, 5, 10]) add(`loss_${n}`, n >= 5 ? 'star' : 'trendDown', `−${n} kg`, `${n} kg leichter seit Beginn (7-Tage-Schnitt)`, loss >= n - 1e-9, 'Körper');
   const fat = bodyLoss(c.data.body, 'fat_pct');
-  for (const n of [1, 2, 3, 5]) add(`fat_${n}`, '🔥', `−${n} % Fett`, `${n} Prozentpunkte weniger Fett`, fat >= n - 1e-9, 'Körper');
+  for (const n of [1, 2, 3, 5]) add(`fat_${n}`, 'trendDown', `−${n} % Fett`, `${n} Prozentpunkte weniger Fett`, fat >= n - 1e-9, 'Körper');
   const sink = sinkingWeekStreak(c.data.body, 'weight_kg');
-  for (const n of [4, 8, 12]) add(`sink_${n}`, '📉', `${n} Wochen leichter`, `${n} Wochen in Folge sinkender Wochenschnitt`, sink.best >= n, 'Körper');
-  for (const n of [30, 100]) add(`measure_${n}`, '📏', `${n} Messtage`, `An ${n} Tagen gewogen`, c.measureDays.size >= n, 'Körper');
-  add('bodyrec_1', '💎', 'Körper-Rekord', 'Erster Rekord bei Gewicht, Fett oder Muskeln', c.bodyRecs.length >= 1, 'Körper');
+  for (const n of [4, 8, 12]) add(`sink_${n}`, 'calendar', `${n} Wochen leichter`, `${n} Wochen in Folge sinkender Wochenschnitt`, sink.best >= n, 'Körper');
+  for (const n of [30, 100]) add(`measure_${n}`, 'scale', `${n} Messtage`, `An ${n} Tagen gewogen`, c.measureDays.size >= n, 'Körper');
+  add('bodyrec_1', 'gem', 'Körper-Rekord', 'Erster Rekord bei Gewicht, Fett oder Muskeln', c.bodyRecs.length >= 1, 'Körper');
 
   const maxSteps = c.steps.reduce((a, s) => Math.max(a, s.steps || 0), 0);
   const totalSteps = c.steps.reduce((a, s) => a + (s.steps || 0), 0);
-  add('steps_10k', '👟', '10 000 Schritte', 'An einem Tag 10 000 Schritte', maxSteps >= 10000, 'Schritte');
-  add('steps_20k', '🥾', '20 000 Schritte', 'An einem Tag 20 000 Schritte', maxSteps >= 20000, 'Schritte');
-  add('steps_1m', '🌍', 'Millionär', '1 Million Schritte gesamt', totalSteps >= 1e6, 'Schritte');
+  add('steps_10k', 'steps', '10 000 Schritte', 'An einem Tag 10 000 Schritte', maxSteps >= 10000, 'Schritte');
+  add('steps_20k', 'steps', '20 000 Schritte', 'An einem Tag 20 000 Schritte', maxSteps >= 20000, 'Schritte');
+  add('steps_1m', 'globe', 'Millionär', '1 Million Schritte gesamt', totalSteps >= 1e6, 'Schritte');
   return out;
 }
 

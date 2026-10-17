@@ -3,6 +3,8 @@ import { gymName } from '../data.js';
 import { setTop, esc, ago, setText, MUSCLES, KINDS, modal, confirmDialog, toast } from '../ui.js';
 import { working, byTime } from '../stats.js';
 import { resizeImage } from '../photo.js';
+import { icon } from '../icons.js';
+import { currentPosition } from '../geo.js';
 
 let filter = 'all';
 
@@ -33,7 +35,7 @@ export default {
     if (gymId && !gym) { location.hash = '#/'; return; }
     setTop({
       title: gymName(gymId), back: '#/',
-      actions: gym ? '<button class="icon-btn" data-menu aria-label="Studio bearbeiten">⋯</button>' : '',
+      actions: gym ? `<button class="icon-btn" data-menu aria-label="Studio bearbeiten">${icon('more')}</button>` : '',
     });
 
     const all = orderedExercises(gymId);
@@ -46,20 +48,29 @@ export default {
 
     const banner = gym?.photo_path ? await db.photoUrl(gymPhotoKey(gym.id)) : null;
 
+    let detected = null;
+    try { detected = sessionStorage.getItem('geo.detected'); sessionStorage.removeItem('geo.detected'); } catch { /* egal */ }
+
     el.innerHTML = `
+      ${gym && detected === gym.id ? `<div class="notice info row spread">${icon('pin', 16)}<span class="grow">Standort erkannt: Du bist im <b>${esc(gym.name)}</b>.</span><a href="#/" data-other>Anderes Studio</a></div>` : ''}
       ${banner ? `<div class="gym-banner"><img src="${banner}" alt=""></div>` : ''}
       ${all.length > 6 ? '<input class="input search" type="search" placeholder="Übung suchen …" data-search>' : ''}
       ${usedGroups.length > 1 ? `<div class="chips">
         <button class="chip ${filter === 'all' ? 'on' : ''}" data-f="all">Alle</button>
-        ${usedGroups.map(g => `<button class="chip ${filter === g ? 'on' : ''}" data-f="${g}">${MUSCLES[g]?.emoji || ''} ${MUSCLES[g]?.label || g}</button>`).join('')}
+        ${usedGroups.map(g => `<button class="chip ${filter === g ? 'on' : ''}" data-f="${g}">${MUSCLES[g]?.label || g}</button>`).join('')}
       </div>` : ''}
       <div class="tiles" data-tiles></div>
-      ${!all.length ? `<div class="empty"><div class="e">🏋️</div>Noch keine Übungen in ${esc(gymName(gymId))}.<br>Lege das erste Gerät an – am besten gleich mit Foto.</div>` : ''}
+      ${!all.length ? `<div class="empty"><div class="e">${icon('machine', 40)}</div>Noch keine Übungen in ${esc(gymName(gymId))}.<br>Lege das erste Gerät an – am besten gleich mit Foto.</div>` : ''}
       <div class="row" style="margin-top:14px">
         <a class="btn primary grow" href="#/ex/new/${gid}">+ Übung / Gerät</a>
-        ${all.length > 1 ? `<button class="btn" data-order>${hasOrder ? '↕ Reihenfolge' : '↕ Laufweg festlegen'}</button>` : ''}
+        ${all.length > 1 ? `<button class="btn" data-order>${icon('sort', 18)} ${hasOrder ? 'Reihenfolge' : 'Laufweg festlegen'}</button>` : ''}
       </div>
       ${all.length > 1 && !hasOrder ? '<p class="muted small">Optional: Lege deinen Laufweg fest. Dann zeigt dir die App nach jedem Gerät das nächste an.</p>' : ''}
+      ${gym ? `<div class="card" style="margin-top:14px"><div class="row">
+        <span style="color:var(--primary)">${icon('pin', 22)}</span>
+        <div class="grow">${gym.lat != null ? `<b>Standort gespeichert</b><div class="muted small">Die App öffnet dieses Studio automatisch, wenn du hier bist.</div>`
+          : `<b>Studio per Standort erkennen</b><div class="muted small">Tippe hier, wenn du im Studio bist. Danach öffnet sich die App hier automatisch.</div>`}</div>
+        <button class="btn sm" data-geo>${gym.lat != null ? 'Neu setzen' : 'Hier speichern'}</button></div></div>` : ''}
     `;
 
     const tiles = el.querySelector('[data-tiles]');
@@ -69,7 +80,7 @@ export default {
       tiles.innerHTML = list.map((e, i) => {
         const s = lastSet.get(e.id);
         return `<a class="tile" href="#/ex/${e.id}">
-          <div class="ph" data-photo="${e.photo_path ? e.id : ''}">${KINDS[e.kind]?.emoji || '🏋️'}${hasOrder && e.sort_order != null ? `<span class="order">${i + 1}</span>` : ''}</div>
+          <div class="ph" data-photo="${e.photo_path ? e.id : ''}">${icon(KINDS[e.kind]?.icon || 'machine', 36)}${hasOrder && e.sort_order != null ? `<span class="order">${i + 1}</span>` : ''}</div>
           <div class="body"><div class="name">${esc(e.name)}</div>
           <div class="last">${s ? `${setText(s, e.kind)} · ${ago(s.performed_at)}` : 'noch nie'}</div></div></a>`;
       }).join('');
@@ -84,6 +95,18 @@ export default {
     const search = el.querySelector('[data-search]');
     if (search) search.oninput = () => { q = search.value.trim().toLowerCase(); draw(); };
     el.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { filter = b.dataset.f; ctx.refresh(); });
+    const other = el.querySelector('[data-other]');
+    if (other) other.onclick = () => { try { sessionStorage.setItem('geo.autoDone', '1'); } catch { /* egal */ } };
+    const geoBtn = el.querySelector('[data-geo]');
+    if (geoBtn) geoBtn.onclick = async () => {
+      geoBtn.disabled = true; geoBtn.textContent = 'Suche …';
+      try {
+        const pos = await currentPosition({ maximumAge: 0 });
+        await db.put('gyms', { id: gym.id, lat: pos.lat, lng: pos.lng, geo_acc: Math.round(pos.acc) });
+        toast(`Standort von ${esc(gym.name)} gespeichert (Genauigkeit ca. ${Math.round(pos.acc)} m)`, '', 3500);
+        ctx.refresh();
+      } catch (err) { toast(esc(err.message), '', 3500); geoBtn.disabled = false; geoBtn.textContent = 'Hier speichern'; }
+    };
     const ob = el.querySelector('[data-order]');
     if (ob) ob.onclick = async () => { if (await orderDialog(all)) ctx.refresh(); };
 
@@ -94,9 +117,10 @@ export default {
         m.innerHTML = `<h2>${esc(gym.name)}</h2>
           <label class="field"><span>Name</span><input class="input" data-name value="${esc(gym.name)}"></label>
           <div class="field"><span>Logo oder Bild des Studios</span>
-            <div class="row"><div class="gym-ico" data-prev style="width:64px;height:64px">${banner ? `<img src="${banner}" alt="">` : '🏢'}</div>
-            <label class="btn grow" style="cursor:pointer">🖼️ Bild wählen<input type="file" accept="image/*" data-file hidden></label></div>
+            <div class="row"><div class="gym-ico" data-prev style="width:64px;height:64px">${banner ? `<img src="${banner}" alt="">` : icon('building', 26)}</div>
+            <label class="btn grow" style="cursor:pointer">${icon('image', 18)} Bild wählen<input type="file" accept="image/*" data-file hidden></label></div>
             <p class="muted small">z. B. ein Foto vom Eingang oder das Logo, das du auf deinem Handy gespeichert hast.</p></div>
+          ${gym.lat != null ? '<label class="toggle"><input type="checkbox" data-nogeo> Gespeicherten Standort entfernen</label>' : ''}
           <div class="actions"><button class="btn danger" data-del>Studio löschen</button><button class="btn primary" data-ok>Speichern</button></div>`;
         m.querySelector('[data-file]').onchange = async e => {
           const f = e.target.files[0];
@@ -106,7 +130,7 @@ export default {
             m.querySelector('[data-prev]').innerHTML = `<img src="${URL.createObjectURL(photo)}" alt="">`;
           } catch { toast('Bild konnte nicht gelesen werden'); }
         };
-        m.querySelector('[data-ok]').onclick = () => close({ name: m.querySelector('[data-name]').value.trim() });
+        m.querySelector('[data-ok]').onclick = () => close({ name: m.querySelector('[data-name]').value.trim(), noGeo: !!m.querySelector('[data-nogeo]')?.checked });
         m.querySelector('[data-del]').onclick = () => close({ del: true });
       });
       if (!act) return;
@@ -123,6 +147,7 @@ export default {
         await db.put('gyms', { id: gym.id, photo_path: `${db.currentUser()}/${gymPhotoKey(gym.id)}.jpg` });
       }
       if (act.name) await db.put('gyms', { id: gym.id, name: act.name });
+      if (act.noGeo) await db.put('gyms', { id: gym.id, lat: null, lng: null, geo_acc: null });
       ctx.refresh();
     };
   },

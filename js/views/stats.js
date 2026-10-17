@@ -3,6 +3,7 @@ import { analyze, rangeStart, RANGES, dayKey, dayFromKey } from '../stats.js';
 import { setTop, esc, n0, n1, tons, fmtDay, fmtMonth, MUSCLES, ENERGY, ago } from '../ui.js';
 import * as charts from '../charts.js';
 import * as fun from '../fun.js';
+import { icon } from '../icons.js';
 
 let range = '3m';
 let calOffset = 0;
@@ -58,18 +59,18 @@ export default {
         </div>
         <div class="card">
           <div class="card-title"><h3>Muskelgruppen</h3><span class="muted small">Arbeitssätze</span></div>
-          ${muscleEntries.map(([k, v]) => `<div class="hbar"><span class="name">${MUSCLES[k].emoji} ${MUSCLES[k].label}</span><div class="bar teal"><i style="width:${v / maxMuscle * 100}%"></i></div><span class="v">${v}</span></div>`).join('')}
+          ${muscleEntries.map(([k, v]) => `<div class="hbar"><span class="name">${MUSCLES[k].label}</span><div class="bar teal"><i style="width:${v / maxMuscle * 100}%"></i></div><span class="v">${v}</span></div>`).join('')}
           ${weak.length && a.setsCount > 20 ? `<div class="notice warn" style="margin-top:10px">Kommt zu kurz: <b>${weak.join(', ')}</b></div>` : ''}
         </div>
         <div class="card">
           <div class="card-title"><h3>Lieblingsübungen</h3></div>
-          ${a.favorites.length ? `<ul class="list">${a.favorites.slice(0, 6).map((f, i) => `<li><span class="emoji">${['🥇', '🥈', '🥉'][i] || '·'}</span><a class="grow" href="#/ex/${f.ex.id}" style="color:inherit;text-decoration:none"><b>${esc(f.ex.name)}</b> <span class="muted small">${esc(gymName(f.ex.gym_id))}</span></a><span class="muted small">${f.days}×</span></li>`).join('')}</ul>` : '<p class="muted small">Noch keine Daten.</p>'}
-          ${a.neglected.length ? `<h3 style="margin-top:14px">Lange nicht mehr gemacht</h3><ul class="list">${a.neglected.slice(0, 5).map(n => `<li><span class="emoji">💤</span><a class="grow" href="#/ex/${n.ex.id}" style="color:inherit;text-decoration:none">${esc(n.ex.name)} <span class="muted small">${esc(gymName(n.ex.gym_id))}</span></a><span class="muted small">${ago(n.last)}</span></li>`).join('')}</ul>` : ''}
+          ${a.favorites.length ? `<ul class="list">${a.favorites.slice(0, 6).map((f, i) => `<li><span class="emoji">${i + 1}.</span><a class="grow" href="#/ex/${f.ex.id}" style="color:inherit;text-decoration:none"><b>${esc(f.ex.name)}</b> <span class="muted small">${esc(gymName(f.ex.gym_id))}</span></a><span class="muted small">${f.days}×</span></li>`).join('')}</ul>` : '<p class="muted small">Noch keine Daten.</p>'}
+          ${a.neglected.length ? `<h3 style="margin-top:14px">Lange nicht mehr gemacht</h3><ul class="list">${a.neglected.slice(0, 5).map(n => `<li><span class="emoji">${icon('clock', 18)}</span><a class="grow" href="#/ex/${n.ex.id}" style="color:inherit;text-decoration:none">${esc(n.ex.name)} <span class="muted small">${esc(gymName(n.ex.gym_id))}</span></a><span class="muted small">${ago(n.last)}</span></li>`).join('')}</ul>` : ''}
         </div>
         <div class="card">
           <div class="card-title"><h3>Energie und Leistung</h3></div>
           ${e.low.n + e.mid.n + e.high.n >= 3 ? `
-            ${[['low', `${ENERGY[1]}${ENERGY[2]} müde`], ['mid', `${ENERGY[3]} normal`], ['high', `${ENERGY[4]}${ENERGY[5]} fit`]].map(([k, l]) => `
+            ${[['low', 'Energie 1–2'], ['mid', 'Energie 3'], ['high', 'Energie 4–5']].map(([k, l]) => `
               <div class="hbar"><span class="name">${l}</span><div class="bar"><i style="width:${e[k].pct == null ? 0 : Math.min(100, Math.max(4, 50 + e[k].pct * 2.5))}%"></i></div><span class="v">${e[k].pct == null ? '–' : (e[k].pct > 0 ? '+' : '') + n0(e[k].pct) + ' %'}</span></div>`).join('')}
             <p class="muted small">Leistung pro Satz im Vergleich zu deinem Durchschnitt an diesem Gerät. ${energyVerdict(e)}</p>`
             : '<p class="muted small">Beantworte vor dem Training den Energie-Check – nach ein paar Trainings siehst du hier, ob du an guten Tagen mehr schaffst.</p>'}

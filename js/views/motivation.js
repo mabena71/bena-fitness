@@ -2,6 +2,7 @@ import { rewards, profile, snapshot } from '../data.js';
 import { XP } from '../rewards.js';
 import { periodSummary, monthRange, monthKey } from '../stats.js';
 import { setTop, esc, n0, MUSCLES, fmtMonth, tons, signed, n1 } from '../ui.js';
+import { icon } from '../icons.js';
 
 export default {
   render(el) {
@@ -34,12 +35,12 @@ export default {
       <div class="grid two" style="margin-top:12px">
         <div class="card">
           <div class="card-title"><h3>Level pro Muskelgruppe</h3></div>
-          ${r.muscles.filter(m => m.key !== 'cardio').map(m => `<div class="hbar" style="grid-template-columns:120px 1fr 64px"><span class="name">${MUSCLES[m.key].emoji} ${MUSCLES[m.key].label}</span>
+          ${r.muscles.filter(m => m.key !== 'cardio').map(m => `<div class="hbar" style="grid-template-columns:120px 1fr 64px"><span class="name">${MUSCLES[m.key].label}</span>
             <div class="bar teal"><i style="width:${m.pct.toFixed(1)}%"></i></div><span class="v">Lvl ${m.level}</span></div>`).join('')}
         </div>
         <div class="card">
           <div class="card-title"><h3>Rückblicke</h3></div>
-          ${years.map(y => `<a class="btn block accent" style="margin-bottom:10px" href="#/review/year/${y}">✨ Jahresrückblick ${y}</a>`).join('')}
+          ${years.map(y => `<a class="btn block accent" style="margin-bottom:10px" href="#/review/year/${y}">${icon('sparkle', 18)} Jahresrückblick ${y}</a>`).join('')}
           ${monthList.length ? `<ul class="list">${monthList.map(m => {
             const [y, mo] = m.split('-').map(Number);
             const [a, b] = monthRange(y, mo - 1);
@@ -53,7 +54,7 @@ export default {
       ${cats.map(c => {
         const list = r.badges.filter(b => b.cat === c);
         return `<h2>${esc(c)} <span class="muted small">${list.filter(b => b.done).length}/${list.length}</span></h2>
-        <div class="badges">${list.map(b => `<div class="badge ${b.done ? '' : 'locked'}" title="${esc(b.desc)}"><div class="e">${b.emoji}</div><div class="t">${esc(b.title)}</div><div class="s">${esc(b.desc)}</div></div>`).join('')}</div>`;
+        <div class="badges">${list.map(b => `<div class="badge ${b.done ? '' : 'locked'}" title="${esc(b.desc)}"><div class="e">${icon(b.icon, 26)}</div><div class="t">${esc(b.title)}</div><div class="s">${esc(b.desc)}</div></div>`).join('')}</div>`;
       }).join('')}
       <p class="muted small center" style="margin-top:18px">${r.records.length} Trainings-Rekorde · ${r.bodyRecords.length} Körper-Rekorde · ${n1(r.earned.length / r.badges.length * 100)} % der Abzeichen</p>`;
   },

@@ -5,6 +5,7 @@ import {
 } from './stats.js';
 import { levelNeed, computeRewards } from './rewards.js';
 import * as fun from './fun.js';
+import { distanceM, nearestGym } from './geo.js';
 
 const results = [];
 function test(name, fn) {
@@ -159,6 +160,15 @@ test('Lustige Vergleiche liefern Text', () => {
   ok(fun.heavy(38000).includes('wie'));
   ok(fun.loss(1) === 'eine Ananas', fun.loss(1));
   ok(fun.distance(42.2) === 'ein Marathon', fun.distance(42.2));
+});
+
+test('Standort: Entfernung und nächstes Studio', () => {
+  const a = { lat: 47.5, lng: 8.724 }, b = { lat: 47.501, lng: 8.724 };
+  const d = distanceM(a, b);
+  ok(d > 105 && d < 117, `Distanz ${d}`);
+  const gyms = [{ id: 'x', ...a }, { id: 'y', lat: 47.4, lng: 8.5 }, { id: 'z', lat: null, lng: null }];
+  eq(nearestGym(gyms, { lat: 47.5005, lng: 8.724, acc: 10 }).gym.id, 'x');
+  eq(nearestGym(gyms, { lat: 47.52, lng: 8.724, acc: 10 }), null);
 });
 
 const out = document.getElementById('out');

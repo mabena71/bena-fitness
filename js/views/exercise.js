@@ -7,6 +7,7 @@ import {
 import { prefill, ghost, ghostCompare, isRecord, best, dayKey, byTime, working, volume, groupBy, roundStep } from '../stats.js';
 import { orderedExercises } from './gym.js';
 import * as charts from '../charts.js';
+import { icon } from '../icons.js';
 
 const skippedEnergy = new Set();
 
@@ -15,7 +16,7 @@ export default {
     const ex = db.get('exercises', id);
     if (!ex) { location.hash = '#/'; return; }
     const gid = ex.gym_id || 'anywhere';
-    setTop({ title: ex.name, back: `#/gym/${gid}`, actions: `<a class="icon-btn" href="#/ex/${ex.id}/edit" aria-label="Bearbeiten">✎</a>` });
+    setTop({ title: ex.name, back: `#/gym/${gid}`, actions: `<a class="icon-btn" href="#/ex/${ex.id}/edit" aria-label="Bearbeiten">${icon('edit')}</a>` });
 
     const photo = ex.photo_path ? await db.photoUrl(ex.id) : null;
     const step = ex.step || (ex.kind === 'free' ? 1 : 2.5);
@@ -50,24 +51,24 @@ export default {
           <div>
             <div class="card">
               <div class="hero">
-                <div class="ph">${photo ? `<img src="${photo}" alt="">` : KINDS[ex.kind]?.emoji}</div>
+                <div class="ph">${photo ? `<img src="${photo}" alt="">` : icon(KINDS[ex.kind]?.icon, 40)}</div>
                 <div>
                   <div class="muted small">${esc(gymName(ex.gym_id))} · ${MUSCLES[ex.muscle_group]?.label || ''} · ${KINDS[ex.kind]?.label}</div>
                   ${ex.settings?.length ? `<div class="settings-pills">${ex.settings.map(s => `<span class="pill">${esc(s.label)} ${esc(s.value)}</span>`).join('')}</div>` : ''}
-                  ${pb ? `<div class="small" style="margin-top:8px">🥇 Bestwert: <b>${setText(pb, ex.kind)}</b></div>` : ''}
+                  ${pb ? `<div class="small" style="margin-top:8px">${icon('award', 16)} Bestwert: <b>${setText(pb, ex.kind)}</b></div>` : ''}
                 </div>
               </div>
-              ${ex.notes ? `<p class="small" style="margin:12px 0 0;white-space:pre-wrap">📝 ${esc(ex.notes)}</p>` : ''}
+              ${ex.notes ? `<p class="small" style="margin:12px 0 0;white-space:pre-wrap">${icon('note', 16)} ${esc(ex.notes)}</p>` : ''}
             </div>
 
             <div class="card">
-              ${comebackInfo && !todays.length ? `<div class="notice warn">🌱 <b>Sanfter Wiedereinstieg:</b> ${comebackInfo.days} Tage Pause. Gewicht um ${Math.round((1 - comebackInfo.factor) * 100)} % reduziert vorgeschlagen.</div>` : ''}
+              ${comebackInfo && !todays.length ? `<div class="notice warn">${icon('sprout', 16)} <b>Sanfter Wiedereinstieg:</b> ${comebackInfo.days} Tage Pause. Gewicht um ${Math.round((1 - comebackInfo.factor) * 100)} % reduziert vorgeschlagen.</div>` : ''}
               <div class="entry">
                 ${isCardio ? stepperHtml('duration_min', 'Minuten', entry.duration_min) + stepperHtml('distance_km', 'km', entry.distance_km, 'decimal')
                   : stepperHtml('weight_kg', isBody ? 'Zusatz-kg' : 'kg', entry.weight_kg, 'decimal') + stepperHtml('reps', 'Wdh.', entry.reps)}
               </div>
               <div class="seg" style="margin-top:12px" data-feel>
-                ${[1, 2, 3].map(f => `<button type="button" data-v="${f}" class="${entry.feel === f ? 'on' : ''}">${['😌', '👍', '🥵'][f - 1]} ${FEEL[f]}</button>`).join('')}
+                ${[1, 2, 3].map(f => `<button type="button" data-v="${f}" class="${entry.feel === f ? 'on' : ''}">${FEEL[f]}</button>`).join('')}
               </div>
               <div class="row spread" style="margin-top:6px">
                 ${isCardio ? '<span></span>' : `<label class="toggle"><input type="checkbox" data-warm ${entry.is_warmup ? 'checked' : ''}> Aufwärmsatz</label>`}
@@ -75,12 +76,12 @@ export default {
               </div>
               ${showNote || entry.note ? `<input class="input" data-note placeholder="Notiz zu diesem Satz" value="${esc(entry.note)}" style="margin-top:6px">` : ''}
               ${entry.at ? `<label class="field" style="margin-top:10px"><span>Zeitpunkt</span><input class="input" type="datetime-local" data-at value="${localInput(entry.at)}"></label>` : ''}
-              <button class="btn primary big block" style="margin-top:12px" data-save>✓ Satz speichern</button>
+              <button class="btn primary big block" style="margin-top:12px" data-save>${icon('check', 22)} Satz speichern</button>
               ${!entry.at ? '<button class="btn ghost sm block" style="margin-top:6px" data-at-toggle>Für einen anderen Tag nachtragen</button>' : ''}
             </div>
 
             <div class="card">
-              <div class="card-title"><h3>Heute</h3>${g ? `<span class="muted small">👻 letztes Mal: ${fmtDay(dayFromKeyLocal(g.day))}</span>` : ''}</div>
+              <div class="card-title"><h3>Heute</h3>${g ? `<span class="muted small">${icon('history', 14)} letztes Mal: ${fmtDay(dayFromKeyLocal(g.day))}</span>` : ''}</div>
               ${todaysList(todays, g, ex)}
             </div>
             ${next ? `<a class="next-link" href="#/ex/${next.id}"><span>Weiter: ${esc(next.name)}</span><span>→</span></a>` : ''}
@@ -89,6 +90,7 @@ export default {
           <div>
             <div class="card">
               <div class="card-title"><h3>Entwicklung</h3><span class="muted small">${sets.length ? `${new Set(sets.map(s => dayKey(s.performed_at))).size} Trainingstage` : ''}</span></div>
+              ${sets.length >= 2 ? `<div class="chips" data-modes>${chartModes(ex, sets).map(([k, l]) => `<button class="chip ${k === chartMode(ex, sets) ? 'on' : ''}" data-mode="${k}">${l}</button>`).join('')}</div>` : ''}
               <div class="chart-box" data-chart>${sets.length < 2 ? '<p class="muted small center" style="padding-top:80px">Ab dem zweiten Training siehst du hier deine Entwicklung.</p>' : ''}</div>
             </div>
             <div class="card">
@@ -100,6 +102,7 @@ export default {
 
       wire(sets);
       if (sets.length >= 2) drawChart(el.querySelector('[data-chart]'), sets, ex);
+      el.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { modeByKind[ex.kind] = b.dataset.mode; paint(); });
     };
 
     const wire = (sets) => {
@@ -151,7 +154,7 @@ export default {
       vibrate(25);
       if (isRecord(saved, previous, ex.kind)) {
         confetti(); vibrate([80, 40, 80]);
-        toast(`🎉 Neuer Rekord! <b>${setText(saved, ex.kind)}</b>`, 'record', 4000);
+        toast(`${icon('award', 18)} Neuer Rekord: <b>${setText(saved, ex.kind)}</b>`, 'record', 4000);
       } else {
         toast(`Gespeichert: ${setText(saved, ex.kind)}${saved.is_warmup ? ' (Aufwärmen)' : ''}`);
       }
@@ -215,16 +218,16 @@ function todaysList(todays, g, ex) {
     if (!s.is_warmup) {
       const p = prevWorking[wi];
       const c = ghostCompare(s, p, ex.kind);
-      if (p) ghostTxt = `<div class="ghost ${c > 0 ? 'good' : c < 0 ? 'bad' : 'muted'}">👻 ${setText(p, ex.kind)} ${c > 0 ? '▲' : c < 0 ? '▼' : '='}</div>`;
+      if (p) ghostTxt = `<div class="ghost ${c > 0 ? 'good' : c < 0 ? 'bad' : 'muted'}">${icon('history', 14)} ${setText(p, ex.kind)} ${c > 0 ? '▲' : c < 0 ? '▼' : '='}</div>`;
       wi++;
     }
     return `<li data-set="${s.id}" style="cursor:pointer" class="${s.is_warmup ? 'warm' : ''}">
       <span class="n">${s.is_warmup ? 'W' : wi}</span>
-      <div><span class="val">${setText(s, ex.kind)}</span> <span class="feel">${FEEL[s.feel] || ''}</span>${s.note ? `<div class="muted small">📝 ${esc(s.note)}</div>` : ''}</div>
+      <div><span class="val">${setText(s, ex.kind)}</span> <span class="feel">${FEEL[s.feel] || ''}</span>${s.note ? `<div class="muted small">${icon('note', 14)} ${esc(s.note)}</div>` : ''}</div>
       <div style="text-align:right">${ghostTxt}<div class="muted small">${fmtTime(s.performed_at)}</div></div></li>`;
   });
   // Noch offene Sätze vom letzten Mal als Ziel anzeigen
-  const open = prevWorking.slice(wi).map((p, k) => `<li class="warm"><span class="n">${wi + k + 1}</span><div class="muted">Ziel vom letzten Mal</div><div class="ghost muted">👻 ${setText(p, ex.kind)}</div></li>`);
+  const open = prevWorking.slice(wi).map((p, k) => `<li class="warm"><span class="n">${wi + k + 1}</span><div class="muted">Ziel vom letzten Mal</div><div class="ghost muted">${icon('history', 14)} ${setText(p, ex.kind)}</div></li>`);
   return `<ul class="sets">${rows.join('')}${open.join('')}</ul>`;
 }
 
@@ -239,29 +242,49 @@ function historyHtml(sets, ex, today, limit) {
     return `<div class="history-day">
       <div class="row spread"><span class="d">${fmtDay(dayFromKeyLocal(d))}</span><span class="muted small">${vol ? `${n0(vol)} kg Volumen` : ''}</span></div>
       <div class="s">${list.map(s => `<span data-set="${s.id}" style="cursor:pointer;${s.is_warmup ? 'opacity:.5' : ''}">${setText(s, ex.kind)}</span>`).join(' · ')}</div>
-      ${list.filter(s => s.note).map(s => `<div class="muted small">📝 ${esc(s.note)}</div>`).join('')}
+      ${list.filter(s => s.note).map(s => `<div class="muted small">${icon('note', 14)} ${esc(s.note)}</div>`).join('')}
     </div>`;
   }).join('') + (byDay.length > limit ? '<button class="btn sm block" style="margin-top:8px" data-more>Mehr anzeigen</button>' : '');
 }
 
+// Diagramm: immer nur eine Kennzahl mit beschrifteter Skala, wählbar über Knöpfe.
+const modeByKind = {};
+function chartModes(ex, sets) {
+  if (ex.kind === 'cardio') return [['km', 'Distanz'], ['min', 'Minuten']];
+  if (ex.kind === 'bodyweight' && !sets.some(s => s.weight_kg)) return [['reps', 'Wiederholungen']];
+  return [['weight', 'Gewicht'], ['volume', 'Volumen'], ['reps', 'Wiederholungen']];
+}
+function chartMode(ex, sets) {
+  const modes = chartModes(ex, sets).map(m => m[0]);
+  return modes.includes(modeByKind[ex.kind]) ? modeByKind[ex.kind] : modes[0];
+}
+const MODE_INFO = {
+  weight: { title: 'Höchstgewicht pro Tag (kg)', f: l => Math.max(...l.map(s => s.weight_kg || 0)) },
+  volume: { title: 'Volumen pro Tag: Gewicht × Wiederholungen (kg)', f: l => l.reduce((a, s) => a + volume(s), 0) },
+  reps: { title: 'Meiste Wiederholungen in einem Satz', f: l => Math.max(...l.map(s => s.reps || 0)) },
+  km: { title: 'Weiteste Distanz pro Tag (km)', f: l => Math.max(...l.map(s => s.distance_km || 0)) || null },
+  min: { title: 'Minuten pro Tag', f: l => l.reduce((a, s) => a + (s.duration_min || 0), 0) },
+};
+
 function drawChart(box, sets, ex) {
   const byDay = [...groupBy(working(sets), s => dayKey(s.performed_at)).entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1));
-  const labels = byDay.map(([d]) => fmtDay(dayFromKeyLocal(d)).replace(/^\w+\.,?\s*/, ''));
-  if (ex.kind === 'cardio') {
-    charts.line(box, labels, [
-      { label: 'km', data: byDay.map(([, l]) => Math.max(...l.map(s => s.distance_km || 0)) || null), color: charts.COLORS.primary, points: 3 },
-      { label: 'Minuten', data: byDay.map(([, l]) => l.reduce((a, s) => a + (s.duration_min || 0), 0)), color: charts.COLORS.accent, axis: 'y2', dashed: true, points: 0 },
-    ], { y2: true });
-    return;
+  const today = dayKey(new Date());
+  const labels = byDay.map(([d]) => (d === today ? 'heute' : fmtDay(dayFromKeyLocal(d)).replace(/^\w+\.,?\s*/, '')));
+  const mode = chartMode(ex, sets);
+  const info = MODE_INFO[mode];
+  const data = byDay.map(([, l]) => info.f(l));
+  charts.line(box, labels, [{ label: info.title, data, color: mode === 'volume' ? charts.COLORS.accent : charts.COLORS.primary, points: 3, fill: true, fillColor: mode === 'volume' ? 'rgba(249,115,22,.12)' : undefined }], {
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkipPadding: 14, font: { size: 11 }, color: '#637081' } },
+        y: { title: { display: true, text: info.title, font: { size: 11 }, color: '#637081' }, grid: { color: '#eef1f4' }, ticks: { font: { size: 11 }, color: '#637081' }, beginAtZero: mode === 'volume' || mode === 'min' },
+      },
+    },
+  });
+  if (byDay.length && byDay[byDay.length - 1][0] === today && (mode === 'volume' || mode === 'min')) {
+    box.insertAdjacentHTML('beforeend', '<div class="muted small" style="position:absolute;right:4px;top:0">„heute“ läuft noch</div>');
   }
-  if (ex.kind === 'bodyweight' && !sets.some(s => s.weight_kg)) {
-    charts.line(box, labels, [{ label: 'max. Wdh.', data: byDay.map(([, l]) => Math.max(...l.map(s => s.reps || 0))), points: 3 }]);
-    return;
-  }
-  charts.line(box, labels, [
-    { label: 'Höchstgewicht (kg)', data: byDay.map(([, l]) => Math.max(...l.map(s => s.weight_kg || 0))), color: charts.COLORS.primary, points: 3 },
-    { label: 'Volumen (kg)', data: byDay.map(([, l]) => l.reduce((a, s) => a + volume(s), 0)), color: charts.COLORS.accent, axis: 'y2', dashed: true, points: 0 },
-  ], { y2: true });
 }
 
 /** Energie-Check: beim ersten Satz des Tages in diesem Studio fragen. */
@@ -275,13 +298,13 @@ async function maybeAskEnergy(ex) {
   if (db.all('sets').some(s => gymEx.has(s.exercise_id) && dayKey(s.performed_at) === today)) return;
   const v = await modal((m, close) => {
     m.innerHTML = `<h2>Wie fühlst du dich heute?</h2>
-      <div class="energy">${[1, 2, 3, 4, 5].map(i => `<button data-v="${i}">${ENERGY[i]}<span>${i}</span></button>`).join('')}</div>
+      <div class="energy">${[1, 2, 3, 4, 5].map(i => `<button data-v="${i}">${i}<span>${ENERGY[i]}</span></button>`).join('')}</div>
       <p class="muted small">Die Statistik zeigt später, ob du an guten Tagen wirklich mehr schaffst.</p>
       <div class="actions"><button class="btn" data-x>Überspringen</button></div>`;
     m.querySelectorAll('[data-v]').forEach(b => b.onclick = () => close(+b.dataset.v));
     m.querySelector('[data-x]').onclick = () => close(null);
   });
   skippedEnergy.add(key);
-  if (v) { await db.put('day_checks', { day: today, gym_id: gymId, energy: v }); toast(`Energie ${ENERGY[v]} notiert`); }
+  if (v) { await db.put('day_checks', { day: today, gym_id: gymId, energy: v }); toast(`Energie ${v} (${ENERGY[v]}) notiert`); }
 }
 

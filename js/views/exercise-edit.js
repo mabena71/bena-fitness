@@ -1,6 +1,7 @@
 import * as db from '../db.js';
 import { setTop, esc, KINDS, MUSCLES, toast, confirmDialog, parseNum } from '../ui.js';
 import { resizeImage } from '../photo.js';
+import { icon } from '../icons.js';
 
 const DEFAULT_MUSCLE = { machine: 'legs', free: 'arms', bodyweight: 'chest', cardio: 'cardio' };
 
@@ -31,23 +32,23 @@ export default {
       <div class="card">
         <label class="field"><span>Name</span><input class="input" data-k="name" value="${esc(st.name)}" placeholder="z. B. Beinpresse" ${isNew ? 'autofocus' : ''}></label>
         <div class="field"><span>Art</span><div class="seg" data-kind>
-          ${Object.entries(KINDS).map(([k, v]) => `<button type="button" data-v="${k}" class="${st.kind === k ? 'on' : ''}">${v.emoji}<br><small>${v.label}</small></button>`).join('')}
+          ${Object.entries(KINDS).map(([k, v]) => `<button type="button" data-v="${k}" class="${st.kind === k ? 'on' : ''}">${icon(v.icon, 22)}<br><small>${v.label}</small></button>`).join('')}
         </div></div>
         <label class="field"><span>Muskelgruppe</span><select class="input" data-k="muscle_group">
-          ${Object.entries(MUSCLES).map(([k, v]) => `<option value="${k}" ${st.muscle_group === k ? 'selected' : ''}>${v.emoji} ${v.label}</option>`).join('')}
+          ${Object.entries(MUSCLES).map(([k, v]) => `<option value="${k}" ${st.muscle_group === k ? 'selected' : ''}>${v.label}</option>`).join('')}
         </select></label>
         <label class="field"><span>Studio</span><select class="input" data-k="gym_id">
           ${gyms.map(g => `<option value="${g.id}" ${st.gym_id === g.id ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}
-          <option value="" ${!st.gym_id ? 'selected' : ''}>🌍 Überall (ohne Studio)</option>
+          <option value="" ${!st.gym_id ? 'selected' : ''}>Überall (ohne Studio)</option>
         </select></label>
       </div>
 
       <div class="card">
         <div class="card-title"><h3>Foto des Geräts</h3></div>
         <div class="row" style="align-items:flex-start">
-          <div class="hero"><div class="ph" data-preview>${existingPhoto ? `<img src="${existingPhoto}" alt="">` : KINDS[st.kind].emoji}</div></div>
+          <div class="hero"><div class="ph" data-preview>${existingPhoto ? `<img src="${existingPhoto}" alt="">` : icon(KINDS[st.kind].icon, 36)}</div></div>
           <div class="grow">
-            <label class="btn block" style="cursor:pointer">📷 Foto aufnehmen / wählen<input type="file" accept="image/*" data-photo hidden></label>
+            <label class="btn block" style="cursor:pointer">${icon('camera', 18)} Foto aufnehmen / wählen<input type="file" accept="image/*" data-photo hidden></label>
             <p class="muted small">Das Foto wird verkleinert gespeichert und hilft dir, das Gerät wiederzuerkennen.</p>
           </div>
         </div>
@@ -72,7 +73,7 @@ export default {
     const drawSettings = () => {
       $('[data-settings]').innerHTML = st.settings.map((s, i) => `
         <div class="kv-row"><input class="input" data-sl="${i}" value="${esc(s.label)}" placeholder="Bezeichnung">
-        <input class="input" data-sv="${i}" value="${esc(s.value)}" placeholder="Wert"><button class="icon-btn" data-sx="${i}" aria-label="entfernen">✕</button></div>`).join('') ||
+        <input class="input" data-sv="${i}" value="${esc(s.value)}" placeholder="Wert"><button class="icon-btn" data-sx="${i}" aria-label="entfernen">${icon('x', 18)}</button></div>`).join('') ||
         '<p class="muted small">Noch keine Einstellungen.</p>';
       el.querySelectorAll('[data-sl]').forEach(i => i.oninput = () => { st.settings[+i.dataset.sl].label = i.value; });
       el.querySelectorAll('[data-sv]').forEach(i => i.oninput = () => { st.settings[+i.dataset.sv].value = i.value; });

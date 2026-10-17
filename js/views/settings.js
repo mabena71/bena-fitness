@@ -4,8 +4,7 @@ import { setTop, esc, toast, confirmDialog, downloadFile } from '../ui.js';
 import { getMode, setMode, MODES } from '../app.js';
 import { setsCsv, bodyCsv, stepsCsv } from '../csv.js';
 import { createBackup, restoreBackup } from '../backup.js';
-
-const EMOJIS = ['💪', '🏋️', '🔥', '⚡', '🦁', '🐻', '🦊', '🌟', '🚀', '🧘'];
+import { icon } from '../icons.js';
 
 export default {
   async render(el, _p, ctx) {
@@ -19,7 +18,6 @@ export default {
       <div class="card">
         <div class="card-title"><h3>Profil</h3></div>
         <label class="field"><span>Name</span><input class="input" data-name value="${esc(p.display_name || '')}" placeholder="z. B. Maurice"></label>
-        <div class="field"><span>Symbol</span><div class="chips">${EMOJIS.map(e => `<button class="chip ${p.avatar_emoji === e ? 'on' : ''}" data-emoji="${e}">${e}</button>`).join('')}</div></div>
         <button class="btn primary" data-save>Speichern</button>
       </div>
 
@@ -27,9 +25,9 @@ export default {
         <div class="card-title"><h3>Daten exportieren</h3></div>
         <p class="muted small">Als CSV-Datei, die du direkt in Excel öffnen kannst.</p>
         <div class="row wrap">
-          <button class="btn" data-csv="sets">🏋️ Trainings</button>
-          <button class="btn" data-csv="body">⚖️ Körper</button>
-          <button class="btn" data-csv="steps">👟 Schritte</button>
+          <button class="btn" data-csv="sets">${icon('table', 18)} Trainings</button>
+          <button class="btn" data-csv="body">${icon('table', 18)} Körper</button>
+          <button class="btn" data-csv="steps">${icon('table', 18)} Schritte</button>
         </div>
       </div>
 
@@ -37,8 +35,8 @@ export default {
         <div class="card-title"><h3>Datensicherung</h3></div>
         <p class="muted small">Alle Trainings, Messungen und Fotos als eine Datei. Auf dem Handy landet sie im Ordner „Downloads“. Mach ab und zu eine Sicherung, solange die Daten nur auf diesem Gerät liegen.</p>
         <div class="row wrap">
-          <button class="btn primary" data-backup>💾 Sicherung herunterladen</button>
-          <label class="btn" style="cursor:pointer">📂 Sicherung einspielen<input type="file" accept=".json,application/json" data-restore hidden></label>
+          <button class="btn primary" data-backup>${icon('download', 18)} Sicherung herunterladen</button>
+          <label class="btn" style="cursor:pointer">${icon('upload', 18)} Sicherung einspielen<input type="file" accept=".json,application/json" data-restore hidden></label>
         </div>
         <p class="muted small" data-persist></p>
       </div>
@@ -55,19 +53,17 @@ export default {
       <div class="card">
         <div class="card-title"><h3>Bald verfügbar</h3></div>
         <ul class="list">
-          <li><span class="emoji">☁️</span><div class="grow"><b>Login und Sync</b><div class="muted small">Gleiche Daten auf Handy und PC, getrennte Konten für Maurice und Sabine</div></div></li>
-          <li><span class="emoji">📍</span><div class="grow"><b>Studio per Standort</b><div class="muted small">Öffnet automatisch das Studio, in dem du gerade bist</div></div></li>
-          <li><span class="emoji">⚖️</span><div class="grow"><b>Withings</b><div class="muted small">Gewicht, Fett und Schritte automatisch übernehmen</div></div></li>
-          <li><span class="emoji">👑</span><div class="grow"><b>Paar-Challenge</b><div class="muted small">Wochenduell nur mit Kennzahlen</div></div></li>
-          <li><span class="emoji">🔔</span><div class="grow"><b>Benachrichtigungen</b><div class="muted small">Wochenbilanz am Sonntag und Erinnerungen</div></div></li>
+          <li><span class="emoji">${icon('cloud', 18)}</span><div class="grow"><b>Login und Sync</b><div class="muted small">Gleiche Daten auf Handy und PC, getrennte Konten für Maurice und Sabine</div></div></li>
+          <li><span class="emoji">${icon('pin', 18)}</span><div class="grow"><b>Studio per Standort</b><div class="muted small">Öffnet automatisch das Studio, in dem du gerade bist</div></div></li>
+          <li><span class="emoji">${icon('scale', 18)}</span><div class="grow"><b>Withings</b><div class="muted small">Gewicht, Fett und Schritte automatisch übernehmen</div></div></li>
+          <li><span class="emoji">${icon('crown', 18)}</span><div class="grow"><b>Paar-Challenge</b><div class="muted small">Wochenduell nur mit Kennzahlen</div></div></li>
+          <li><span class="emoji">${icon('bell', 18)}</span><div class="grow"><b>Benachrichtigungen</b><div class="muted small">Wochenbilanz am Sonntag und Erinnerungen</div></div></li>
         </ul>
       </div>
-      <p class="muted small center">Fitness-Tagebuch · Version 0.3 (Etappen 1–2, Datensicherung)</p>`;
+      <p class="muted small center">Fitness-Tagebuch · Version 0.4 (Etappen 1, 2 und 4)</p>`;
 
-    let emoji = p.avatar_emoji || '💪';
-    el.querySelectorAll('[data-emoji]').forEach(b => b.onclick = () => { emoji = b.dataset.emoji; el.querySelectorAll('[data-emoji]').forEach(x => x.classList.toggle('on', x === b)); });
     el.querySelector('[data-save]').onclick = async () => {
-      await saveProfile({ display_name: el.querySelector('[data-name]').value.trim(), avatar_emoji: emoji });
+      await saveProfile({ display_name: el.querySelector('[data-name]').value.trim() });
       toast('Profil gespeichert');
       ctx.refresh();
     };
@@ -94,7 +90,7 @@ export default {
     try {
       if (navigator.storage?.persisted) {
         const p = await navigator.storage.persisted();
-        el.querySelector('[data-persist]').textContent = p ? '✓ Der Browser speichert die Daten dauerhaft.' : 'Hinweis: Der Browser hat dauerhaften Speicher nicht bestätigt. Als App auf dem Startbildschirm ist er meist sicherer.';
+        el.querySelector('[data-persist]').textContent = p ? 'Der Browser speichert die Daten dauerhaft.' : 'Hinweis: Der Browser hat dauerhaften Speicher nicht bestätigt. Als App auf dem Startbildschirm ist er meist sicherer.';
       }
     } catch { /* egal */ }
     el.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => setMode(b.dataset.mode));

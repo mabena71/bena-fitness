@@ -2,6 +2,7 @@ import { snapshot, rewards, profile, gymName } from '../data.js';
 import { periodSummary, monthRange, yearRange } from '../stats.js';
 import { setTop, esc, n0, n1, tons, signed, fmtMonth, setText, fmtDay, confetti } from '../ui.js';
 import * as fun from '../fun.js';
+import { icon } from '../icons.js';
 
 const GRADIENTS = [
   'linear-gradient(160deg,#0f766e,#134e4a)', 'linear-gradient(160deg,#ea580c,#9a3412)', 'linear-gradient(160deg,#7c3aed,#4c1d95)',
@@ -24,10 +25,10 @@ function renderMonth(el, data, key) {
   setTop({ title: fmtMonth(a), back: '#/rewards' });
   const w = s.bodyDelta.weight_kg, f = s.bodyDelta.fat_pct;
   const lines = [];
-  if (s.volume) lines.push(`🏋️ ${tons(s.volume)} bewegt – ${esc(fun.heavy(s.volume))}.`);
-  if (w != null && w < -0.1) lines.push(`⚖️ ${n1(-w)} kg leichter – das ist ${esc(fun.loss(-w))}.`);
-  if (s.cardioKm) lines.push(`🏃 ${n1(s.cardioKm)} km Cardio – ${esc(fun.distance(s.cardioKm))}.`);
-  if (s.stepsTotal) lines.push(`👟 ${n0(s.stepsTotal)} Schritte – etwa ${esc(fun.steps(s.stepsTotal))}.`);
+  if (s.volume) lines.push(`${icon('weight', 18)} ${tons(s.volume)} bewegt – ${esc(fun.heavy(s.volume))}.`);
+  if (w != null && w < -0.1) lines.push(`${icon('trendDown', 18)} ${n1(-w)} kg leichter – das ist ${esc(fun.loss(-w))}.`);
+  if (s.cardioKm) lines.push(`${icon('route', 18)} ${n1(s.cardioKm)} km Cardio – ${esc(fun.distance(s.cardioKm))}.`);
+  if (s.stepsTotal) lines.push(`${icon('steps', 18)} ${n0(s.stepsTotal)} Schritte – etwa ${esc(fun.steps(s.stepsTotal))}.`);
 
   el.innerHTML = `
     <div class="card" style="background:${GRADIENTS[(m - 1) % GRADIENTS.length]};color:#fff">
@@ -43,7 +44,7 @@ function renderMonth(el, data, key) {
     </div>
     ${lines.length ? `<div class="card" style="margin-top:12px"><div class="stack">${lines.map(l => `<div>${l}</div>`).join('')}</div></div>` : ''}
     ${s.records.length ? `<div class="card"><div class="card-title"><h3>Rekorde im ${esc(fmtMonth(a).split(' ')[0])}</h3></div><ul class="list">
-      ${s.records.slice(-10).reverse().map(r => `<li><span class="emoji">🥇</span><div class="grow"><b>${esc(r.ex.name)}</b> <span class="muted small">${esc(gymName(r.ex.gym_id))}</span><div class="small">${setText(r.set, r.ex.kind)} · ${fmtDay(r.set.performed_at)}</div></div></li>`).join('')}
+      ${s.records.slice(-10).reverse().map(r => `<li><span class="emoji">${icon('award', 18)}</span><div class="grow"><b>${esc(r.ex.name)}</b> <span class="muted small">${esc(gymName(r.ex.gym_id))}</span><div class="small">${setText(r.set, r.ex.kind)} · ${fmtDay(r.set.performed_at)}</div></div></li>`).join('')}
     </ul></div>` : ''}
     ${s.favorite ? `<div class="card"><b>Lieblingsübung:</b> ${esc(s.favorite.ex.name)} (${s.favorite.days}×)</div>` : ''}`;
 }
@@ -59,18 +60,18 @@ function renderYear(el, data, y) {
   const w = s.bodyDelta.weight_kg, f = s.bodyDelta.fat_pct;
 
   const slides = [
-    { e: '✨', k: `Dein Jahr ${y}`, mid: name ? `${esc(name)}, das war dein Fitnessjahr!` : 'Das war dein Fitnessjahr!', sub: 'Tippe rechts für weiter, links für zurück.' },
-    { e: '📅', k: 'Trainings', big: n0(s.days), sub: `Trainingstage in ${gyms.size} ${gyms.size === 1 ? 'Studio' : 'Studios'} – im Schnitt ${n0(s.avgDuration || 0)} Minuten.` },
-    s.volume ? { e: '🏋️', k: 'Bewegt', big: tons(s.volume), sub: `Das ist ${esc(fun.heavy(s.volume))}.` } : null,
-    s.bestMonth ? { e: '🔥', k: 'Bester Monat', mid: esc(fmtMonth(new Date(+s.bestMonth.month.slice(0, 4), +s.bestMonth.month.slice(5) - 1, 1))), sub: `${s.bestMonth.days} Trainingstage – da warst du kaum zu bremsen.` } : null,
-    s.favorite ? { e: '❤️', k: 'Lieblingsgerät', mid: esc(s.favorite.ex.name), sub: `${s.favorite.days}× benutzt · ${esc(gymName(s.favorite.ex.gym_id))}` } : null,
-    s.records.length ? { e: '🥇', k: 'Rekorde', big: n0(s.records.length), sub: s.biggestRecord ? `Der grösste: ${esc(s.biggestRecord.ex.name)} mit ${setText(s.biggestRecord.set, s.biggestRecord.ex.kind)} (vorher ${setText(s.biggestRecord.prev, s.biggestRecord.ex.kind)}).` : '' } : null,
-    s.topProgress && s.topProgress.pct > 0 ? { e: '📈', k: 'Stärkste Steigerung', mid: `${esc(s.topProgress.ex.name)}`, big: `+${n0(s.topProgress.pct)} %`, sub: `von ${n1(s.topProgress.first)} auf ${n1(s.topProgress.last)}` } : null,
-    w != null && w < -0.1 ? { e: '⚖️', k: 'Leichter geworden', big: `−${n1(-w)} kg`, sub: `Das ist ${esc(fun.loss(-w))}${f != null && f < -0.1 ? ` – und ${n1(-f)} Prozentpunkte weniger Fett!` : '.'}` } : null,
-    s.stepsTotal ? { e: '👟', k: 'Schritte', big: n0(s.stepsTotal), sub: `Damit bist du ${esc(fun.steps(s.stepsTotal))} gelaufen.` } : null,
-    s.cardioKm ? { e: '🏃', k: 'Cardio', big: `${n1(s.cardioKm)} km`, sub: `${esc(fun.distance(s.cardioKm))}` } : null,
-    { e: '🏆', k: 'Dein Level', big: r.level, mid: `${esc(r.title)}${name ? '-' + esc(name) : ''}`, sub: `${r.earned.length} von ${r.badges.length} Abzeichen gesammelt.` },
-    { e: '🚀', k: `Auf ${y + 1}!`, mid: 'Weiter so!', sub: 'Tippe, um den Rückblick zu schliessen.' },
+    { e: 'sparkle', k: `Dein Jahr ${y}`, mid: name ? `${esc(name)}, das war dein Fitnessjahr!` : 'Das war dein Fitnessjahr!', sub: 'Tippe rechts für weiter, links für zurück.' },
+    { e: 'calendar', k: 'Trainings', big: n0(s.days), sub: `Trainingstage in ${gyms.size} ${gyms.size === 1 ? 'Studio' : 'Studios'} – im Schnitt ${n0(s.avgDuration || 0)} Minuten.` },
+    s.volume ? { e: 'weight', k: 'Bewegt', big: tons(s.volume), sub: `Das ist ${esc(fun.heavy(s.volume))}.` } : null,
+    s.bestMonth ? { e: 'flame', k: 'Bester Monat', mid: esc(fmtMonth(new Date(+s.bestMonth.month.slice(0, 4), +s.bestMonth.month.slice(5) - 1, 1))), sub: `${s.bestMonth.days} Trainingstage – da warst du kaum zu bremsen.` } : null,
+    s.favorite ? { e: 'heart', k: 'Lieblingsgerät', mid: esc(s.favorite.ex.name), sub: `${s.favorite.days}× benutzt · ${esc(gymName(s.favorite.ex.gym_id))}` } : null,
+    s.records.length ? { e: 'award', k: 'Rekorde', big: n0(s.records.length), sub: s.biggestRecord ? `Der grösste: ${esc(s.biggestRecord.ex.name)} mit ${setText(s.biggestRecord.set, s.biggestRecord.ex.kind)} (vorher ${setText(s.biggestRecord.prev, s.biggestRecord.ex.kind)}).` : '' } : null,
+    s.topProgress && s.topProgress.pct > 0 ? { e: 'trendUp', k: 'Stärkste Steigerung', mid: `${esc(s.topProgress.ex.name)}`, big: `+${n0(s.topProgress.pct)} %`, sub: `von ${n1(s.topProgress.first)} auf ${n1(s.topProgress.last)}` } : null,
+    w != null && w < -0.1 ? { e: 'trendDown', k: 'Leichter geworden', big: `−${n1(-w)} kg`, sub: `Das ist ${esc(fun.loss(-w))}${f != null && f < -0.1 ? ` – und ${n1(-f)} Prozentpunkte weniger Fett!` : '.'}` } : null,
+    s.stepsTotal ? { e: 'steps', k: 'Schritte', big: n0(s.stepsTotal), sub: `Damit bist du ${esc(fun.steps(s.stepsTotal))} gelaufen.` } : null,
+    s.cardioKm ? { e: 'route', k: 'Cardio', big: `${n1(s.cardioKm)} km`, sub: `${esc(fun.distance(s.cardioKm))}` } : null,
+    { e: 'trophy', k: 'Dein Level', big: r.level, mid: `${esc(r.title)}${name ? '-' + esc(name) : ''}`, sub: `${r.earned.length} von ${r.badges.length} Abzeichen gesammelt.` },
+    { e: 'arrow', k: `Auf ${y + 1}!`, mid: 'Weiter so!', sub: 'Tippe, um den Rückblick zu schliessen.' },
   ].filter(Boolean);
 
   el.innerHTML = '<p class="muted center pad">Rückblick läuft …</p>';
@@ -83,8 +84,8 @@ function renderYear(el, data, y) {
     const sl = slides[i];
     story.style.background = GRADIENTS[i % GRADIENTS.length];
     story.innerHTML = `<div class="progress">${slides.map((_, k) => `<i class="${k <= i ? 'done' : ''}"></i>`).join('')}</div>
-      <button class="icon-btn close" aria-label="Schliessen">✕</button>
-      <div class="slide"><div class="e">${sl.e}</div><div class="k">${sl.k}</div>${sl.big != null ? `<div class="big">${sl.big}</div>` : ''}${sl.mid ? `<div class="mid">${sl.mid}</div>` : ''}<div class="sub">${sl.sub || ''}</div></div>
+      <button class="icon-btn close" aria-label="Schliessen">${icon('x', 26)}</button>
+      <div class="slide"><div class="e">${icon(sl.e, 64)}</div><div class="k">${sl.k}</div>${sl.big != null ? `<div class="big">${sl.big}</div>` : ''}${sl.mid ? `<div class="mid">${sl.mid}</div>` : ''}<div class="sub">${sl.sub || ''}</div></div>
       <div class="hint">${i + 1} / ${slides.length}</div>`;
     story.querySelector('.close').onclick = e => { e.stopPropagation(); close(); };
     if (i === slides.length - 2) confetti(90);

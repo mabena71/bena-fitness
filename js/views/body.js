@@ -4,6 +4,7 @@ import { rolling, bodyTrend, bodyRecordEvents, bodyLoss, sinkingWeekStreak, dayK
 import { setTop, esc, n0, n1, signed, fmtDay, ago, modal, toast, confetti, vibrate, parseNum, localInput, confirmDialog } from '../ui.js';
 import * as charts from '../charts.js';
 import * as fun from '../fun.js';
+import { icon } from '../icons.js';
 
 let range = 90;
 
@@ -33,7 +34,7 @@ export default {
     el.innerHTML = `
       <div class="row" style="margin-bottom:12px">
         <button class="btn primary grow" data-add>+ Messung</button>
-        <button class="btn" data-steps>👟 Schritte</button>
+        <button class="btn" data-steps>${icon('steps', 18)} Schritte</button>
       </div>
       <p class="muted small" style="margin:-4px 0 12px">Bald automatisch von der Withings-Waage. Bis dahin hier von Hand eintragen.</p>
       <div class="kpis">
@@ -58,9 +59,9 @@ export default {
       <div class="grid two" style="margin-top:12px">
         <div class="card">
           <div class="card-title"><h3>Körper-Rekorde</h3><span class="muted small">gegen den 7-Tage-Schnitt</span></div>
-          ${recs.length ? `<ul class="list">${recs.slice(0, 6).map(r => `<li><span class="emoji">💎</span><div class="grow"><b>${BODY_FIELDS[r.field].label}: ${n1(r.avg)} ${BODY_FIELDS[r.field].unit}</b><div class="muted small">${fmtDay(r.t)} · vorher ${n1(r.prev)}</div></div></li>`).join('')}</ul>`
+          ${recs.length ? `<ul class="list">${recs.slice(0, 6).map(r => `<li><span class="emoji">${icon('gem', 18)}</span><div class="grow"><b>${BODY_FIELDS[r.field].label}: ${n1(r.avg)} ${BODY_FIELDS[r.field].unit}</b><div class="muted small">${fmtDay(r.t)} · vorher ${n1(r.prev)}</div></div></li>`).join('')}</ul>`
             : '<p class="muted small">Rekorde gibt es ab etwa einer Woche mit Messungen.</p>'}
-          ${sink.current >= 2 ? `<div class="notice info" style="margin-top:10px">📉 ${sink.current} Wochen in Folge leichter geworden!</div>` : ''}
+          ${sink.current >= 2 ? `<div class="notice info" style="margin-top:10px">${icon('trendDown', 18)} ${sink.current} Wochen in Folge leichter geworden!</div>` : ''}
         </div>
         <div class="card">
           <div class="card-title"><h3>Messungen</h3></div>
@@ -137,7 +138,7 @@ export async function openBodyEntry(existing = null) {
   const newest = after[after.length - 1];
   if (!existing && after.length > before && newest) {
     confetti(); vibrate([80, 40, 80]);
-    toast(`💎 Körper-Rekord! ${BODY_FIELDS[newest.field].label} Ø ${n1(newest.avg)} ${BODY_FIELDS[newest.field].unit}`, 'record', 4200);
+    toast(`${icon('gem', 18)} Körper-Rekord: ${BODY_FIELDS[newest.field].label} Ø ${n1(newest.avg)} ${BODY_FIELDS[newest.field].unit}`, 'record', 4200);
   } else toast('Messung gespeichert');
   announceRewards();
   return true;
@@ -159,7 +160,7 @@ export async function openStepsEntry() {
   if (!res) return false;
   const existing = db.all('daily_steps').find(x => x.day === res.day);
   await db.put('daily_steps', { ...(existing ? { id: existing.id } : { source: 'manual' }), ...res });
-  toast(`${n0(res.steps)} Schritte gespeichert${res.steps >= 10000 ? ' 👟' : ''}`);
+  toast(`${n0(res.steps)} Schritte gespeichert`);
   announceRewards();
   return true;
 }

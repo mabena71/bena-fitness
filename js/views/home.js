@@ -4,6 +4,8 @@ import { bodyTrend, sessions, monthRange, periodSummary, dayKey } from '../stats
 import { setTop, esc, n1, n0, signed, ago, fmtMonth, tons, modal, toast, setText } from '../ui.js';
 import { openBodyEntry, openStepsEntry } from './body.js';
 import { gymPhotoKey } from './gym.js';
+import { icon } from '../icons.js';
+import { permissionState, currentPosition, nearestGym } from '../geo.js';
 
 export default {
   render(el, _p, ctx) {
@@ -68,16 +70,17 @@ export default {
         </div>
       </div>
 
+      <div data-geo-box></div>
       <h2>Studios</h2>
       <div class="stack" id="gyms">
         ${gyms.map(g => `
           <a class="card tap gym-row" href="#/gym/${g.id}" style="text-decoration:none;color:inherit;display:flex">
-            <div class="gym-ico" ${g.photo_path ? `data-gym-photo="${g.id}"` : ''}>🏢</div>
+            <div class="gym-ico" ${g.photo_path ? `data-gym-photo="${g.id}"` : ''}>${icon('building', 24)}</div>
             <div class="grow"><b>${esc(g.name)}</b><div class="muted small">${exCount(g.id)} Übungen${lastVisit.get(g.id) ? ' · zuletzt ' + ago(lastVisit.get(g.id)) : ''}</div></div>
             <span class="muted">›</span>
           </a>`).join('')}
         <a class="card tap gym-row" href="#/gym/anywhere" style="text-decoration:none;color:inherit;display:flex">
-          <div class="gym-ico" style="background:var(--accent-soft)">🌍</div>
+          <div class="gym-ico" style="background:var(--accent-soft);color:#9a3412">${icon('globe', 24)}</div>
           <div class="grow"><b>Überall</b><div class="muted small">${exCount(null)} Übungen ohne Studio (Eigengewicht, Cardio)</div></div>
           <span class="muted">›</span>
         </a>
@@ -87,10 +90,11 @@ export default {
       ${recent.length ? `
       <h2>Letzte Rekorde</h2>
       <div class="card"><ul class="list">
-        ${recent.map(x => `<li><span class="emoji">🥇</span><div class="grow"><b>${esc(x.ex.name)}</b> <span class="muted small">${esc(gymName(x.ex.gym_id))}</span><div class="small">${setText(x.set, x.ex.kind)} · ${ago(x.set.performed_at)}</div></div></li>`).join('')}
+        ${recent.map(x => `<li><span class="emoji">${icon('award', 18)}</span><div class="grow"><b>${esc(x.ex.name)}</b> <span class="muted small">${esc(gymName(x.ex.gym_id))}</span><div class="small">${setText(x.set, x.ex.kind)} · ${ago(x.set.performed_at)}</div></div></li>`).join('')}
       </ul></div>` : ''}
     `;
 
+    detectGym(el, data.gyms);
     el.querySelectorAll('[data-gym-photo]').forEach(async ic => {
       const u = await db.photoUrl(gymPhotoKey(ic.dataset.gymPhoto));
       if (u) ic.innerHTML = `<img src="${u}" alt="">`;
@@ -114,3 +118,41 @@ export default {
     };
   },
 };
+
+/**
+ * Standort-Erkennung: Ist die Ortung erlaubt, wird das Studio in der Nähe einmal pro
+ * App-Start automatisch geöffnet. Sonst gibt es einen Knopf, der danach fragt.
+ */
+async function detectGym(el, gyms) {
+  const withGeo = gyms.filter(g => g.lat != null);
+  const box = el.querySelector('[data-geo-box]');
+  if (!withGeo.length || !box) return;
+  let done = false;
+  try { done = sessionStorage.getItem('geo.autoDone') === '1'; } catch { /* egal */ }
+  const open = (gym) => {
+    try { sessionStorage.setItem('geo.autoDone', '1'); sessionStorage.setItem('geo.detected', gym.id); } catch { /* egal */ }
+    location.hash = `#/gym/${gym.id}`;
+  };
+  const state = await permissionState();
+  if (state === 'granted' && !done) {
+    try {
+      const pos = await currentPosition({ timeout: 8000 });
+      const hit = nearestGym(withGeo, pos);
+      try { sessionStorage.setItem('geo.autoDone', '1'); } catch { /* egal */ }
+      if (hit && ['', '#', '#/'].includes(location.hash)) open(hit.gym);
+    } catch { /* still: dann eben von Hand */ }
+    return;
+  }
+  if (state === 'prompt' || (state === 'granted' && done)) {
+    box.innerHTML = `<button class="btn block" data-locate style="margin-top:12px">${icon('pin', 18)} Studio per Standort finden</button>`;
+    box.querySelector('[data-locate]').onclick = async (e) => {
+      const b = e.currentTarget; b.disabled = true; b.textContent = 'Suche Standort …';
+      try {
+        const pos = await currentPosition({ timeout: 10000 });
+        const hit = nearestGym(withGeo, pos);
+        if (hit) open(hit.gym);
+        else { toast('Kein gespeichertes Studio in der Nähe'); b.disabled = false; b.innerHTML = `${icon('pin', 18)} Studio per Standort finden`; }
+      } catch (err) { toast(esc(err.message)); b.disabled = false; b.innerHTML = `${icon('pin', 18)} Studio per Standort finden`; }
+    };
+  }
+}

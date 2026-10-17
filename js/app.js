@@ -3,6 +3,7 @@ import * as db from './db.js';
 import { seedDemo, ensureDefaultGyms } from './demo.js';
 import { primeRewards } from './data.js';
 import { esc } from './ui.js';
+import { icon } from './icons.js';
 
 import welcome from './views/welcome.js';
 import home from './views/home.js';
@@ -36,11 +37,11 @@ const routes = [
 ];
 
 const NAV = [
-  ['#/', '🏠', 'Start', /^\/($|gym|ex)/],
-  ['#/body', '⚖️', 'Körper', /^\/body/],
-  ['#/stats', '📊', 'Statistik', /^\/stats/],
-  ['#/rewards', '🏆', 'Erfolge', /^\/(rewards|review)/],
-  ['#/settings', '⚙️', 'Mehr', /^\/settings/],
+  ['#/', 'home', 'Start', /^\/($|gym|ex)/],
+  ['#/body', 'scale', 'Körper', /^\/body/],
+  ['#/stats', 'chart', 'Statistik', /^\/stats/],
+  ['#/rewards', 'trophy', 'Erfolge', /^\/(rewards|review)/],
+  ['#/settings', 'sliders', 'Mehr', /^\/settings/],
 ];
 
 let cleanup = null;
@@ -58,7 +59,7 @@ function renderNav(path) {
   const nav = document.getElementById('nav');
   nav.hidden = !mode;
   nav.innerHTML = `<div class="brand"><img src="icons/icon-192.png" alt="">Fitness</div>` +
-    NAV.map(([href, ico, label, re]) => `<a href="${href}" class="${re.test(path) ? 'active' : ''}"><span class="ico">${ico}</span>${label}</a>`).join('');
+    NAV.map(([href, ico, label, re]) => `<a href="${href}" class="${re.test(path) ? 'active' : ''}"><span class="ico">${icon(ico, 22)}</span>${label}</a>`).join('');
 }
 
 async function route() {

@@ -3,6 +3,7 @@
 import * as db from './db.js';
 import { computeRewards } from './rewards.js';
 import { toast, confetti, vibrate, esc } from './ui.js';
+import { icon } from './icons.js';
 
 export function snapshot() {
   return {
@@ -16,7 +17,7 @@ export function snapshot() {
 }
 
 export function profile() {
-  return db.all('profiles')[0] || { display_name: '', avatar_emoji: '💪', settings: {} };
+  return db.all('profiles')[0] || { display_name: '', avatar_emoji: '', settings: {} };
 }
 export async function saveProfile(p) {
   const cur = db.all('profiles')[0];
@@ -60,12 +61,12 @@ export async function announceRewards() {
   if (r.level > lastLevel) {
     setTimeout(() => {
       confetti(); vibrate([60, 40, 60]);
-      toast(`⬆️ Level ${r.level}! Du bist jetzt <b>${esc(r.title)}</b>`, 'level', 4200);
+      toast(`${icon('trendUp')} Level ${r.level} erreicht: <b>${esc(r.title)}</b>`, 'level', 4200);
     }, delay);
     delay += 900;
   }
   for (const b of fresh) {
-    setTimeout(() => toast(`${b.emoji} Neues Abzeichen: <b>${esc(b.title)}</b>`, 'badge-t', 3600), delay);
+    setTimeout(() => toast(`${icon(b.icon)} Neues Abzeichen: <b>${esc(b.title)}</b>`, 'badge-t', 3600), delay);
     delay += 900;
   }
   if (fresh.length) await db.setMeta('seenBadges', [...seen, ...fresh.map(b => b.id)]);
