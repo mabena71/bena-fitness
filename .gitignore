@@ -1,0 +1,8 @@
+# Geheimnisse gehören nie ins Repo (Supabase-Secrets, Withings, Push-Schlüssel)
+.env
+.env.*
+*.key
+supabase/.temp/
+.claude/
+Thumbs.db
+desktop.ini

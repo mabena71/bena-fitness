@@ -1,0 +1,143 @@
+import * as db from '../db.js';
+import { setTop, esc, KINDS, MUSCLES, toast, confirmDialog, parseNum } from '../ui.js';
+import { resizeImage } from '../photo.js';
+
+const DEFAULT_MUSCLE = { machine: 'legs', free: 'arms', bodyweight: 'chest', cardio: 'cardio' };
+
+export default {
+  async render(el, [param], ctx) {
+    const isNew = !!ctx.isNew;
+    const ex = isNew ? null : db.get('exercises', param);
+    if (!isNew && !ex) { location.hash = '#/'; return; }
+    const gymParam = isNew ? (param === 'anywhere' ? null : param) : (ex.gym_id || null);
+    const back = isNew ? `#/gym/${param}` : `#/ex/${ex.id}`;
+    setTop({ title: isNew ? 'Neue Übung' : 'Übung bearbeiten', back });
+
+    const st = {
+      name: ex?.name || '',
+      kind: ex?.kind || (gymParam ? 'machine' : 'bodyweight'),
+      muscle_group: ex?.muscle_group || null,
+      gym_id: gymParam,
+      notes: ex?.notes || '',
+      settings: (ex?.settings || []).map(s => ({ ...s })),
+      step: ex?.step ?? null,
+      photo: null,
+    };
+    if (!st.muscle_group) st.muscle_group = DEFAULT_MUSCLE[st.kind];
+    const gyms = db.all('gyms').sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
+    const existingPhoto = ex?.photo_path ? await db.photoUrl(ex.id) : null;
+
+    el.innerHTML = `
+      <div class="card">
+        <label class="field"><span>Name</span><input class="input" data-k="name" value="${esc(st.name)}" placeholder="z. B. Beinpresse" ${isNew ? 'autofocus' : ''}></label>
+        <div class="field"><span>Art</span><div class="seg" data-kind>
+          ${Object.entries(KINDS).map(([k, v]) => `<button type="button" data-v="${k}" class="${st.kind === k ? 'on' : ''}">${v.emoji}<br><small>${v.label}</small></button>`).join('')}
+        </div></div>
+        <label class="field"><span>Muskelgruppe</span><select class="input" data-k="muscle_group">
+          ${Object.entries(MUSCLES).map(([k, v]) => `<option value="${k}" ${st.muscle_group === k ? 'selected' : ''}>${v.emoji} ${v.label}</option>`).join('')}
+        </select></label>
+        <label class="field"><span>Studio</span><select class="input" data-k="gym_id">
+          ${gyms.map(g => `<option value="${g.id}" ${st.gym_id === g.id ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}
+          <option value="" ${!st.gym_id ? 'selected' : ''}>🌍 Überall (ohne Studio)</option>
+        </select></label>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><h3>Foto des Geräts</h3></div>
+        <div class="row" style="align-items:flex-start">
+          <div class="hero"><div class="ph" data-preview>${existingPhoto ? `<img src="${existingPhoto}" alt="">` : KINDS[st.kind].emoji}</div></div>
+          <div class="grow">
+            <label class="btn block" style="cursor:pointer">📷 Foto aufnehmen / wählen<input type="file" accept="image/*" data-photo hidden></label>
+            <p class="muted small">Das Foto wird verkleinert gespeichert und hilft dir, das Gerät wiederzuerkennen.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><h3>Einstellungen am Gerät</h3><button class="btn sm" data-add-setting>+ Feld</button></div>
+        <p class="muted small" style="margin-top:-4px">z. B. Sitzhöhe 5, Lehne 3, Polster M – wird beim Gerät gross angezeigt.</p>
+        <div data-settings></div>
+      </div>
+
+      <div class="card">
+        <label class="field" data-step-field><span>Gewichtsschritt für +/– (kg)</span><input class="input" inputmode="decimal" data-k="step" value="${st.step ?? ''}" placeholder="${st.kind === 'free' ? '1' : '2,5'}"></label>
+        <label class="field"><span>Notiz</span><textarea class="input" data-k="notes" placeholder="z. B. steht hinten links, Griff breit">${esc(st.notes)}</textarea></label>
+      </div>
+
+      <button class="btn primary big block" style="margin-top:14px" data-save>Speichern</button>
+      ${!isNew ? '<button class="btn block danger" style="margin-top:10px" data-del>Übung löschen</button>' : ''}
+    `;
+
+    const $ = s => el.querySelector(s);
+    const drawSettings = () => {
+      $('[data-settings]').innerHTML = st.settings.map((s, i) => `
+        <div class="kv-row"><input class="input" data-sl="${i}" value="${esc(s.label)}" placeholder="Bezeichnung">
+        <input class="input" data-sv="${i}" value="${esc(s.value)}" placeholder="Wert"><button class="icon-btn" data-sx="${i}" aria-label="entfernen">✕</button></div>`).join('') ||
+        '<p class="muted small">Noch keine Einstellungen.</p>';
+      el.querySelectorAll('[data-sl]').forEach(i => i.oninput = () => { st.settings[+i.dataset.sl].label = i.value; });
+      el.querySelectorAll('[data-sv]').forEach(i => i.oninput = () => { st.settings[+i.dataset.sv].value = i.value; });
+      el.querySelectorAll('[data-sx]').forEach(b => b.onclick = () => { st.settings.splice(+b.dataset.sx, 1); drawSettings(); });
+    };
+    drawSettings();
+    const stepVisible = () => { $('[data-step-field]').hidden = st.kind === 'cardio'; };
+    stepVisible();
+
+    $('[data-add-setting]').onclick = () => {
+      const suggestions = ['Sitz', 'Lehne', 'Polster', 'Griff', 'Startposition'];
+      const used = new Set(st.settings.map(s => s.label));
+      st.settings.push({ label: suggestions.find(s => !used.has(s)) || '', value: '' });
+      drawSettings();
+      el.querySelector(`[data-sv="${st.settings.length - 1}"]`).focus();
+    };
+    el.querySelectorAll('[data-kind] button').forEach(b => b.onclick = () => {
+      const prevDefault = DEFAULT_MUSCLE[st.kind];
+      st.kind = b.dataset.v;
+      el.querySelectorAll('[data-kind] button').forEach(x => x.classList.toggle('on', x === b));
+      if (st.muscle_group === prevDefault) { st.muscle_group = DEFAULT_MUSCLE[st.kind]; $('[data-k="muscle_group"]').value = st.muscle_group; }
+      stepVisible();
+    });
+    $('[data-photo]').onchange = async e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        st.photo = await resizeImage(file);
+        $('[data-preview]').innerHTML = `<img src="${URL.createObjectURL(st.photo)}" alt="">`;
+      } catch (err) {
+        console.error(err);
+        toast('Foto konnte nicht gelesen werden');
+      }
+    };
+
+    $('[data-save]').onclick = async () => {
+      const name = $('[data-k="name"]').value.trim();
+      if (!name) { toast('Bitte einen Namen eingeben'); $('[data-k="name"]').focus(); return; }
+      const row = {
+        ...(ex ? { id: ex.id } : {}),
+        name,
+        kind: st.kind,
+        muscle_group: $('[data-k="muscle_group"]').value,
+        gym_id: $('[data-k="gym_id"]').value || null,
+        notes: $('[data-k="notes"]').value.trim(),
+        settings: st.settings.filter(s => s.label.trim() || s.value.trim()).map(s => ({ label: s.label.trim(), value: s.value.trim() })),
+        step: parseNum($('[data-k="step"]').value),
+        archived: false,
+      };
+      if (isNew) { row.photo_path = null; row.sort_order = null; }
+      const saved = await db.put('exercises', row);
+      if (st.photo) {
+        await db.putPhoto(saved.id, st.photo);
+        await db.put('exercises', { id: saved.id, photo_path: `${db.currentUser()}/${saved.id}.jpg` });
+      }
+      toast(isNew ? 'Übung angelegt' : 'Gespeichert');
+      location.hash = `#/ex/${saved.id}`;
+    };
+
+    const del = $('[data-del]');
+    if (del) del.onclick = async () => {
+      if (!(await confirmDialog(`„${ex.name}“ löschen? Die Sätze dieser Übung verschwinden aus den Auswertungen.`))) return;
+      await db.put('exercises', { id: ex.id, archived: true, deleted_at: new Date().toISOString() });
+      toast('Übung gelöscht');
+      location.hash = `#/gym/${ex.gym_id || 'anywhere'}`;
+    };
+  },
+};
