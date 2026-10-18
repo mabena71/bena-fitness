@@ -4,11 +4,11 @@ import { cloudConfigured } from '../config.js';
 
 export default {
   render(el) {
-    setTop({ title: '' });
+    setTop({ title: '', logo: false });
     el.innerHTML = `
       <div class="welcome">
         <img src="icons/icon-192.png" alt="">
-        <h1>Fitness-Tagebuch</h1>
+        <h1>BENA Fit</h1>
         <p class="muted">Geräte, Gewichte und Wiederholungen in Bellevue, Archhöfe und Win4 festhalten und die Fortschritte sehen.</p>
         <div class="stack">
           <button class="btn primary big block" data-m="demo">▶ Demo ausprobieren</button>

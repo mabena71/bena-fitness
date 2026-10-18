@@ -64,7 +64,7 @@ export async function setMode(m, hash = '#/') {
 function renderNav(path) {
   const nav = document.getElementById('nav');
   nav.hidden = !mode;
-  nav.innerHTML = `<div class="brand"><img src="icons/icon-192.png" alt="">Fitness</div>` +
+  nav.innerHTML = `<div class="brand"><img src="icons/icon-192.png" alt="">BENA Fit</div>` +
     NAV.map(([href, ico, label, re]) => `<a href="${href}" class="${re.test(path) ? 'active' : ''}"><span class="ico">${icon(ico, 22)}</span>${label}</a>`).join('');
 }
 

@@ -12,7 +12,7 @@ export default {
     const data = snapshot();
     const prof = profile();
     const r = rewards();
-    setTop({ title: prof.display_name ? `Hallo ${prof.display_name}` : 'Fitness-Tagebuch' });
+    setTop({ title: prof.display_name ? `Hallo ${prof.display_name}` : 'BENA Fit' });
 
     const exById = new Map(data.exercises.map(e => [e.id, e]));
     const sess = sessions(data.sets, exById);

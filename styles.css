@@ -346,3 +346,8 @@ h2 { font-size: 1rem; font-weight: 600; }
 .kpi .v { font-weight: 700; }
 .cal .c.today { outline-color: #f59e0b; }
 @media (min-width: 900px) { .topbar { background: var(--bg); color: var(--text); } .topbar .icon-btn { color: var(--text); } }
+
+/* App-Symbol in der Kopfzeile (nur auf Hauptseiten, auf dem PC steht es in der Seitenleiste) */
+.top-logo { width: 34px; height: 34px; border-radius: 9px; flex: 0 0 auto; box-shadow: 0 0 0 1.5px rgba(255,255,255,.55); }
+@media (max-width: 330px) { .top-logo { display: none; } }
+@media (min-width: 900px) { .top-logo { display: none; } }
