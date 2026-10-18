@@ -177,6 +177,31 @@ export function startAutoSync() {
   stopAutoSync.fn = () => { unsub(); clearTimeout(timer); clearInterval(iv); window.removeEventListener('online', onOnline); document.removeEventListener('visibilitychange', onVisible); };
   sync();
 }
+/**
+ * Withings automatisch holen: beim Öffnen und beim Zurückwechseln in die App,
+ * höchstens alle 15 Minuten (nach einem Fehler oder ohne Verbindung erst nach 1 Stunde wieder).
+ */
+const WITHINGS_NEXT = 'fitness.withingsNext';
+let withingsRunning = false;
+export async function autoWithings() {
+  if (withingsRunning || !navigator.onLine || document.visibilityState !== 'visible') return;
+  let next = 0;
+  try { next = +localStorage.getItem(WITHINGS_NEXT) || 0; } catch { /* egal */ }
+  if (Date.now() < next) return;
+  withingsRunning = true;
+  const later = min => { try { localStorage.setItem(WITHINGS_NEXT, String(Date.now() + min * 60000)); } catch { /* egal */ } };
+  try {
+    const r = await callFunction('withings-sync', {});
+    later(r?.error ? 60 : 15);
+    if (r?.measures || r?.stepDays) await sync();
+  } catch { later(60); }
+  finally { withingsRunning = false; }
+}
+export function startAutoWithings() {
+  document.addEventListener('visibilitychange', () => autoWithings());
+  setTimeout(autoWithings, 2000);
+}
+
 export function stopAutoSync() { if (stopAutoSync.fn) { stopAutoSync.fn(); stopAutoSync.fn = null; } }
 
 /** Datenbank-Funktion aufrufen (Paar-Challenge usw.). */

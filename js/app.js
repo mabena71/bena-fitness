@@ -185,6 +185,7 @@ async function openCloud() {
   });
   db.onChange(t => { if (t === 'remote' && !document.querySelector('.modal-back')) route(); });
   sync.startAutoSync();
+  sync.startAutoWithings();
   return true;
 }
 
