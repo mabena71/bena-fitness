@@ -1,6 +1,6 @@
 // Dünne Hülle um Chart.js (global geladen über CDN in index.html).
 
-export const COLORS = { primary: '#0f766e', accent: '#f97316', soft: 'rgba(15,118,110,.18)', grey: '#94a3b8', gold: '#ca8a04' };
+export const COLORS = { primary: '#2350c8', accent: '#60a5fa', soft: 'rgba(35,80,200,.14)', grey: '#94a3b8', gold: '#ca8a04' };
 
 const charts = new Set();
 export function destroyAll() { charts.forEach(c => c.destroy()); charts.clear(); }

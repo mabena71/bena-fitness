@@ -80,7 +80,7 @@ export default {
             <span class="muted">›</span>
           </a>`).join('')}
         <a class="card tap gym-row" href="#/gym/anywhere" style="text-decoration:none;color:inherit;display:flex">
-          <div class="gym-ico" style="background:var(--accent-soft);color:#9a3412">${icon('globe', 24)}</div>
+          <div class="gym-ico">${icon('globe', 24)}</div>
           <div class="grow"><b>Überall</b><div class="muted small">${exCount(null)} Übungen ohne Studio (Eigengewicht, Cardio)</div></div>
           <span class="muted">›</span>
         </a>

@@ -118,7 +118,7 @@ export function toast(msg, type = '', ms = 2600) {
 export function confetti(n = 70) {
   const box = document.createElement('div');
   box.className = 'confetti';
-  const colors = ['#f97316', '#0f766e', '#facc15', '#db2777', '#3b82f6', '#22c55e'];
+  const colors = ['#2350c8', '#60a5fa', '#1a3a99', '#f59e0b', '#93c5fd', '#e4ebfb'];
   for (let i = 0; i < n; i++) {
     const c = document.createElement('i');
     c.style.left = Math.random() * 100 + 'vw';

@@ -1,7 +1,7 @@
 // Service Worker: App läuft auch ohne Netz.
 // Eigene Dateien: zuerst Netz (damit Updates sofort ankommen), sonst Cache.
 // Bibliotheken vom CDN: zuerst Cache (Versionen sind fest).
-const CACHE = 'fitness-v9';
+const CACHE = 'fitness-v10';
 const SHELL = [
   './', 'index.html', 'styles.css', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon.png',
@@ -25,11 +25,12 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   const sameOrigin = url.origin === self.location.origin;
-  const isCdn = url.hostname === 'cdnjs.cloudflare.com' || url.hostname === 'cdn.jsdelivr.net';
+  const isCdn = ['cdnjs.cloudflare.com', 'cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'].includes(url.hostname);
   if (!sameOrigin && !isCdn) return; // z. B. Supabase-API: nie cachen
 
   if (isCdn) {
     e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
+      if (!res.ok && res.type !== 'opaque') return res;
       const copy = res.clone();
       caches.open(CACHE).then(c => c.put(req, copy));
       return res;

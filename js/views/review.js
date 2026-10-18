@@ -5,9 +5,9 @@ import * as fun from '../fun.js';
 import { icon } from '../icons.js';
 
 const GRADIENTS = [
-  'linear-gradient(160deg,#0f766e,#134e4a)', 'linear-gradient(160deg,#ea580c,#9a3412)', 'linear-gradient(160deg,#7c3aed,#4c1d95)',
-  'linear-gradient(160deg,#0369a1,#0c4a6e)', 'linear-gradient(160deg,#db2777,#831843)', 'linear-gradient(160deg,#ca8a04,#713f12)',
-  'linear-gradient(160deg,#15803d,#14532d)', 'linear-gradient(160deg,#1e293b,#0f172a)',
+  'linear-gradient(160deg,#2350c8,#1a3a99)', 'linear-gradient(160deg,#1e293b,#0f172a)', 'linear-gradient(160deg,#3b6fe0,#2350c8)',
+  'linear-gradient(160deg,#1a3a99,#0f1f5c)', 'linear-gradient(160deg,#334155,#1e293b)', 'linear-gradient(160deg,#2c5fd6,#1a3a99)',
+  'linear-gradient(160deg,#3b6fe0,#1a3a99)', 'linear-gradient(160deg,#1e293b,#0f172a)',
 ];
 
 export default {
