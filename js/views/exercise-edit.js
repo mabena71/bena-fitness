@@ -1,6 +1,7 @@
 import * as db from '../db.js';
 import { setTop, esc, KINDS, MUSCLES, toast, confirmDialog, parseNum, modal } from '../ui.js';
 import { resizeImage } from '../photo.js';
+import { toSketch, sketchPreferred, setSketchPreferred } from '../sketch.js';
 import { icon } from '../icons.js';
 import { getMode } from '../app.js';
 
@@ -52,7 +53,9 @@ export default {
           <div class="hero"><div class="ph" data-preview>${existingPhoto ? `<img src="${existingPhoto}" alt="">` : icon(KINDS[st.kind].icon, 36)}</div></div>
           <div class="grow">
             <label class="btn block" style="cursor:pointer">${icon('camera', 18)} Foto aufnehmen / wählen<input type="file" accept="image/*" data-photo hidden></label>
-            <p class="muted small">Das Foto wird verkleinert gespeichert und hilft dir, das Gerät wiederzuerkennen.</p>
+            <label class="toggle"><input type="checkbox" data-sketch ${sketchPreferred() ? 'checked' : ''}> Als Zeichnung darstellen</label>
+            ${existingPhoto ? '<button type="button" class="btn sm block" data-sketch-existing style="margin-top:6px">Bisheriges Foto in Zeichnung umwandeln</button>' : ''}
+            <p class="muted small">Zeichnungen wirken einheitlich und sachlich. Das Foto wird verkleinert gespeichert.</p>
           </div>
         </div>
       </div>
@@ -100,16 +103,35 @@ export default {
       if (st.muscle_group === prevDefault) { st.muscle_group = DEFAULT_MUSCLE[st.kind]; $('[data-k="muscle_group"]').value = st.muscle_group; }
       stepVisible();
     });
+    // Original merken, damit "Als Zeichnung" jederzeit umgeschaltet werden kann
+    let original = null;
+    const showPhoto = async () => {
+      if (!original) return;
+      const sketch = $('[data-sketch]').checked;
+      $('[data-preview]').innerHTML = '<span class="muted small">…</span>';
+      st.photo = sketch ? await toSketch(original) : original;
+      $('[data-preview]').innerHTML = `<img src="${URL.createObjectURL(st.photo)}" alt="">`;
+    };
     $('[data-photo]').onchange = async e => {
       const file = e.target.files[0];
       if (!file) return;
       try {
-        st.photo = await resizeImage(file);
-        $('[data-preview]').innerHTML = `<img src="${URL.createObjectURL(st.photo)}" alt="">`;
+        original = await resizeImage(file);
+        await showPhoto();
       } catch (err) {
         console.error(err);
         toast('Foto konnte nicht gelesen werden');
       }
+    };
+    $('[data-sketch]').onchange = () => { setSketchPreferred($('[data-sketch]').checked); showPhoto(); };
+    const convert = $('[data-sketch-existing]');
+    if (convert) convert.onclick = async () => {
+      const blob = await db.getPhotoBlob(ex.id);
+      if (!blob) return;
+      original = blob;
+      $('[data-sketch]').checked = true;
+      await showPhoto();
+      toast('Vorschau umgewandelt – mit „Speichern“ übernehmen');
     };
 
     $('[data-save]').onclick = async () => {
@@ -147,8 +169,8 @@ export default {
       $('[data-k="muscle_group"]').value = st.muscle_group;
       stepVisible();
       if (picked.blob) {
-        st.photo = picked.blob;
-        $('[data-preview]').innerHTML = `<img src="${URL.createObjectURL(st.photo)}" alt="">`;
+        original = picked.blob;
+        await showPhoto();
       }
       toast(`„${esc(picked.name)}“ übernommen – Einstellungen trägst du selbst ein`, '', 3500);
     };

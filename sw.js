@@ -1,12 +1,12 @@
 // Service Worker: App läuft auch ohne Netz.
 // Eigene Dateien: zuerst Netz (damit Updates sofort ankommen), sonst Cache.
 // Bibliotheken vom CDN: zuerst Cache (Versionen sind fest).
-const CACHE = 'fitness-v16';
+const CACHE = 'fitness-v17';
 const SHELL = [
   './', 'index.html', 'styles.css', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon.png',
   'js/app.js', 'js/db.js', 'js/ui.js', 'js/data.js', 'js/stats.js', 'js/rewards.js', 'js/fun.js', 'js/demo.js',
-  'js/charts.js', 'js/photo.js', 'js/csv.js', 'js/backup.js', 'js/icons.js', 'js/geo.js', 'js/config.js', 'js/sync.js', 'js/push.js', 'js/family.js',
+  'js/charts.js', 'js/photo.js', 'js/csv.js', 'js/backup.js', 'js/icons.js', 'js/geo.js', 'js/config.js', 'js/sync.js', 'js/push.js', 'js/family.js', 'js/sketch.js',
   'js/views/welcome.js', 'js/views/home.js', 'js/views/gym.js', 'js/views/exercise.js', 'js/views/exercise-edit.js',
   'js/views/body.js', 'js/views/stats.js', 'js/views/motivation.js', 'js/views/review.js', 'js/views/settings.js', 'js/views/login.js', 'js/views/challenge.js', 'js/views/settings-cloud.js',
   'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js',
