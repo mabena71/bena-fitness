@@ -3,6 +3,8 @@ import * as db from './db.js';
 import { addDays, dayKey } from './stats.js';
 
 export const DEFAULT_GYMS = ['Bellevue', 'Archhöfe', 'Win4'];
+/** Erhöhen, wenn sich die Demo-Daten ändern: bestehende Demos werden dann neu erzeugt. */
+export const DEMO_VERSION = 2;
 export const WIN4_SAUNAS = ['Bio-Sauna', 'Dampfbad', 'Hot-Sauna'];
 
 /** Legt die drei Saunen im Win4 einmalig an (auch bei bestehenden Tagebüchern). */
@@ -139,10 +141,42 @@ export async function seedDemo() {
 
   for (const e of exercises) { delete e._start; delete e._inc; delete e._reps; }
   await db.bulkPut('gyms', gyms);
+  // neutrale Studio-Abzeichen (keine fremden Logos)
+  const badgeColors = { Bellevue: ['#1e3a8a', '#3b82f6'], 'Archhöfe': ['#0f172a', '#22d3ee'], Win4: ['#334155', '#60a5fa'] };
+  for (const g of gyms) {
+    const blob = await studioBadge(g.name, ...(badgeColors[g.name] || ['#0f172a', '#3b82f6']));
+    if (!blob) continue;
+    await db.putPhoto(`gym-${g.id}`, blob);
+    g.photo_path = `demo/gym-${g.id}.jpg`;
+  }
+  await db.bulkPut('gyms', gyms);
+  await db.bulkPut('profiles', [{ id: 'demo', display_name: 'Alex', avatar_emoji: '', settings: {} }]);
   await db.bulkPut('exercises', exercises);
   await db.bulkPut('sets', sets);
   await db.bulkPut('day_checks', checks);
   await db.bulkPut('body_metrics', body);
   await db.bulkPut('daily_steps', steps);
   await db.setMeta('saunasSeeded', true);
+}
+
+/** Schlichtes Studio-Abzeichen als Bild (Verlauf + Kürzel), nur für die Demo. */
+function studioBadge(name, c1, c2) {
+  try {
+    const c = document.createElement('canvas');
+    c.width = 600; c.height = 340;
+    const g = c.getContext('2d');
+    const grad = g.createLinearGradient(0, 0, 600, 340);
+    grad.addColorStop(0, c1); grad.addColorStop(1, c2);
+    g.fillStyle = grad; g.fillRect(0, 0, 600, 340);
+    g.fillStyle = 'rgba(255,255,255,.12)';
+    g.beginPath(); g.arc(520, 60, 160, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#fff';
+    g.font = '700 120px "IBM Plex Sans", system-ui, sans-serif';
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    const short = name === 'Win4' ? 'W4' : name.slice(0, 2).toUpperCase();
+    g.fillText(short, 300, 150);
+    g.font = '500 44px "IBM Plex Sans", system-ui, sans-serif';
+    g.fillText(name, 300, 255);
+    return new Promise(res => c.toBlob(b => res(b), 'image/jpeg', 0.88));
+  } catch { return Promise.resolve(null); }
 }

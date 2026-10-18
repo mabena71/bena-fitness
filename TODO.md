@@ -1,44 +1,48 @@
-# To-do Fitness-App
+# To-do BENA Fit
 
 Aufwand in Minuten = Schätzung. Modell = Empfehlung für den jeweiligen Auftrag.
-App: https://mabena71.github.io/bena-fitness/ · Repo: https://github.com/mabena71/bena-fitness
+App: https://mabena71.github.io/bena-fitness/ · Demo: https://mabena71.github.io/bena-fitness/?demo · Repo: https://github.com/mabena71/bena-fitness
 
 ## Offen
 
 | Nr | Thema | Details | Wer | Modell | Aufwand (Min.) | Prio | Status | Abhängig von |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Studio-Test | App auf dem Handy neu laden, installieren, „Eigenes Tagebuch starten“, Checkliste abarbeiten, Feedback mit Screenshots | Maurice | — | 60 | hoch | offen | — |
-| 2 | Studio-Logos und -Standorte | In jedem Studio: Logo/Bild hochladen (⋯) und „Standort hier speichern“ | Maurice | — | 10 | mittel | offen | 1 |
-| 3 | Feedback einarbeiten | Anpassungen nach dem Studio-Test | Claude | Sonnet | 60 | hoch | offen | 1 |
-| 4 | Supabase einrichten | `docs/SUPABASE-EINRICHTEN.md`: Konto, Projekt, schema.sql, Benutzer Maurice + Sabine (+ Remy), URL + anon key an Claude | Maurice | — | 20 | hoch | offen | — |
-| 5 | Etappe 3 einschalten | `js/config.js` füllen, online stellen, gemeinsamer Test Handy ↔ PC, Datenübernahme vom Handy | Claude + Maurice | Opus | 30 | hoch | offen | 4 |
-| 6 | Sabine (und Remy) einrichten | App auf dem eigenen Handy öffnen, mit eigenem Konto anmelden | Sabine, Remy | — | 10 | hoch | offen | 5 |
-| 7 | Withings-Entwicklerkonto | `docs/WITHINGS-UND-PUSH.md` Teil A (Freigabe eventuell einige Tage) | Maurice | — | 15 | mittel | offen | 4 |
-| 8 | Withings und Push einschalten | Secrets, Edge Functions bereitstellen, Zeitplan (Teile B–F), VAPID_PUBLIC_KEY in `js/config.js`, Test auf den Handys | Claude + Maurice | Opus | 45 | mittel | offen | 5, 7 |
-| 9 | Paar-Challenge testen | Maurice erzeugt Code, Sabine tritt bei, Wochenwertung prüfen | Maurice + Sabine | — | 10 | niedrig | offen | 6 |
-| 10 | Später/optional | Pausen-Timer, Steigerungs-Vorschlag, Ziele, Trainingspläne, Sprach-Eingabe | — | Sonnet | — | niedrig | Idee | — |
+| 1 | Studio-Test | Geräte mit Foto anlegen, Sätze erfassen, Flugmodus, Sauna, Standort speichern; Feedback mit Screenshots | Maurice | — | 60 | hoch | offen | — |
+| 2 | Feedback einarbeiten | Anpassungen nach dem Studio-Test | Claude | Sonnet | 60 | hoch | offen | 1 |
+| 3 | Sabine und Remy anmelden | App installieren, mit eigenem Konto anmelden; Claude prüft danach in der Datenbank | Sabine, Remy | — | 10 | hoch | offen | — |
+| 4 | Familien-Geräte testen | Remy/Sabine: „Aus Familien-Geräten wählen“ im Win4; Studio-Logos erscheinen | Sabine, Remy | — | 10 | mittel | offen | 3 |
+| 5 | Withings-Entwicklerkonto | `docs/WITHINGS-UND-PUSH.md` Teil A (Freigabe eventuell einige Tage), Claude führt durch | Maurice | — | 15 | mittel | offen | — |
+| 6 | Withings und Push einschalten | Schlüssel-Seite, Secrets, Edge Functions bereitstellen, Zeitplan (Teile B–F), VAPID_PUBLIC_KEY in `js/config.js`, Test | Claude + Maurice | Opus | 45 | mittel | offen | 5 |
+| 7 | Challenge testen | Code erzeugen, beitreten, Wochenwertung prüfen | Maurice + Sabine | — | 10 | niedrig | offen | 3 |
+| 8 | Erholungs-Karte | Körper-Grafik: welche Muskeln Pause brauchen (rot/grün), Vorschlag „Heute ideal: …“ (Empfehlung) | Claude | Opus | 60 | mittel | Idee | — |
+| 9 | Maximalkraft-Schätzung | Geschätztes 1-Wiederholungs-Maximum pro Gerät (Epley) als Diagramm-Option und Rekord (Empfehlung) | Claude | Sonnet | 30 | mittel | Idee | — |
+| 10 | Rekord als Bild teilen | Rekord/Monatsrückblick als Bild, Teilen per WhatsApp (Web Share API) (Empfehlung) | Claude | Sonnet | 40 | mittel | Idee | — |
+| 11 | Kalorien-Schätzung | Ungefährer Verbrauch pro Training, Cardio, Sauna (MET-Werte) | Claude | Sonnet | 30 | niedrig | Idee | — |
+| 12 | Gewichts-Prognose | „Bei diesem Tempo erreichst du X kg etwa im …“ | Claude | Sonnet | 20 | niedrig | Idee | — |
+| 13 | Familien-Feed | Freiwillig: Rekorde/Abzeichen der anderen, „Daumen hoch“ | Claude | Opus | 90 | niedrig | Idee | 3 |
+| 14 | Ins-Studio-Meldung | „Ich gehe jetzt ins Win4“ als Benachrichtigung an die Familie | Claude | Opus | 45 | niedrig | Idee | 6 |
+| 15 | Gerät defekt melden | Gerät als defekt/gesperrt markieren, Familie sieht es im gleichen Studio | Claude | Sonnet | 30 | niedrig | Idee | — |
+| 16 | Weitere Ideen | Pausen-Timer, Steigerungs-Vorschlag, Ziele, Trainingspläne, Sprach-Eingabe, Familien-Challenge für 3, Fortschrittsfotos, PIN, „Passwort ändern“ | — | Sonnet | — | niedrig | Idee | — |
 
 ## Erledigt
 
 | Nr | Thema | Details | Wer | Modell | Datum |
 |---|---|---|---|---|---|
 | E1 | Planung | Funktionsumfang, Etappen, Datenmodell | Maurice + Claude | Opus | 17.10.2026 |
-| E2 | Etappe 1: Kern | Studios, Übungen aller Arten, Gerätefotos, Einstellungen, Laufweg (optional), Sätze mit Gefühl/Aufwärmen, Geister-Training, Comeback-Hilfe, Energie-Check, Verlauf und Diagramm | Claude | Opus | 17.10.2026 |
-| E3 | Etappe 2: Auswertung | Rekorde, Statistik, Körper mit 7-Tage-Schnitt, Rekorden und Belohnungen, Schritte, Level, Abzeichen, lustige Vergleiche, Monats- und Jahresrückblick, CSV-Export | Claude | Opus | 17.10.2026 |
-| E4 | Studio-Bilder und App-Symbol | Logo/Bild pro Studio, sachliches BENA-Symbol | Claude | Opus | 17.10.2026 |
-| E5 | Online gestellt | GitHub-Repo und GitHub Pages | Maurice + Claude | Opus | 17.10.2026 |
-| E6 | Datensicherung | Sicherung inkl. Fotos herunterladen und einspielen, dauerhafter Speicher | Claude | Opus | 17.10.2026 |
-| E7 | Icons und Diagramm | Linien-Icons statt Emojis; Umschalter Gewicht · Volumen · Wiederholungen | Claude | Opus | 17.10.2026 |
-| E8 | Etappe 4: Standort | Standort pro Studio speichern, automatisches Öffnen im Umkreis von ca. 150 m | Claude | Opus | 17.10.2026 |
-| E9 | Sauna | Bio-Sauna, Dampfbad, Hot-Sauna im Win4; eigene Statistik; zählt nicht als Training | Claude | Opus | 17.10.2026 |
-| E10 | Etappe 3 gebaut | Supabase-Schema, Login, Konto-Modus, automatischer Abgleich, Datenübernahme; mit simuliertem Server getestet | Claude | Opus | 17.10.2026 |
-| E11 | Etappe 6a gebaut | Paar-Challenge: Einladungscode, Wochenduell, Kronen-Bilanz (nur Kennzahlen geteilt) | Claude | Opus | 17.10.2026 |
-| E12 | Etappe 6b gebaut | Push-Abo, Service Worker, Edge Function `notify` (Wochenbilanz, Erinnerungen) | Claude | Opus | 17.10.2026 |
-| E13 | Etappe 5 gebaut | Edge Functions `withings-auth` und `withings-sync`, Einstellungen „Withings verbinden“ | Claude | Opus | 17.10.2026 |
-| E14 | Anleitungen | `docs/SUPABASE-EINRICHTEN.md`, `docs/WITHINGS-UND-PUSH.md`, Schlüssel-Seite `tools/schluessel.html` | Claude | Opus | 17.10.2026 |
-| E15 | Tests | `tests.html`: 45 automatische Tests | Claude | Opus | 17.10.2026 |
+| E2 | Etappe 1: Kern | Studios, Übungen aller Arten, Gerätefotos, Einstellungen, Laufweg, Sätze mit Gefühl/Aufwärmen, Geister-Training, Comeback-Hilfe, Energie-Check, Verlauf und Diagramm | Claude | Opus | 17.10.2026 |
+| E3 | Etappe 2: Auswertung | Rekorde, Statistik, Körper mit 7-Tage-Schnitt, Schritte, Level, Abzeichen, lustige Vergleiche, Monats- und Jahresrückblick, CSV-Export | Claude | Opus | 17.10.2026 |
+| E4 | Online gestellt | GitHub-Repo und GitHub Pages | Maurice + Claude | Opus | 17.10.2026 |
+| E5 | Datensicherung | Sicherung inkl. Fotos herunterladen und einspielen, dauerhafter Speicher | Claude | Opus | 17.10.2026 |
+| E6 | Etappe 4: Standort | Standort pro Studio, automatisches Öffnen im Umkreis von ca. 150 m (+ GPS-Toleranz) | Claude | Opus | 17.10.2026 |
+| E7 | Sauna | Bio-Sauna, Dampfbad, Hot-Sauna im Win4; eigene Statistik; zählt nicht als Training | Claude | Opus | 17.10.2026 |
+| E8 | Etappen 5 und 6 gebaut | Withings-Import, Paar-Challenge, Push (noch nicht eingeschaltet) | Claude | Opus | 17.10.2026 |
+| E9 | Design | Name BENA Fit, Farbwelt „Modern“ (Nachtblau + Blau), IBM Plex Sans, Symbol mit Hantel, Logo in der Kopfzeile | Maurice + Claude | Opus | 18.10.2026 |
+| E10 | Etappe 3 eingeschaltet | Supabase-Projekt „bena-fit“, Schema, Registrierung aus, Login und Abgleich laufen; Konten für Maurice, Sabine, Remy | Maurice + Claude | Opus | 18.10.2026 |
+| E11 | Familien-Geräte | Geräte anderer übernehmen (Name, Art, Muskelgruppe, Foto); Studio-Logos für die ganze Familie | Claude | Opus | 18.10.2026 |
+| E12 | Activfitness-Logos | Logo als PNG bereitgestellt (nicht im Repo), von Maurice bei allen Studios hochgeladen | Maurice + Claude | Opus | 18.10.2026 |
+| E13 | Tests | `tests.html`: 45 automatische Tests | Claude | Opus | 18.10.2026 |
 
 ## Rückfragen
 
-- Soll Remy mitmachen? Falls ja: Paar-Challenge zu einer **Familien-Challenge** für drei erweitern?
-- Soll die App einen anderen Namen bekommen (z. B. „BENA Fitness“ statt „Fitness-Tagebuch“)?
+- Familien-Challenge für drei Personen (mit Remy)?
+- PIN für die App und „Passwort ändern“ in der App gewünscht?

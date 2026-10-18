@@ -1,6 +1,6 @@
 // Einstieg: Modus wählen (Demo / lokal), Datenbank öffnen, Router und Navigation.
 import * as db from './db.js';
-import { seedDemo, ensureDefaultGyms, ensureDefaultSaunas } from './demo.js';
+import { seedDemo, ensureDefaultGyms, ensureDefaultSaunas, DEMO_VERSION } from './demo.js';
 import { primeRewards } from './data.js';
 import { esc } from './ui.js';
 import { icon } from './icons.js';
@@ -95,7 +95,7 @@ async function boot() {
   mode = localStorage.getItem(MODE_KEY);
   if (mode && !MODES[mode]) mode = null;
   // Link zum Weitergeben: …/?demo öffnet direkt die Demo (nur wenn noch kein Modus gewählt ist)
-  if (!mode && new URLSearchParams(location.search).has('demo')) {
+  if ((!mode || mode === 'demo') && new URLSearchParams(location.search).has('demo')) {
     mode = 'demo';
     localStorage.setItem(MODE_KEY, mode);
   }
@@ -105,9 +105,11 @@ async function boot() {
     await db.open(cfg.db, cfg.user);
   }
   if (mode) {
-    if (mode === 'demo' && !(await db.getMeta('seeded'))) {
+    if (mode === 'demo' && (await db.getMeta('seeded')) !== DEMO_VERSION) {
+      // ältere Demo-Daten durch die aktuelle Fassung ersetzen
+      if (await db.getMeta('seeded')) { await db.deleteDatabase(MODES.demo.db); await db.open(MODES.demo.db, MODES.demo.user); }
       await seedDemo();
-      await db.setMeta('seeded', true);
+      await db.setMeta('seeded', DEMO_VERSION);
     }
     if (mode !== 'cloud' || (await db.getMeta('initialPullDone'))) {
       await ensureDefaultGyms();
