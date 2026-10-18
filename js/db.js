@@ -187,4 +187,5 @@ export async function savePhotoFromRemote(key, blob) {
   const tx = idb.transaction('photos', 'readwrite');
   tx.objectStore('photos').put({ key, blob, at: new Date().toISOString() });
   await txDone(tx);
+  if (photoUrls.has(key)) { URL.revokeObjectURL(photoUrls.get(key)); photoUrls.delete(key); }
 }

@@ -5,6 +5,7 @@ import { working, byTime } from '../stats.js';
 import { resizeImage } from '../photo.js';
 import { icon } from '../icons.js';
 import { currentPosition } from '../geo.js';
+import { familyGymPhotoUrl } from '../family.js';
 
 let filter = 'all';
 
@@ -46,7 +47,8 @@ export default {
     const lastSet = new Map();
     for (const s of working(db.all('sets')).sort(byTime)) lastSet.set(s.exercise_id, s);
 
-    const banner = gym?.photo_path ? await db.photoUrl(gymPhotoKey(gym.id)) : null;
+    const ownBanner = gym?.photo_path ? await db.photoUrl(gymPhotoKey(gym.id)) : null;
+    const banner = ownBanner || (gym ? await Promise.race([familyGymPhotoUrl(gym.name), new Promise(r => setTimeout(() => r(null), 1500))]) : null);
 
     let detected = null;
     try { detected = sessionStorage.getItem('geo.detected'); sessionStorage.removeItem('geo.detected'); } catch { /* egal */ }

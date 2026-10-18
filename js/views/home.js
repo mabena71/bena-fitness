@@ -4,6 +4,7 @@ import { bodyTrend, sessions, monthRange, periodSummary, dayKey } from '../stats
 import { setTop, esc, n1, n0, signed, ago, fmtMonth, tons, modal, toast, setText } from '../ui.js';
 import { openBodyEntry, openStepsEntry } from './body.js';
 import { gymPhotoKey } from './gym.js';
+import { familyGymPhotoUrl } from '../family.js';
 import { icon } from '../icons.js';
 import { permissionState, currentPosition, nearestGym } from '../geo.js';
 
@@ -75,7 +76,7 @@ export default {
       <div class="stack" id="gyms">
         ${gyms.map(g => `
           <a class="card tap gym-row" href="#/gym/${g.id}" style="text-decoration:none;color:inherit;display:flex">
-            <div class="gym-ico" ${g.photo_path ? `data-gym-photo="${g.id}"` : ''}>${icon('building', 24)}</div>
+            <div class="gym-ico" ${g.photo_path ? `data-gym-photo="${g.id}"` : `data-fam-photo="${esc(g.name)}"`}>${icon('building', 24)}</div>
             <div class="grow"><b>${esc(g.name)}</b><div class="muted small">${exCount(g.id)} Übungen${lastVisit.get(g.id) ? ' · zuletzt ' + ago(lastVisit.get(g.id)) : ''}</div></div>
             <span class="muted">›</span>
           </a>`).join('')}
@@ -95,6 +96,10 @@ export default {
     `;
 
     detectGym(el, data.gyms);
+    el.querySelectorAll('[data-fam-photo]').forEach(async ic => {
+      const u = await familyGymPhotoUrl(ic.dataset.famPhoto);
+      if (u) ic.innerHTML = `<img src="${u}" alt="">`;
+    });
     el.querySelectorAll('[data-gym-photo]').forEach(async ic => {
       const u = await db.photoUrl(gymPhotoKey(ic.dataset.gymPhoto));
       if (u) ic.innerHTML = `<img src="${u}" alt="">`;
