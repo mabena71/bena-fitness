@@ -4,7 +4,7 @@ import { addDays, dayKey } from './stats.js';
 
 export const DEFAULT_GYMS = ['Bellevue', 'Archhöfe', 'Win4'];
 /** Erhöhen, wenn sich die Demo-Daten ändern: bestehende Demos werden dann neu erzeugt. */
-export const DEMO_VERSION = 2;
+export const DEMO_VERSION = 3;
 export const WIN4_SAUNAS = ['Bio-Sauna', 'Dampfbad', 'Hot-Sauna'];
 
 /** Legt die drei Saunen im Win4 einmalig an (auch bei bestehenden Tagebüchern). */
@@ -40,27 +40,27 @@ export async function seedDemo() {
   });
   const exercises = [
     E(bel, 'Beinpresse', 'machine', 'legs', 70, 12, [{ label: 'Sitz', value: '5' }, { label: 'Lehne', value: '3' }], { sort: 1 }),
-    E(bel, 'Latzug', 'machine', 'back', 40, 6, [{ label: 'Knie-Polster', value: '4' }], { sort: 2 }),
-    E(bel, 'Brustpresse', 'machine', 'chest', 35, 6, [{ label: 'Sitz', value: '6' }], { sort: 3 }),
-    E(bel, 'Rudern sitzend', 'machine', 'back', 40, 5, [{ label: 'Brustpolster', value: '2' }], { sort: 4 }),
-    E(bel, 'Schulterpresse', 'machine', 'shoulders', 20, 4, [{ label: 'Sitz', value: '4' }], { sort: 5 }),
+    E(bel, 'Latzug', 'machine', 'pull', 40, 6, [{ label: 'Knie-Polster', value: '4' }], { sort: 2 }),
+    E(bel, 'Brustpresse', 'machine', 'push', 35, 6, [{ label: 'Sitz', value: '6' }], { sort: 3 }),
+    E(bel, 'Rudern sitzend', 'machine', 'pull', 40, 5, [{ label: 'Brustpolster', value: '2' }], { sort: 4 }),
+    E(bel, 'Schulterpresse', 'machine', 'push', 20, 4, [{ label: 'Sitz', value: '4' }], { sort: 5 }),
     E(bel, 'Bauchmaschine', 'machine', 'core', 25, 4, [], { sort: 6, reps: 15 }),
     E(bel, 'Laufband', 'cardio', 'cardio', 15, 0, [], { sort: 7 }),
     E(arc, 'Beinstrecker', 'machine', 'legs', 30, 5, [{ label: 'Rückenlehne', value: '7' }]),
     E(arc, 'Beinbeuger', 'machine', 'legs', 25, 4, [{ label: 'Polster', value: 'M' }]),
-    E(arc, 'Kurzhantel Bankdrücken', 'free', 'chest', 14, 3, [], { step: 1, reps: 10, notes: 'Kurzhanteln stehen hinten rechts' }),
-    E(arc, 'Kabelzug Trizeps', 'machine', 'arms', 15, 3, []),
-    E(arc, 'Bizeps-Curls', 'free', 'arms', 8, 2, [], { step: 1 }),
+    E(arc, 'Kurzhantel Bankdrücken', 'free', 'push', 14, 3, [], { step: 1, reps: 10, notes: 'Kurzhanteln stehen hinten rechts' }),
+    E(arc, 'Kabelzug Trizeps', 'machine', 'push', 15, 3, []),
+    E(arc, 'Bizeps-Curls', 'free', 'pull', 8, 2, [], { step: 1 }),
     E(arc, 'Ruderergometer', 'cardio', 'cardio', 10, 0, []),
     E(win, 'Beinpresse', 'machine', 'legs', 60, 10, [{ label: 'Sitz', value: '3' }], { notes: 'Gewichte anders als im Bellevue' }),
-    E(win, 'Latzug', 'machine', 'back', 35, 5, []),
-    E(win, 'Rückenstrecker', 'machine', 'back', 30, 4, [], { reps: 15 }),
+    E(win, 'Latzug', 'machine', 'pull', 35, 5, []),
+    E(win, 'Rückenstrecker', 'machine', 'core', 30, 4, [], { reps: 15 }),
     E(win, 'Crosstrainer', 'cardio', 'cardio', 20, 0, []),
     E(win, 'Bio-Sauna', 'sauna', 'recovery', 0, 0, []),
     E(win, 'Dampfbad', 'sauna', 'recovery', 0, 0, []),
     E(win, 'Hot-Sauna', 'sauna', 'recovery', 0, 0, []),
-    E(null, 'Liegestütze', 'bodyweight', 'chest', 0, 0, [], { reps: 15 }),
-    E(null, 'Klimmzüge', 'bodyweight', 'back', 0, 0, [], { reps: 4 }),
+    E(null, 'Liegestütze', 'bodyweight', 'push', 0, 0, [], { reps: 15 }),
+    E(null, 'Klimmzüge', 'bodyweight', 'pull', 0, 0, [], { reps: 4 }),
   ];
   const byGym = g => exercises.filter(e => e.gym_id === (g ? g.id : null));
 

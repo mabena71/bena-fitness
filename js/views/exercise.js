@@ -1,7 +1,7 @@
 import * as db from '../db.js';
 import { gymName, exerciseSets, announceRewards } from '../data.js';
 import {
-  setTop, esc, n1, n0, n2, KINDS, MUSCLES, FEEL, ENERGY, setText, fmtDay, fmtTime, ago, toast, confetti, vibrate,
+  setTop, esc, n1, n0, n2, KINDS, MUSCLES, categoryOf, FEEL, ENERGY, setText, fmtDay, fmtTime, ago, toast, confetti, vibrate,
   modal, confirmDialog, parseNum, localInput,
 } from '../ui.js';
 import { prefill, ghost, ghostCompare, isRecord, best, dayKey, byTime, working, volume, groupBy, roundStep } from '../stats.js';
@@ -55,7 +55,7 @@ export default {
               <div class="hero">
                 <div class="ph">${photo ? `<img src="${photo}" alt="">` : icon(KINDS[ex.kind]?.icon, 40)}</div>
                 <div>
-                  <div class="muted small">${esc(gymName(ex.gym_id))} · ${MUSCLES[ex.muscle_group]?.label || ''} · ${KINDS[ex.kind]?.label}</div>
+                  <div class="muted small">${esc(gymName(ex.gym_id))} · ${MUSCLES[categoryOf(ex.muscle_group, ex.name)]?.label || ''} · ${KINDS[ex.kind]?.label}</div>
                   ${ex.settings?.length ? `<div class="settings-pills">${ex.settings.map(s => `<span class="pill">${esc(s.label)} ${esc(s.value)}</span>`).join('')}</div>` : ''}
                   ${pb ? `<div class="small" style="margin-top:8px">${icon('award', 16)} Bestwert: <b>${setText(pb, ex.kind)}</b></div>` : ''}
                 </div>

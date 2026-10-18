@@ -1,11 +1,11 @@
 import * as db from '../db.js';
-import { setTop, esc, KINDS, MUSCLES, toast, confirmDialog, parseNum, modal } from '../ui.js';
+import { setTop, esc, KINDS, MUSCLES, categoryOf, toast, confirmDialog, parseNum, modal } from '../ui.js';
 import { resizeImage } from '../photo.js';
 import { toSketch, sketchPreferred, setSketchPreferred } from '../sketch.js';
 import { icon } from '../icons.js';
 import { getMode } from '../app.js';
 
-const DEFAULT_MUSCLE = { machine: 'legs', free: 'arms', bodyweight: 'chest', cardio: 'cardio', sauna: 'recovery' };
+const DEFAULT_MUSCLE = { machine: 'legs', free: 'pull', bodyweight: 'push', cardio: 'cardio', sauna: 'recovery' };
 
 export default {
   async render(el, [param], ctx) {
@@ -19,7 +19,7 @@ export default {
     const st = {
       name: ex?.name || '',
       kind: ex?.kind || (gymParam ? 'machine' : 'bodyweight'),
-      muscle_group: ex?.muscle_group || null,
+      muscle_group: ex ? categoryOf(ex.muscle_group, ex.name) : null,
       gym_id: gymParam,
       notes: ex?.notes || '',
       settings: (ex?.settings || []).map(s => ({ ...s })),
@@ -38,8 +38,8 @@ export default {
         <div class="field"><span>Art</span><div class="seg" data-kind>
           ${Object.entries(KINDS).map(([k, v]) => `<button type="button" data-v="${k}" class="${st.kind === k ? 'on' : ''}">${icon(v.icon, 22)}<br><small>${v.label}</small></button>`).join('')}
         </div></div>
-        <label class="field"><span>Muskelgruppe</span><select class="input" data-k="muscle_group">
-          ${Object.entries(MUSCLES).map(([k, v]) => `<option value="${k}" ${st.muscle_group === k ? 'selected' : ''}>${v.label}</option>`).join('')}
+        <label class="field"><span>Kategorie</span><select class="input" data-k="muscle_group">
+          ${Object.entries(MUSCLES).map(([k, v]) => `<option value="${k}" ${st.muscle_group === k ? 'selected' : ''}>${v.label} – ${v.hint}</option>`).join('')}
         </select></label>
         <label class="field"><span>Studio</span><select class="input" data-k="gym_id">
           ${gyms.map(g => `<option value="${g.id}" ${st.gym_id === g.id ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}
@@ -165,7 +165,7 @@ export default {
       $('[data-k="name"]').value = picked.name;
       st.kind = picked.kind || 'machine';
       el.querySelectorAll('[data-kind] button').forEach(x => x.classList.toggle('on', x.dataset.v === st.kind));
-      st.muscle_group = picked.muscle_group || DEFAULT_MUSCLE[st.kind];
+      st.muscle_group = picked.muscle_group ? categoryOf(picked.muscle_group, picked.name) : DEFAULT_MUSCLE[st.kind];
       $('[data-k="muscle_group"]').value = st.muscle_group;
       stepVisible();
       if (picked.blob) {
@@ -194,10 +194,10 @@ async function pickFamilyDevice(gymName) {
   const own = new Set(db.all('exercises').map(e => e.name.trim().toLowerCase()));
   return modal((m, close) => {
     m.innerHTML = `<h2>Familien-Geräte im ${esc(gymName)}</h2>
-      ${list.length ? `<p class="muted small">Übernommen werden Name, Art, Muskelgruppe und Foto – nicht die Einstellungen.</p>
+      ${list.length ? `<p class="muted small">Übernommen werden Name, Art, Kategorie und Foto – nicht die Einstellungen.</p>
       <ul class="list" data-list>${list.map((d, i) => `<li data-i="${i}" style="cursor:pointer">
         <div class="gym-ico" data-thumb="${i}" style="width:56px;height:56px">${icon(KINDS[d.kind]?.icon || 'machine', 24)}</div>
-        <div class="grow"><b>${esc(d.name)}</b><div class="muted small">${esc(MUSCLES[d.muscle_group]?.label || '')} · von ${esc(d.owner_name)}${own.has(d.name.trim().toLowerCase()) ? ' · hast du schon' : ''}</div></div>
+        <div class="grow"><b>${esc(d.name)}</b><div class="muted small">${esc(MUSCLES[categoryOf(d.muscle_group, d.name)]?.label || '')} · von ${esc(d.owner_name)}${own.has(d.name.trim().toLowerCase()) ? ' · hast du schon' : ''}</div></div>
         <span class="muted">›</span></li>`).join('')}</ul>`
         : '<p class="muted">Noch niemand aus der Familie hat in diesem Studio Geräte angelegt.</p>'}
       <div class="actions"><button class="btn" data-x>Abbrechen</button></div>`;

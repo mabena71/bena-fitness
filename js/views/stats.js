@@ -21,7 +21,7 @@ export default {
     const muscleEntries = Object.keys(MUSCLES).filter(k => k !== 'cardio' && k !== 'recovery').map(k => [k, a.muscles.get(k) || 0]);
     const maxMuscle = Math.max(1, ...muscleEntries.map(([, v]) => v));
     const avgMuscle = muscleEntries.reduce((s, [, v]) => s + v, 0) / muscleEntries.length;
-    const weak = muscleEntries.filter(([k, v]) => k !== 'full' && v < avgMuscle * 0.4).map(([k]) => MUSCLES[k].label);
+    const weak = muscleEntries.filter(([k, v]) => v < avgMuscle * 0.4).map(([k]) => MUSCLES[k].label);
     const gymEntries = [...a.perGym.entries()].sort((x, y) => y[1] - x[1]);
     const maxGym = Math.max(1, ...gymEntries.map(([, v]) => v));
     const prog = a.progress.slice(0, 8);
@@ -60,7 +60,7 @@ export default {
             : '<p class="muted small">Ab zwei Trainings pro Übung siehst du hier deine Steigerung.</p>'}
         </div>
         <div class="card">
-          <div class="card-title"><h3>Muskelgruppen</h3><span class="muted small">Arbeitssätze</span></div>
+          <div class="card-title"><h3>Push · Pull · Legs</h3><span class="muted small">Arbeitssätze</span></div>
           ${muscleEntries.map(([k, v]) => `<div class="hbar"><span class="name">${MUSCLES[k].label}</span><div class="bar teal"><i style="width:${v / maxMuscle * 100}%"></i></div><span class="v">${v}</span></div>`).join('')}
           ${weak.length && a.setsCount > 20 ? `<div class="notice warn" style="margin-top:10px">Kommt zu kurz: <b>${weak.join(', ')}</b></div>` : ''}
         </div>

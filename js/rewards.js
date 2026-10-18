@@ -3,7 +3,7 @@ import {
   sessions, recordEvents, bodyRecordEvents, bodyLoss, sinkingWeekStreak, weekStreak,
   working, volume, dayKey,
 } from './stats.js';
-import { MUSCLES } from './ui.js';
+import { MUSCLES, categoryOf } from './ui.js';
 
 export const XP = { set: 10, warmup: 2, session: 50, measure: 15, record: 50, bodyRecord: 50, badge: 100, sauna: 5 };
 
@@ -50,8 +50,8 @@ export function computeRewards(data) {
 
   const muscleXp = {};
   for (const k of Object.keys(MUSCLES)) muscleXp[k] = 0;
-  for (const s of ws) { const g = exById.get(s.exercise_id).muscle_group || 'full'; muscleXp[g] = (muscleXp[g] || 0) + XP.set; }
-  for (const r of recs) { const g = r.ex.muscle_group || 'full'; muscleXp[g] += XP.record / 2; }
+  for (const s of ws) { const g = categoryOf(exById.get(s.exercise_id).muscle_group, exById.get(s.exercise_id).name); muscleXp[g] = (muscleXp[g] || 0) + XP.set; }
+  for (const r of recs) { const g = categoryOf(r.ex.muscle_group, r.ex.name); muscleXp[g] += XP.record / 2; }
   const muscles = Object.entries(muscleXp).map(([k, v]) => ({ key: k, ...levelOf(v, muscleNeed) }));
 
   const lvl = levelOf(xp, levelNeed);
@@ -69,8 +69,8 @@ function computeBadges(c) {
   for (const n of [2, 4, 8, 12, 26]) add(`streak_${n}`, n >= 12 ? 'zap' : 'calendar', `${n} Wochen am Stück`, `${n} Wochen in Folge trainiert`, streak.best >= n, 'Training');
   for (const n of [1, 10, 50]) add(`rec_${n}`, 'award', n === 1 ? 'Erster Rekord' : `${n} Rekorde`, `${n} persönliche Rekorde`, c.recs.length >= n, 'Rekorde');
   for (const [k, m] of Object.entries(MUSCLES)) {
-    if (k === 'cardio' || k === 'full' || k === 'recovery') continue;
-    add(`recmg_${k}`, 'target', `Rekord ${m.label}`, `Erster Rekord bei ${m.label}`, c.recs.some(r => (r.ex.muscle_group || 'full') === k), 'Rekorde');
+    if (k === 'cardio' || k === 'recovery') continue;
+    add(`recmg_${k}`, 'target', `Rekord ${m.label}`, `Erster Rekord bei ${m.label}`, c.recs.some(r => (categoryOf(r.ex.muscle_group, r.ex.name)) === k), 'Rekorde');
   }
   const gymsVisited = new Set(c.sess.filter(s => s.gym_id).map(s => s.gym_id));
   add('gyms_all', 'map', 'Studio-Hopper', 'In allen Studios trainiert', c.data.gyms.length >= 2 && c.data.gyms.every(g => gymsVisited.has(g.id)), 'Training');

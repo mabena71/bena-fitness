@@ -2,7 +2,7 @@
 // plus die Erkennung neuer Level und Abzeichen nach einer Änderung.
 import * as db from './db.js';
 import { computeRewards } from './rewards.js';
-import { toast, confetti, vibrate, esc } from './ui.js';
+import { toast, confetti, vibrate, esc, MUSCLES, categoryOf } from './ui.js';
 import { icon } from './icons.js';
 
 /**
@@ -80,4 +80,20 @@ export async function announceRewards() {
   }
   if (fresh.length) await db.setMeta('seenBadges', [...seen, ...fresh.map(b => b.id)]);
   if (r.level !== lastLevel) await db.setMeta('lastLevel', r.level);
+}
+
+/**
+ * Einmalige Umstellung alter Muskelgruppen auf Push/Pull/Legs. Läuft bei jedem Start,
+ * ändert aber nur Geräte mit alten Werten (wird danach normal synchronisiert).
+ * Neu entstehende Abzeichen (z. B. "Rekord Push") werden still als gesehen markiert.
+ */
+export async function migrateCategories() {
+  const old = db.all('exercises').filter(e => e.muscle_group && !MUSCLES[e.muscle_group]);
+  if (!old.length) return 0;
+  for (const e of old) await db.put('exercises', { id: e.id, muscle_group: categoryOf(e.muscle_group, e.name) }, { silent: true });
+  rewardCache = null;
+  const seen = new Set(await db.getMeta('seenBadges', []));
+  rewards().earned.forEach(b => seen.add(b.id));
+  await db.setMeta('seenBadges', [...seen]);
+  return old.length;
 }

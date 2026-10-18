@@ -1,6 +1,6 @@
 import * as db from '../db.js';
 import { gymName } from '../data.js';
-import { setTop, esc, ago, setText, MUSCLES, KINDS, modal, confirmDialog, toast } from '../ui.js';
+import { setTop, esc, ago, setText, MUSCLES, KINDS, categoryOf, modal, confirmDialog, toast } from '../ui.js';
 import { working, byTime } from '../stats.js';
 import { resizeImage } from '../photo.js';
 import { icon } from '../icons.js';
@@ -41,7 +41,7 @@ export default {
 
     const all = orderedExercises(gymId);
     const hasOrder = all.some(e => e.sort_order != null);
-    const usedGroups = [...new Set(all.map(e => e.muscle_group || 'full'))];
+    const usedGroups = [...new Set(all.map(e => categoryOf(e.muscle_group, e.name)))];
     if (filter !== 'all' && !usedGroups.includes(filter)) filter = 'all';
 
     const lastSet = new Map();
@@ -78,7 +78,7 @@ export default {
     const tiles = el.querySelector('[data-tiles]');
     let q = '';
     const draw = async () => {
-      const list = all.filter(e => (filter === 'all' || (e.muscle_group || 'full') === filter) && (!q || e.name.toLowerCase().includes(q)));
+      const list = all.filter(e => (filter === 'all' || (categoryOf(e.muscle_group, e.name)) === filter) && (!q || e.name.toLowerCase().includes(q)));
       tiles.innerHTML = list.map((e, i) => {
         const s = lastSet.get(e.id);
         return `<a class="tile" href="#/ex/${e.id}">

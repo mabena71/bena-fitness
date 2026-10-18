@@ -1,7 +1,7 @@
 // Einstieg: Modus wählen (Demo / lokal), Datenbank öffnen, Router und Navigation.
 import * as db from './db.js';
 import { seedDemo, ensureDefaultGyms, ensureDefaultSaunas, DEMO_VERSION } from './demo.js';
-import { primeRewards } from './data.js';
+import { primeRewards, migrateCategories } from './data.js';
 import { esc } from './ui.js';
 import { icon } from './icons.js';
 
@@ -116,6 +116,7 @@ async function boot() {
       await ensureDefaultGyms();
       await ensureDefaultSaunas();
     }
+    await migrateCategories();
     await primeRewards();
     try {
       const pending = localStorage.getItem('fitness.pendingName');

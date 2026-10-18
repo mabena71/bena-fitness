@@ -5,6 +5,7 @@ import {
 } from './stats.js';
 import { levelNeed, computeRewards } from './rewards.js';
 import * as fun from './fun.js';
+import { categoryOf } from './ui.js';
 import { distanceM, nearestGym } from './geo.js';
 
 const results = [];
@@ -188,6 +189,19 @@ test('Paar-Challenge: Wertung der drei Kategorien', () => {
   eq([r.a, r.b, r.winner], [2, 1, 'a']);
   const tie = challengeScore({ training_days: 2, steps: 0, weight_change_pct: null }, { training_days: 2, steps: 0, weight_change_pct: -1 });
   eq([tie.a, tie.b, tie.winner], [0, 0, null], 'gleich und fehlende Werte ergeben keine Krone');
+});
+
+test('Kategorien: alte Muskelgruppen werden Push/Pull/Legs zugeordnet', () => {
+  eq(categoryOf('chest', 'Chest Press D1'), 'push');
+  eq(categoryOf('shoulders', 'Schulterpresse F1'), 'push');
+  eq(categoryOf('back', 'Oberer Rücken isoliert B7'), 'pull');
+  eq(categoryOf('back', 'Rückenstrecker'), 'core');
+  eq(categoryOf('arms', 'Armbeuger H1'), 'pull');
+  eq(categoryOf('arms', 'Rudern B4'), 'pull');
+  eq(categoryOf('arms', 'Kabelzug Trizeps'), 'push');
+  eq(categoryOf('arms', 'Armstrecker'), 'push');
+  eq(categoryOf('legs', 'Beinpresse'), 'legs');
+  eq(categoryOf('push', 'egal'), 'push');
 });
 
 // Abgleich gegen simulierten Server (asynchron)

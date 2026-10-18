@@ -8,17 +8,28 @@ export const KINDS = {
   sauna: { label: 'Sauna', icon: 'steam' },
 };
 
+/** Kategorien nach Push / Pull / Legs (+ Rumpf, Cardio, Erholung für die Sauna). */
 export const MUSCLES = {
-  legs: { label: 'Beine' },
-  back: { label: 'Rücken' },
-  chest: { label: 'Brust' },
-  shoulders: { label: 'Schultern' },
-  arms: { label: 'Arme' },
-  core: { label: 'Bauch' },
-  full: { label: 'Ganzkörper' },
-  cardio: { label: 'Ausdauer' },
-  recovery: { label: 'Erholung' },
+  push: { label: 'Push', hint: 'Brust, Schultern, Trizeps' },
+  pull: { label: 'Pull', hint: 'Rücken, Bizeps' },
+  legs: { label: 'Legs', hint: 'Beine, Gesäss' },
+  core: { label: 'Bauch/Rumpf', hint: 'Bauch, unterer Rücken' },
+  cardio: { label: 'Cardio', hint: 'Laufband, Velo, Rudern' },
+  recovery: { label: 'Erholung', hint: 'Sauna' },
 };
+
+/** Ordnet alte Muskelgruppen (vor Push/Pull/Legs) der neuen Kategorie zu. */
+export function categoryOf(group, name = '') {
+  if (MUSCLES[group]) return group;
+  const n = String(name).toLowerCase();
+  switch (group) {
+    case 'chest': case 'shoulders': return 'push';
+    case 'back': return /rückenstrecker|hyperextension/.test(n) ? 'core' : 'pull';
+    case 'arms': return /trizeps|triceps|armstrecker|dips|drück/.test(n) ? 'push' : 'pull';
+    case 'full': return 'legs';
+    default: return 'core';
+  }
+}
 
 export const FEEL = { 1: 'leicht', 2: 'passend', 3: 'schwer' };
 export const ENERGY = { 1: 'sehr müde', 2: 'müde', 3: 'normal', 4: 'fit', 5: 'top' };

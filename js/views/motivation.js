@@ -34,7 +34,7 @@ export default {
 
       <div class="grid two" style="margin-top:12px">
         <div class="card">
-          <div class="card-title"><h3>Level pro Muskelgruppe</h3></div>
+          <div class="card-title"><h3>Level pro Kategorie</h3></div>
           ${r.muscles.filter(m => m.key !== 'cardio' && m.key !== 'recovery').map(m => `<div class="hbar" style="grid-template-columns:120px 1fr 64px"><span class="name">${MUSCLES[m.key].label}</span>
             <div class="bar teal"><i style="width:${m.pct.toFixed(1)}%"></i></div><span class="v">Lvl ${m.level}</span></div>`).join('')}
         </div>

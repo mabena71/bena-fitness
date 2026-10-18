@@ -1,4 +1,5 @@
 // Reine Rechenfunktionen ohne DOM- und Datenbankzugriff (testbar in tests.html).
+import { categoryOf } from './ui.js';
 
 export const DAY = 86400000;
 export const SESSION_GAP_H = 3;
@@ -360,7 +361,7 @@ export function analyze(data, from, to = new Date()) {
 
   // Muskelgruppen
   const muscles = new Map();
-  for (const s of ws) { const g = exById.get(s.exercise_id).muscle_group || 'full'; muscles.set(g, (muscles.get(g) || 0) + 1); }
+  for (const s of ws) { const g = categoryOf(exById.get(s.exercise_id).muscle_group, exById.get(s.exercise_id).name); muscles.set(g, (muscles.get(g) || 0) + 1); }
 
   // Lieblingsübungen (Anzahl Trainingstage) und lange nicht gemacht (über alle Zeit)
   const usage = new Map();

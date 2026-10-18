@@ -1,7 +1,7 @@
 // CSV-Export für Excel (Semikolon als Trennzeichen, UTF-8 mit BOM für Umlaute).
 import * as db from './db.js';
 import { snapshot, gymName } from './data.js';
-import { KINDS, MUSCLES, FEEL } from './ui.js';
+import { KINDS, MUSCLES, FEEL, categoryOf } from './ui.js';
 import { byTime } from './stats.js';
 
 function cell(v) {
@@ -20,10 +20,10 @@ export function setsCsv() {
   const ex = new Map(db.all('exercises').map(e => [e.id, e]));
   const rows = db.all('sets').filter(s => ex.has(s.exercise_id)).sort(byTime).map(s => {
     const e = ex.get(s.exercise_id);
-    return [date(s.performed_at), time(s.performed_at), gymName(e.gym_id), e.name, KINDS[e.kind]?.label, MUSCLES[e.muscle_group]?.label,
+    return [date(s.performed_at), time(s.performed_at), gymName(e.gym_id), e.name, KINDS[e.kind]?.label, MUSCLES[categoryOf(e.muscle_group, e.name)]?.label,
       s.weight_kg, s.reps, s.duration_min, s.distance_km, FEEL[s.feel] || '', s.is_warmup ? 'ja' : '', s.note || ''];
   });
-  return table(['Datum', 'Zeit', 'Studio', 'Übung', 'Art', 'Muskelgruppe', 'Gewicht kg', 'Wiederholungen', 'Minuten', 'km', 'Gefühl', 'Aufwärmen', 'Notiz'], rows);
+  return table(['Datum', 'Zeit', 'Studio', 'Übung', 'Art', 'Kategorie', 'Gewicht kg', 'Wiederholungen', 'Minuten', 'km', 'Gefühl', 'Aufwärmen', 'Notiz'], rows);
 }
 
 export function bodyCsv() {
