@@ -18,6 +18,7 @@ import settings from './views/settings.js';
 import login from './views/login.js';
 import challenge from './views/challenge.js';
 import { cloudConfigured } from './config.js';
+import { APP_VERSION } from './version.js';
 
 const MODE_KEY = 'fitness.mode';
 export const MODES = {
@@ -133,6 +134,34 @@ async function boot() {
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('sw.js').catch(e => console.warn('Service Worker:', e));
   }
+  // Update-Prüfung: beim Start, beim Zurückkehren in die App und alle 30 Minuten
+  setTimeout(checkForUpdate, 3000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkForUpdate(); });
+  setInterval(checkForUpdate, 30 * 60000);
+}
+
+/** Lädt die App komplett neu (inkl. neuer Service-Worker-Version). */
+export async function reloadApp() {
+  try { const reg = await navigator.serviceWorker?.getRegistration(); await reg?.update(); } catch { /* egal */ }
+  location.reload();
+}
+
+let updateShown = false;
+async function checkForUpdate() {
+  if (updateShown || !navigator.onLine) return;
+  try {
+    const res = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) return;
+    const { version } = await res.json();
+    if (!version || version === APP_VERSION) return;
+    updateShown = true;
+    try { (await navigator.serviceWorker?.getRegistration())?.update(); } catch { /* egal */ }
+    const bar = document.createElement('div');
+    bar.className = 'update-bar';
+    bar.innerHTML = `<span>Neue Version von BENA Fit verfügbar.</span><button class="btn sm primary">Jetzt aktualisieren</button>`;
+    bar.querySelector('button').onclick = () => reloadApp();
+    document.body.appendChild(bar);
+  } catch { /* offline o. ä. */ }
 }
 
 /**

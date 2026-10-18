@@ -1,7 +1,8 @@
 import * as db from '../db.js';
 import { profile, saveProfile } from '../data.js';
 import { setTop, esc, toast, confirmDialog, downloadFile } from '../ui.js';
-import { getMode, setMode, MODES } from '../app.js';
+import { getMode, setMode, MODES, reloadApp } from '../app.js';
+import { APP_VERSION } from '../version.js';
 import { setsCsv, bodyCsv, stepsCsv } from '../csv.js';
 import { createBackup, restoreBackup } from '../backup.js';
 import { icon } from '../icons.js';
@@ -68,7 +69,7 @@ export default {
           <li><span class="emoji">${icon('bell', 18)}</span><div class="grow"><b>Benachrichtigungen</b><div class="muted small">Wochenbilanz am Sonntag und Erinnerungen</div></div></li>
         </ul>
       </div>`}
-      <p class="muted small center">BENA Fit · Version 0.7</p>`;
+      <div class="center" style="margin-top:10px"><button class="btn sm" data-reload>App neu laden</button><p class="muted small">BENA Fit · Version ${APP_VERSION}</p></div>`;
 
     el.querySelector('[data-save]').onclick = async () => {
       await saveProfile({ display_name: el.querySelector('[data-name]').value.trim() });
@@ -101,6 +102,7 @@ export default {
         el.querySelector('[data-persist]').textContent = p ? 'Der Browser speichert die Daten dauerhaft.' : 'Hinweis: Der Browser hat dauerhaften Speicher nicht bestätigt. Als App auf dem Startbildschirm ist er meist sicherer.';
       }
     } catch { /* egal */ }
+    el.querySelector('[data-reload]').onclick = () => reloadApp();
     let cleanupFn = null;
     const toLogin = el.querySelector('[data-to-login]');
     if (toLogin) toLogin.onclick = () => setMode(null, '#/login');
