@@ -94,6 +94,11 @@ async function route() {
 async function boot() {
   mode = localStorage.getItem(MODE_KEY);
   if (mode && !MODES[mode]) mode = null;
+  // Link zum Weitergeben: …/?demo öffnet direkt die Demo (nur wenn noch kein Modus gewählt ist)
+  if (!mode && new URLSearchParams(location.search).has('demo')) {
+    mode = 'demo';
+    localStorage.setItem(MODE_KEY, mode);
+  }
   if (mode === 'cloud' && !(await openCloud())) mode = null;
   if (mode && mode !== 'cloud') {
     const cfg = MODES[mode];
