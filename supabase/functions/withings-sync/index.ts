@@ -76,21 +76,33 @@ async function syncUser(t: Record<string, any>) {
     measures = rows.length;
   }
 
-  // Schritte der letzten 14 Tage (Uhr oder Handy-App)
+  // Schritte der letzten 14 Tage (Uhr oder Handy-App über Health Connect).
+  // Die Tagessumme von Withings enthält Handy-Schritte teils erst spät; darum zusätzlich die
+  // Minutenwerte von heute und gestern zusammenzählen und pro Tag den grösseren Wert nehmen.
+  const perDay = new Map<string, number>();
+  const take = (day: string, n: number) => { if (day >= START_DAY && n > (perDay.get(day) || 0)) perDay.set(day, n); };
   const a = await withings('/v2/measure', { action: 'getactivity', startdateymd: ymd(new Date(Math.max(START_MS, Date.now() - 14 * 86400000))), enddateymd: ymd(new Date()), data_fields: 'steps' }, token);
-  if (a.status === 0) {
+  if (a.status === 0) for (const act of a.body.activities || []) if (act.steps) take(act.date, act.steps);
+  const debug: Record<string, unknown> = { daily: (a.body?.activities || []).map((x: any) => [x.date, x.steps, x.brand, x.is_tracker]) };
+  for (const back of [1, 0]) {
+    const day = ymd(new Date(Date.now() - back * 86400000));
+    const from = Date.parse(`${day}T00:00:00+02:00`) / 1000;
+    const i = await withings('/v2/measure', { action: 'getintradayactivity', startdate: String(from), enddate: String(Math.min(from + 86399, Math.floor(Date.now() / 1000))), data_fields: 'steps' }, token);
+    if (i.status !== 0) { debug[`intra_${day}`] = `status ${i.status}`; continue; }
+    let sum = 0;
+    for (const v of Object.values(i.body?.series || {}) as any[]) sum += v.steps || 0;
+    debug[`intra_${day}`] = sum;
+    take(day, sum);
+  }
+  console.log('Schritte', t.user_id, JSON.stringify(debug));
+  if (perDay.size) {
     const { data: existing } = await db.from('daily_steps').select('id, day').eq('user_id', t.user_id).is('deleted_at', null);
     const byDay = new Map((existing || []).map(r => [r.day, r.id]));
     const steps = [];
-    for (const act of a.body.activities || []) {
-      if (!act.steps || act.date < START_DAY) continue;
-      steps.push({ id: byDay.get(act.date) || await stableId(`withings-steps:${t.user_id}:${act.date}`), user_id: t.user_id, day: act.date, steps: act.steps, source: 'withings', updated_at: now });
-    }
-    if (steps.length) {
-      const { error } = await db.from('daily_steps').upsert(steps, { onConflict: 'id' });
-      if (error) throw new Error(error.message);
-      stepDays = steps.length;
-    }
+    for (const [day, n] of perDay) steps.push({ id: byDay.get(day) || await stableId(`withings-steps:${t.user_id}:${day}`), user_id: t.user_id, day, steps: n, source: 'withings', updated_at: now });
+    const { error } = await db.from('daily_steps').upsert(steps, { onConflict: 'id' });
+    if (error) throw new Error(error.message);
+    stepDays = steps.length;
   }
 
   await db.from('withings_tokens').update({ last_meas_update: m.body.updatetime || Math.floor(Date.now() / 1000), last_sync: now, last_error: null }).eq('user_id', t.user_id);
