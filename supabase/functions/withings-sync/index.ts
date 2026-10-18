@@ -45,7 +45,13 @@ async function freshToken(t: Record<string, any>) {
 
 // Erst Werte ab diesem Tag übernehmen (Zürcher Zeit), ältere Withings-Daten bleiben draussen.
 const START_DAY = Deno.env.get('WITHINGS_START_DAY') || '2026-10-11';
-const START_MS = Date.parse(`${START_DAY}T00:00:00+02:00`);
+/** Mitternacht eines Tages (YYYY-MM-DD) in Zürich als Millisekunden – Sommer- und Winterzeit. */
+function zurichMidnight(day: string) {
+  const noon = new Date(`${day}T12:00:00Z`);
+  const off = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Zurich', timeZoneName: 'shortOffset' }).format(noon).match(/GMT([+-]\d+)/);
+  return Date.parse(`${day}T00:00:00Z`) - (off ? +off[1] : 1) * 3600000;
+}
+const START_MS = zurichMidnight(START_DAY);
 
 const ymd = (d: Date) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Zurich' }).format(d); // YYYY-MM-DD
 
@@ -86,7 +92,7 @@ async function syncUser(t: Record<string, any>) {
   const debug: Record<string, unknown> = { daily: (a.body?.activities || []).map((x: any) => [x.date, x.steps, x.brand, x.is_tracker]) };
   for (const back of [1, 0]) {
     const day = ymd(new Date(Date.now() - back * 86400000));
-    const from = Date.parse(`${day}T00:00:00+02:00`) / 1000;
+    const from = zurichMidnight(day) / 1000;
     const i = await withings('/v2/measure', { action: 'getintradayactivity', startdate: String(from), enddate: String(Math.min(from + 86399, Math.floor(Date.now() / 1000))), data_fields: 'steps' }, token);
     if (i.status !== 0) { debug[`intra_${day}`] = `status ${i.status}`; continue; }
     let sum = 0;
