@@ -2,7 +2,7 @@
 // - stündlich von pg_cron (Header x-cron-secret): einmal pro Nacht um 4 Uhr (Zürich) für alle Verbundenen
 // - POST mit Login der App: sofort für die angemeldete Person ("Jetzt holen")
 // Beim Bereitstellen "Verify JWT" AUSSCHALTEN (der Cron-Aufruf hat kein Login); die Function prüft selbst.
-// Secrets: WITHINGS_CLIENT_ID, WITHINGS_CLIENT_SECRET, CRON_SECRET, optional WITHINGS_START_DAY (Standard 2026-10-12).
+// Secrets: WITHINGS_CLIENT_ID, WITHINGS_CLIENT_SECRET, CRON_SECRET, optional WITHINGS_START_DAY (Standard 2026-10-11).
 import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
 
 const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
@@ -44,7 +44,7 @@ async function freshToken(t: Record<string, any>) {
 }
 
 // Erst Werte ab diesem Tag übernehmen (Zürcher Zeit), ältere Withings-Daten bleiben draussen.
-const START_DAY = Deno.env.get('WITHINGS_START_DAY') || '2026-10-12';
+const START_DAY = Deno.env.get('WITHINGS_START_DAY') || '2026-10-11';
 const START_MS = Date.parse(`${START_DAY}T00:00:00+02:00`);
 
 const ymd = (d: Date) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Zurich' }).format(d); // YYYY-MM-DD
