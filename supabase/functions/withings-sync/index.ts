@@ -2,7 +2,7 @@
 // - stündlich von pg_cron (Header x-cron-secret): einmal pro Nacht um 4 Uhr (Zürich) für alle Verbundenen
 // - POST mit Login der App: sofort für die angemeldete Person ("Jetzt holen")
 // Beim Bereitstellen "Verify JWT" AUSSCHALTEN (der Cron-Aufruf hat kein Login); die Function prüft selbst.
-// Secrets: WITHINGS_CLIENT_ID, WITHINGS_CLIENT_SECRET, CRON_SECRET.
+// Secrets: WITHINGS_CLIENT_ID, WITHINGS_CLIENT_SECRET, CRON_SECRET, optional WITHINGS_START_DAY (Standard 2026-10-12).
 import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
 
 const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
@@ -43,6 +43,10 @@ async function freshToken(t: Record<string, any>) {
   return j.body.access_token;
 }
 
+// Erst Werte ab diesem Tag übernehmen (Zürcher Zeit), ältere Withings-Daten bleiben draussen.
+const START_DAY = Deno.env.get('WITHINGS_START_DAY') || '2026-10-12';
+const START_MS = Date.parse(`${START_DAY}T00:00:00+02:00`);
+
 const ymd = (d: Date) => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Zurich' }).format(d); // YYYY-MM-DD
 
 async function syncUser(t: Record<string, any>) {
@@ -59,6 +63,7 @@ async function syncUser(t: Record<string, any>) {
     const val = (type: number) => { const x = g.measures.find((v: any) => v.type === type); return x ? Math.round(x.value * Math.pow(10, x.unit) * 100) / 100 : null; };
     const weight = val(1), fat = val(6), muscle = val(76);
     if (weight == null && fat == null && muscle == null) continue;
+    if (g.date * 1000 < START_MS) continue;
     rows.push({
       id: await stableId(`withings:${t.user_id}:${g.grpid}`), user_id: t.user_id, external_id: `withings:${g.grpid}`, source: 'withings',
       measured_at: new Date(g.date * 1000).toISOString(), weight_kg: weight, fat_pct: fat, muscle_kg: muscle,
@@ -72,13 +77,13 @@ async function syncUser(t: Record<string, any>) {
   }
 
   // Schritte der letzten 14 Tage (Uhr oder Handy-App)
-  const a = await withings('/v2/measure', { action: 'getactivity', startdateymd: ymd(new Date(Date.now() - 14 * 86400000)), enddateymd: ymd(new Date()), data_fields: 'steps' }, token);
+  const a = await withings('/v2/measure', { action: 'getactivity', startdateymd: ymd(new Date(Math.max(START_MS, Date.now() - 14 * 86400000))), enddateymd: ymd(new Date()), data_fields: 'steps' }, token);
   if (a.status === 0) {
     const { data: existing } = await db.from('daily_steps').select('id, day').eq('user_id', t.user_id).is('deleted_at', null);
     const byDay = new Map((existing || []).map(r => [r.day, r.id]));
     const steps = [];
     for (const act of a.body.activities || []) {
-      if (!act.steps) continue;
+      if (!act.steps || act.date < START_DAY) continue;
       steps.push({ id: byDay.get(act.date) || await stableId(`withings-steps:${t.user_id}:${act.date}`), user_id: t.user_id, day: act.date, steps: act.steps, source: 'withings', updated_at: now });
     }
     if (steps.length) {
