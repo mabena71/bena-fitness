@@ -1,7 +1,8 @@
 import * as db from '../db.js';
-import { setTop, esc, KINDS, MUSCLES, toast, confirmDialog, parseNum } from '../ui.js';
+import { setTop, esc, KINDS, MUSCLES, toast, confirmDialog, parseNum, modal } from '../ui.js';
 import { resizeImage } from '../photo.js';
 import { icon } from '../icons.js';
+import { getMode } from '../app.js';
 
 const DEFAULT_MUSCLE = { machine: 'legs', free: 'arms', bodyweight: 'chest', cardio: 'cardio', sauna: 'recovery' };
 
@@ -28,7 +29,9 @@ export default {
     const gyms = db.all('gyms').sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
     const existingPhoto = ex?.photo_path ? await db.photoUrl(ex.id) : null;
 
+    const family = isNew && gymParam && getMode() === 'cloud';
     el.innerHTML = `
+      ${family ? `<button class="btn block" style="margin-bottom:12px" data-family>${icon('user', 18)} Aus Familien-Geräten wählen</button>` : ''}
       <div class="card">
         <label class="field"><span>Name</span><input class="input" data-k="name" value="${esc(st.name)}" placeholder="z. B. Beinpresse" ${isNew ? 'autofocus' : ''}></label>
         <div class="field"><span>Art</span><div class="seg" data-kind>
@@ -133,6 +136,23 @@ export default {
       location.hash = `#/ex/${saved.id}`;
     };
 
+    const fam = $('[data-family]');
+    if (fam) fam.onclick = async () => {
+      const picked = await pickFamilyDevice(db.get('gyms', gymParam)?.name || '');
+      if (!picked) return;
+      $('[data-k="name"]').value = picked.name;
+      st.kind = picked.kind || 'machine';
+      el.querySelectorAll('[data-kind] button').forEach(x => x.classList.toggle('on', x.dataset.v === st.kind));
+      st.muscle_group = picked.muscle_group || DEFAULT_MUSCLE[st.kind];
+      $('[data-k="muscle_group"]').value = st.muscle_group;
+      stepVisible();
+      if (picked.blob) {
+        st.photo = picked.blob;
+        $('[data-preview]').innerHTML = `<img src="${URL.createObjectURL(st.photo)}" alt="">`;
+      }
+      toast(`„${esc(picked.name)}“ übernommen – Einstellungen trägst du selbst ein`, '', 3500);
+    };
+
     const del = $('[data-del]');
     if (del) del.onclick = async () => {
       if (!(await confirmDialog(`„${ex.name}“ löschen? Die Sätze dieser Übung verschwinden aus den Auswertungen.`))) return;
@@ -142,3 +162,43 @@ export default {
     };
   },
 };
+
+/** Liste der Geräte, die andere Familienmitglieder im gleichen Studio angelegt haben. */
+async function pickFamilyDevice(gymName) {
+  const sync = await import('../sync.js');
+  let list;
+  try { list = await sync.rpc('family_exercises', { p_gym_name: gymName }); }
+  catch (e) { toast(esc(`Nicht erreichbar: ${e.message}`), '', 3500); return null; }
+  const own = new Set(db.all('exercises').map(e => e.name.trim().toLowerCase()));
+  return modal((m, close) => {
+    m.innerHTML = `<h2>Familien-Geräte im ${esc(gymName)}</h2>
+      ${list.length ? `<p class="muted small">Übernommen werden Name, Art, Muskelgruppe und Foto – nicht die Einstellungen.</p>
+      <ul class="list" data-list>${list.map((d, i) => `<li data-i="${i}" style="cursor:pointer">
+        <div class="gym-ico" data-thumb="${i}" style="width:56px;height:56px">${icon(KINDS[d.kind]?.icon || 'machine', 24)}</div>
+        <div class="grow"><b>${esc(d.name)}</b><div class="muted small">${esc(MUSCLES[d.muscle_group]?.label || '')} · von ${esc(d.owner_name)}${own.has(d.name.trim().toLowerCase()) ? ' · hast du schon' : ''}</div></div>
+        <span class="muted">›</span></li>`).join('')}</ul>`
+        : '<p class="muted">Noch niemand aus der Familie hat in diesem Studio Geräte angelegt.</p>'}
+      <div class="actions"><button class="btn" data-x>Abbrechen</button></div>`;
+    m.querySelector('[data-x]').onclick = () => close(null);
+    const blobs = {};
+    list.forEach(async (d, i) => {
+      if (!d.photo_path) return;
+      try {
+        const c = await sync.getClient();
+        const { data } = await c.storage.from('photos').download(d.photo_path);
+        if (!data) return;
+        blobs[i] = data;
+        const t = m.querySelector(`[data-thumb="${i}"]`);
+        if (t) t.innerHTML = `<img src="${URL.createObjectURL(data)}" alt="" style="object-fit:cover">`;
+      } catch { /* ohne Foto weiter */ }
+    });
+    m.querySelectorAll('[data-i]').forEach(li => li.onclick = async () => {
+      const d = list[+li.dataset.i];
+      let blob = blobs[li.dataset.i];
+      if (!blob && d.photo_path) {
+        try { const c = await sync.getClient(); blob = (await c.storage.from('photos').download(d.photo_path)).data; } catch { /* ohne Foto */ }
+      }
+      close({ ...d, blob });
+    });
+  });
+}
