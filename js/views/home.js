@@ -19,6 +19,16 @@ export default {
     const sess = sessions(data.sets, exById);
     const lastVisit = new Map();
     for (const s of sess) lastVisit.set(s.gym_id || 'anywhere', s.startTs);
+    // Saunagänge zählen auch als Besuch im Studio
+    const saunaGym = new Map(data.saunaExercises.map(e => [e.id, e.gym_id || 'anywhere']));
+    const saunaToday = new Map();
+    for (const s of data.sauna) {
+      const g = saunaGym.get(s.exercise_id), ts = Date.parse(s.performed_at);
+      if (!g) continue;
+      if (ts > (lastVisit.get(g) || 0)) lastVisit.set(g, ts);
+      if (dayKey(s.performed_at) === dayKey(new Date())) saunaToday.set(g, (saunaToday.get(g) || 0) + 1);
+    }
+    const saunaText = id => { const n = saunaToday.get(id); return n ? ` (${n} ${n === 1 ? 'Saunagang' : 'Saunagänge'})` : ''; };
     const gyms = [...data.gyms].sort((a, b) => (lastVisit.get(b.id) || 0) - (lastVisit.get(a.id) || 0));
     const exCount = id => data.exercises.filter(e => (e.gym_id || null) === id && !e.archived).length;
 
@@ -77,7 +87,7 @@ export default {
         ${gyms.map(g => `
           <a class="card tap gym-row" href="#/gym/${g.id}" style="text-decoration:none;color:inherit;display:flex">
             <div class="gym-ico" ${g.photo_path ? `data-gym-photo="${g.id}"` : `data-fam-photo="${esc(g.name)}"`}>${icon('building', 24)}</div>
-            <div class="grow"><b>${esc(g.name)}</b><div class="muted small">${exCount(g.id)} Übungen${lastVisit.get(g.id) ? ' · zuletzt ' + ago(lastVisit.get(g.id)) : ''}</div></div>
+            <div class="grow"><b>${esc(g.name)}</b><div class="muted small">${exCount(g.id)} Übungen${lastVisit.get(g.id) ? ' · zuletzt ' + ago(lastVisit.get(g.id)) : ''}${saunaText(g.id)}</div></div>
             <span class="muted">›</span>
           </a>`).join('')}
         <a class="card tap gym-row" href="#/gym/anywhere" style="text-decoration:none;color:inherit;display:flex">

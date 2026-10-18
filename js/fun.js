@@ -1,4 +1,4 @@
-// Lustige Vergleichsgrößen für bewegte Kilos, verlorenes Gewicht, Distanzen und Schritte.
+// Lustige Vergleichsgrössen für bewegte Kilos, verlorenes Gewicht, Distanzen und Schritte.
 import { n0, n1 } from './ui.js';
 
 const HEAVY = [

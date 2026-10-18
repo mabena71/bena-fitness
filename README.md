@@ -58,7 +58,7 @@ gegen einen simulierten Server (`js/tests-sync.js`). Erwartet wird: „Alle 44 T
 - **Rekord:** mehr Gewicht oder, beim gleichen Gewicht, mehr Wiederholungen (bei Cardio:
   weitere Distanz). Der allererste Trainingstag setzt nur die Basis. Aufwärmsätze zählen nie.
 - **Körper-Rekord:** neuer Bestwert des 7-Tage-Schnitts, höchstens einer pro Woche und
-  Wert. Erfolg heißt weniger Gewicht, weniger Fett, mehr Muskeln.
+  Wert. Erfolg heisst weniger Gewicht, weniger Fett, mehr Muskeln.
 - **Sauna:** Ein Gang wird mit Minuten erfasst. Sauna zählt nicht als Training, Volumen oder
   Rekord und hat eine eigene Statistik.
 - **Sync:** Alles wird zuerst lokal gespeichert. Die Outbox wird hochgeladen, danach holt die App
