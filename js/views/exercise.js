@@ -281,7 +281,7 @@ function drawChart(box, sets, ex) {
   const mode = chartMode(ex, sets);
   const info = MODE_INFO[mode];
   const data = byDay.map(([, l]) => info.f(l));
-  charts.line(box, labels, [{ label: info.title, data, color: mode === 'volume' ? charts.COLORS.accent : charts.COLORS.primary, points: 3, fill: true, fillColor: mode === 'volume' ? 'rgba(96,165,250,.16)' : undefined }], {
+  charts.line(box, labels, [{ label: info.title, data, color: mode === 'volume' ? charts.COLORS.accent : charts.COLORS.primary, points: 3, fill: true, fillColor: mode === 'volume' ? 'rgba(34,211,238,.16)' : undefined }], {
     options: {
       plugins: { legend: { display: false } },
       scales: {

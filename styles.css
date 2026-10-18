@@ -1,16 +1,17 @@
 :root {
-  --bg: #f3f5f9;
+  --bg: #f1f4f9;
   --surface: #ffffff;
-  --surface-2: #edf1f8;
-  --text: #111827;
-  --muted: #5f6b7d;
-  --line: #dfe4ee;
-  --primary: #2350c8;
-  --primary-dark: #1a3a99;
+  --surface-2: #eaeef5;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --primary: #3b82f6;
+  --navy: #0f172a;
+  --primary-dark: #1d4ed8;
   --primary-ink: #ffffff;
-  --primary-soft: #e4ebfb;
-  --accent: #2350c8;
-  --accent-soft: #e4ebfb;
+  --primary-soft: #e0ecff;
+  --accent: #3b82f6;
+  --accent-soft: #e0ecff;
   --good: #15803d;
   --good-soft: #dcfce7;
   --bad: #b91c1c;
@@ -351,3 +352,22 @@ h2 { font-size: 1rem; font-weight: 600; }
 .top-logo { width: 34px; height: 34px; border-radius: 9px; flex: 0 0 auto; box-shadow: 0 0 0 1.5px rgba(255,255,255,.55); }
 @media (max-width: 330px) { .top-logo { display: none; } }
 @media (min-width: 900px) { .top-logo { display: none; } }
+
+/* Farbwelt "Modern": Nachtblau für Kopfzeile, Navigation und Akzentflächen, leuchtendes Blau für Aktionen */
+.topbar { background: var(--navy); color: #fff; }
+.body-hero { background: linear-gradient(135deg, var(--navy), #1e3a8a); }
+.body-hero .trend.good { color: #86efac; }
+.level .badge-lvl { background: var(--navy); border-radius: 12px; }
+.bar > i { background: linear-gradient(90deg, #3b82f6, #22d3ee); }
+.bar.teal > i { background: var(--primary); }
+.chip.on { background: var(--navy); border-color: var(--navy); }
+.next-link { background: var(--navy); }
+.nav { background: var(--navy); border-top-color: var(--navy); }
+.nav a { color: #94a3b8; }
+.nav a.active { color: #fff; }
+.toast.record { background: var(--navy); }
+@media (min-width: 900px) {
+  .nav .brand { color: #fff; }
+  .nav a.active { background: rgba(255,255,255,.1); }
+  .topbar { background: var(--bg); color: var(--text); }
+}
