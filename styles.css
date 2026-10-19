@@ -237,11 +237,11 @@ textarea.input { min-height: 70px; resize: vertical; }
 .badge .s { font-size: .72rem; color: var(--muted); margin-top: 2px; }
 .badge.locked { opacity: .38; filter: grayscale(1); }
 
-.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; max-width: 380px; margin: 0 auto; }
+.cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; width: 100%; max-width: 380px; margin: 0 auto; }
 .cal .h { font-size: .7rem; color: var(--muted); text-align: center; font-weight: 700; }
-.cal .c { aspect-ratio: 1; border-radius: 8px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: .78rem; font-variant-numeric: tabular-nums; }
+.cal .c { aspect-ratio: 1; min-width: 0; border-radius: 8px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: .78rem; font-variant-numeric: tabular-nums; }
 .cal .c.on { background: var(--primary); color: #fff; font-weight: 700; }
-.cal .c.empty { background: transparent; }
+.cal .c.empty { background: transparent; padding: 0; }
 .cal .c.today { outline: 2px solid var(--accent); }
 
 .chart-box { position: relative; height: 220px; }
