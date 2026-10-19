@@ -22,6 +22,7 @@ App: https://mabena71.github.io/bena-fitness/ · Demo: https://mabena71.github.i
 | 14 | Ins-Studio-Meldung | „Ich gehe jetzt ins Win4“ als Benachrichtigung an die Familie | Claude | Opus | 45 | niedrig | Idee | 6 |
 | 15 | Gerät defekt melden | Gerät als defekt/gesperrt markieren, Familie sieht es im gleichen Studio | Claude | Sonnet | 30 | niedrig | Idee | — |
 | 16 | Weitere Ideen | Pausen-Timer, Steigerungs-Vorschlag, Ziele, Trainingspläne, Sprach-Eingabe, Familien-Challenge für 3, Fortschrittsfotos, PIN, „Passwort ändern“ | — | Sonnet | — | niedrig | Idee | — |
+| 17 | Sprachauswahl | App auf Deutsch, Englisch, Französisch und Italienisch; Wahl pro Person unter Mehr → Profil; alle Texte in Sprachdateien auslagern, Datums- und Zahlenformate pro Sprache | Claude | Sonnet | 120 | niedrig | Idee | — |
 
 ## Erledigt
 
