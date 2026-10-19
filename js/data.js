@@ -67,6 +67,13 @@ export async function primeRewards() {
   }
 }
 
+/** Die zuletzt erhaltenen Abzeichen (mit Datum, sonst in Listenreihenfolge). */
+export async function latestBadges(n = 3) {
+  const dates = await db.getMeta('badgeDates', {});
+  return [...rewards().earned].map((b, i) => ({ b, k: dates[b.id] || `0-${String(i).padStart(4, '0')}` }))
+    .sort((x, y) => (x.k < y.k ? 1 : -1)).slice(0, n).map(x => x.b);
+}
+
 /** Nach einer Änderung aufrufen: meldet neue Abzeichen und Level-Aufstiege. */
 export async function announceRewards() {
   const r = rewards();
@@ -85,7 +92,12 @@ export async function announceRewards() {
     setTimeout(() => toast(`${icon(b.icon)} Neues Abzeichen: <b>${esc(b.title)}</b>`, 'badge-t', 3600), delay);
     delay += 900;
   }
-  if (fresh.length) await db.setMeta('seenBadges', [...seen, ...fresh.map(b => b.id)]);
+  if (fresh.length) {
+    await db.setMeta('seenBadges', [...seen, ...fresh.map(b => b.id)]);
+    const dates = await db.getMeta('badgeDates', {});
+    for (const b of fresh) dates[b.id] = new Date().toISOString();
+    await db.setMeta('badgeDates', dates);
+  }
   if (r.level !== lastLevel) await db.setMeta('lastLevel', r.level);
 }
 

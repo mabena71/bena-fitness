@@ -1,6 +1,6 @@
 import * as db from '../db.js';
-import { snapshot, rewards, profile, gymName } from '../data.js';
-import { bodyTrend, sessions, monthRange, periodSummary, dayKey } from '../stats.js';
+import { snapshot, rewards, profile, gymName, latestBadges } from '../data.js';
+import { bodyTrend, sessions, monthRange, periodSummary, dayKey, weekKey, dayFromKey } from '../stats.js';
 import { setTop, esc, n1, n0, signed, ago, fmtMonth, tons, modal, toast, setText } from '../ui.js';
 import { openBodyEntry, openStepsEntry } from './body.js';
 import { gymPhotoKey } from './gym.js';
@@ -37,6 +37,8 @@ export default {
     const now = new Date();
     const [ms, me] = monthRange(now.getFullYear(), now.getMonth());
     const month = periodSummary(data, ms, me);
+    const weekStart = dayFromKey(weekKey(now));
+    const week = periodSummary(data, weekStart, now);
     const today = dayKey(now);
     const stepsToday = data.steps.find(s => s.day === today);
     const recent = [...r.records].reverse().slice(0, 3);
@@ -59,19 +61,19 @@ export default {
           <div class="muted small" style="margin-top:6px">Zuletzt gemessen ${ago(w.lastAt)}</div>` : `<p class="muted">Noch keine Messung. Tippe auf „+ Messung“.</p>`}
         </div>
         ${stepsCard(r.steps, stepsToday)}
-        <div class="card tap" data-go="#/rewards" style="grid-column:1/-1">
-          <div class="level">
+        ${activityCard(week, month, sess, now)}
+        <div class="card tap" data-go="#/rewards">
+          <div class="row spread"><b>Erfolge</b><span class="muted small">${r.earned.length} Abzeichen · ${r.records.length} Rekorde</span></div>
+          <div class="level" style="margin-top:10px">
             <div class="badge-lvl">${r.level}</div>
-            <div class="grow">
-              <b>${esc(r.title)}${prof.display_name ? '-' + esc(prof.display_name) : ''}</b>
-              <div class="muted small">${n0(r.into)} / ${n0(r.span)} Punkte bis Level ${r.level + 1}</div>
+            <div class="grow" style="min-width:0">
+              <b>Level ${r.level} · ${esc(r.title)}</b>
               <div class="bar" style="margin-top:6px"><i style="width:${r.pct.toFixed(1)}%"></i></div>
+              <div class="muted small" style="margin-top:4px">noch ${n0(r.next - r.xp)} Punkte bis Level ${r.level + 1}</div>
             </div>
           </div>
-          <div class="row spread" style="margin-top:14px">
-            <div><div class="muted small">${esc(fmtMonth(now))}</div><b>${month.days} Trainings · ${tons(month.volume)}${month.sauna?.count ? ` · ${month.sauna.count} Sauna` : ''}</b></div>
-            <div class="muted small" style="text-align:right">${r.earned.length} Abzeichen<br>${r.records.length} Rekorde</div>
-          </div>
+          <div class="latest-badges" data-latest></div>
+          ${r.near ? `<div class="near small">${icon(r.near.icon, 16)}<span>Fast geschafft: <b>${esc(r.near.title)}</b> <span class="muted">(${n0(r.near.prog[0])}/${n0(r.near.prog[1])})</span></span></div>` : ''}
         </div>
       </div>
 
@@ -100,6 +102,10 @@ export default {
     `;
 
     detectGym(el, data.gyms);
+    latestBadges(3).then(list => {
+      const box = el.querySelector('[data-latest]');
+      if (box && list.length) box.innerHTML = list.map(b => `<span class="lb" title="${esc(b.desc)}">${icon(b.icon, 18)}<span>${esc(b.title)}</span></span>`).join('');
+    });
     el.querySelectorAll('[data-fam-photo]').forEach(async ic => {
       const u = await familyGymPhotoUrl(ic.dataset.famPhoto);
       if (u) ic.innerHTML = `<img src="${u}" alt="">`;
@@ -132,6 +138,23 @@ export default {
  * Standort-Erkennung: Ist die Ortung erlaubt, wird das Studio in der Nähe einmal pro
  * App-Start automatisch geöffnet. Sonst gibt es einen Knopf, der danach fragt.
  */
+/** Aktivität: diese Woche gross, der Monat klein, dazu das letzte Training. */
+function activityCard(week, month, sess, now) {
+  const last = sess[sess.length - 1];
+  const stat = (v, label) => `<div><div class="big-n">${v}</div><div class="muted small">${label}</div></div>`;
+  return `
+        <div class="card tap" data-go="#/stats">
+          <div class="row spread"><b>Aktivität</b><span class="muted small">Diese Woche</span></div>
+          <div class="act-grid">
+            ${stat(week.days, week.days === 1 ? 'Training' : 'Trainings')}
+            ${stat(week.sauna?.count || 0, week.sauna?.count === 1 ? 'Saunagang' : 'Saunagänge')}
+            ${stat(tons(week.volume), 'bewegt')}
+          </div>
+          <div class="muted small" style="margin-top:10px">${esc(fmtMonth(now))}: ${month.days} Trainings · ${tons(month.volume)}${month.sauna?.count ? ` · ${month.sauna.count} Sauna` : ''}</div>
+          <div class="muted small">${last ? `Zuletzt ${esc(gymName(last.gym_id))}, ${ago(last.startTs)}` : 'Noch kein Training erfasst'}</div>
+        </div>`;
+}
+
 const WD = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
 /** Schritte-Karte: Ring bis zum Ziel, Serie in Folge und die laufende Woche. */

@@ -3,7 +3,7 @@ import {
   sessions, isRecord, recordEvents, ghostCompare, comeback, prefill, rolling, bodyRecordEvents,
   weekStreak, sinkingWeekStreak, roundStep, dayKey, addDays, analyze, saunaStats, challengeScore, stepStats,
 } from './stats.js';
-import { levelNeed, computeRewards } from './rewards.js';
+import { levelNeed, computeRewards, rankFor } from './rewards.js';
 import * as fun from './fun.js';
 import { categoryOf } from './ui.js';
 import { distanceM, nearestGym } from './geo.js';
@@ -232,6 +232,12 @@ test('Schritte: Abzeichen für Serien und Zieltage', () => {
   const r = computeRewards({ gyms: [], exercises: [], sets: [], body: [], steps, stepGoal: 10000 });
   const got = id => r.badges.find(b => b.id === id).done;
   eq([got('stepstreak_3'), got('stepstreak_7'), got('stepstreak_14'), got('stepdays_10')], [true, true, false, false]);
+});
+
+test('Ränge: Stufen innerhalb eines Rangs und nächster Rang', () => {
+  eq([1, 2, 3, 4, 5, 11, 12, 27].map(l => rankFor(l).title), ['Neuling I', 'Neuling II', 'Anfänger I', 'Anfänger II', 'Stammgast I', 'Eisen IV', 'Stahl I', 'Legende III']);
+  eq(rankFor(4).next, { name: 'Stammgast', at: 5 });
+  eq(rankFor(30).next, null);
 });
 
 // Abgleich gegen simulierten Server (asynchron)

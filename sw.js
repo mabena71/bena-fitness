@@ -1,7 +1,7 @@
 // Service Worker: App läuft auch ohne Netz.
 // Eigene Dateien: zuerst Netz (damit Updates sofort ankommen), sonst Cache.
 // Bibliotheken vom CDN: zuerst Cache (Versionen sind fest).
-const CACHE = 'fitness-v25';
+const CACHE = 'fitness-v26';
 const SHELL = [
   './', 'index.html', 'styles.css', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon.png',

@@ -398,3 +398,13 @@ h2 { font-size: 1rem; font-weight: 600; }
 .week-dots .wd.missed i { background: var(--surface-2); border-color: #cbd5e1; }
 .week-dots .wd.open i { border-color: var(--primary); border-style: dashed; }
 .week-dots .wd.open span { color: var(--primary); font-weight: 700; }
+
+/* Startseite: Aktivität und Erfolge */
+.act-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+.act-grid .big-n { font-size: 1.5rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.latest-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.latest-badges:empty { display: none; }
+.latest-badges .lb { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px 4px 7px; border-radius: 999px; background: var(--primary-soft); color: var(--primary-dark); font-size: .8rem; font-weight: 600; max-width: 100%; }
+.latest-badges .lb span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.near { display: flex; gap: 6px; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.near > .ic { color: #f59e0b; }
