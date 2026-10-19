@@ -419,3 +419,13 @@ h2 { font-size: 1rem; font-weight: 600; }
 .badge-group { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
 .badge-group summary { cursor: pointer; padding: 4px 0; }
 .badge-cat { margin: 14px 0 8px; font-size: .9rem; }
+
+/* Level-Plakette: beschriftet, blau, als Blickfang */
+.level .badge-lvl { width: 62px; height: 66px; flex-direction: column; gap: 0; border-radius: 14px;
+  background: linear-gradient(160deg, #60a5fa 0%, var(--primary) 45%, var(--primary-dark) 100%);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, .35), inset 0 1px 0 rgba(255, 255, 255, .35); }
+.level .badge-lvl small { font-size: .58rem; font-weight: 800; letter-spacing: .12em; opacity: .9; line-height: 1; }
+.level .badge-lvl span { font-size: 1.6rem; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.level .badge-lvl.lg { width: 76px; height: 82px; }
+.level .badge-lvl.lg small { font-size: .66rem; }
+.level .badge-lvl.lg span { font-size: 2rem; }

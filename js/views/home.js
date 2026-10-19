@@ -65,9 +65,9 @@ export default {
         <div class="card tap" data-go="#/rewards">
           <div class="row spread"><b>Erfolge</b><span class="muted small">${r.earned.length} Abzeichen · ${r.records.length} Rekorde</span></div>
           <div class="level" style="margin-top:10px">
-            <div class="badge-lvl">${r.level}</div>
+            <div class="badge-lvl" aria-label="Level ${r.level}"><small>LEVEL</small><span>${r.level}</span></div>
             <div class="grow" style="min-width:0">
-              <b>Level ${r.level} · ${esc(r.title)}</b>
+              <b>${esc(r.title)}</b>
               <div class="muted small">${r.rank.of ? `Stufe ${r.rank.sub} von ${r.rank.of}${r.rank.next ? ` · ${esc(r.rank.next.name)} ab Level ${r.rank.next.at}` : ''}` : 'Höchster Rang'}</div>
               <div class="bar" style="margin-top:6px"><i style="width:${r.pct.toFixed(1)}%"></i></div>
               <div class="muted small" style="margin-top:4px">noch ${n0(r.next - r.xp)} Punkte bis Level ${r.level + 1}</div>

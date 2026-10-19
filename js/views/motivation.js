@@ -20,9 +20,9 @@ export default {
     el.innerHTML = `
       <div class="card">
         <div class="level">
-          <div class="badge-lvl" style="width:70px;height:70px;font-size:1.7rem">${r.level}</div>
+          <div class="badge-lvl lg" aria-label="Level ${r.level}"><small>LEVEL</small><span>${r.level}</span></div>
           <div class="grow">
-            <div style="font-size:1.2rem;font-weight:800">Level ${r.level} · ${esc(r.title)}</div>
+            <div style="font-size:1.2rem;font-weight:800">${esc(r.title)}</div>
             <div class="rank-stages small">${r.rank.of ? `${Array.from({ length: r.rank.of }, (_, k) => `<i class="${k < r.rank.sub ? 'on' : ''}"></i>`).join('')}<span>Stufe ${r.rank.sub} von ${r.rank.of}${r.rank.next ? ` · ${esc(r.rank.next.name)} ab Level ${r.rank.next.at}` : ''}</span>` : `<span>Stufe ${r.rank.sub} · höchster Rang</span>`}</div>
             <div class="muted small">${n0(r.xp)} Punkte · noch ${n0(r.next - r.xp)} bis Level ${r.level + 1}</div>
             <div class="bar" style="margin-top:8px;height:12px"><i style="width:${r.pct.toFixed(1)}%"></i></div>
