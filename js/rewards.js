@@ -29,7 +29,14 @@ export function rankFor(level) {
   RANKS.forEach(([from], k) => { if (level >= from) i = k; });
   const [from, name] = RANKS[i];
   const sub = level - from + 1, next = RANKS[i + 1];
-  return { name, sub, title: `${name} ${roman(sub)}`, next: next ? { name: next[1], at: next[0] } : null };
+  return { name, sub, of: next ? next[0] - from : null, title: `${name} ${roman(sub)}`, next: next ? { name: next[1], at: next[0] } : null };
+}
+/** Alle Ränge mit Level-Bereich und Stufen, für die Übersicht. */
+export function allRanks() {
+  return RANKS.map(([from, name], i) => {
+    const to = RANKS[i + 1] ? RANKS[i + 1][0] - 1 : null;
+    return { name, from, to, stages: to ? Array.from({ length: to - from + 1 }, (_, k) => roman(k + 1)) : null };
+  });
 }
 export function titleFor(level) { return rankFor(level).title; }
 

@@ -237,6 +237,7 @@ test('Schritte: Abzeichen für Serien und Zieltage', () => {
 test('Ränge: Stufen innerhalb eines Rangs und nächster Rang', () => {
   eq([1, 2, 3, 4, 5, 11, 12, 27].map(l => rankFor(l).title), ['Neuling I', 'Neuling II', 'Anfänger I', 'Anfänger II', 'Stammgast I', 'Eisen IV', 'Stahl I', 'Legende III']);
   eq(rankFor(4).next, { name: 'Stammgast', at: 5 });
+  eq([rankFor(3).sub, rankFor(3).of, rankFor(10).of, rankFor(26).of], [1, 2, 4, null]);
   eq(rankFor(30).next, null);
 });
 
