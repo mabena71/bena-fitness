@@ -2,6 +2,7 @@
 // plus die Erkennung neuer Level und Abzeichen nach einer Änderung.
 import * as db from './db.js';
 import { computeRewards } from './rewards.js';
+import { DEFAULT_STEP_GOAL } from './stats.js';
 import { toast, confetti, vibrate, esc, MUSCLES, categoryOf } from './ui.js';
 import { icon } from './icons.js';
 
@@ -22,11 +23,17 @@ export function snapshot() {
     checks: db.all('day_checks'),
     body: db.all('body_metrics'),
     steps: db.all('daily_steps'),
+    stepGoal: stepGoal(),
   };
 }
 
 export function profile() {
   return db.all('profiles')[0] || { display_name: '', avatar_emoji: '', settings: {} };
+}
+/** Persönliches Schritte-Ziel (Standard 10 000). */
+export function stepGoal() {
+  const g = +profile().settings?.stepGoal;
+  return g >= 1000 ? g : DEFAULT_STEP_GOAL;
 }
 export async function saveProfile(p) {
   const cur = db.all('profiles')[0];

@@ -501,3 +501,49 @@ export function saunaStats(data, from, to = new Date()) {
   const minutes = list.reduce((a, s) => a + (s.duration_min || 0), 0);
   return { count: list.length, minutes, days: new Set(list.map(s => dayKey(s.performed_at))).size, avg: list.length ? minutes / list.length : null, perWeek, byType };
 }
+
+export const DEFAULT_STEP_GOAL = 10000;
+
+/**
+ * Schritte-Ziel: Serie (Tage in Folge am Ziel), beste Serie, bester Tag, Zieltage,
+ * perfekte Wochen (Mo–So alle am Ziel) und die aktuelle Woche für die Startseite.
+ * Heute zählt mit, sobald das Ziel erreicht ist; vorher reisst die Serie noch nicht ab.
+ */
+export function stepStats(steps, goal = DEFAULT_STEP_GOAL, now = new Date()) {
+  const byDay = new Map();
+  for (const s of steps || []) if (s.day) byDay.set(s.day, Math.max(byDay.get(s.day) || 0, s.steps || 0));
+  const today = dayKey(now);
+  const hit = k => (byDay.get(k) || 0) >= goal;
+  const todaySteps = byDay.get(today) || 0;
+  const todayDone = todaySteps >= goal;
+
+  let current = 0;
+  for (let d = addDays(dayFromKey(today), -1); hit(dayKey(d)); d = addDays(d, -1)) current++;
+  if (todayDone) current++;
+
+  const goalDays = [...byDay.keys()].filter(k => k <= today && hit(k)).sort();
+  let best = 0, run = 0, prev = null;
+  for (const k of goalDays) {
+    run = prev && dayKey(addDays(dayFromKey(prev), 1)) === k ? run + 1 : 1;
+    best = Math.max(best, run);
+    prev = k;
+  }
+
+  let bestDay = null;
+  for (const [day, n] of byDay) if (n > 0 && (!bestDay || n > bestDay.steps)) bestDay = { day, steps: n };
+
+  // Abgeschlossene Wochen, in denen jeder Tag am Ziel war
+  const thisWeek = weekKey(now);
+  const weeks = new Map();
+  for (const k of goalDays) { const w = weekKey(dayFromKey(k)); if (w < thisWeek) weeks.set(w, (weeks.get(w) || 0) + 1); }
+  const perfectWeeks = [...weeks.values()].filter(n => n === 7).length;
+
+  const monday = dayFromKey(thisWeek);
+  const week = Array.from({ length: 7 }, (_, i) => {
+    const k = dayKey(addDays(monday, i));
+    const n = byDay.get(k) || 0;
+    return { day: k, steps: n, state: k > today ? 'future' : n >= goal ? 'done' : k === today ? 'open' : n > 0 ? 'missed' : 'empty' };
+  });
+
+  return { goal, today: todaySteps, todayDone, remaining: Math.max(0, goal - todaySteps), current, best, bestDay, goalDays: goalDays.length, perfectWeeks, week };
+}

@@ -11,8 +11,7 @@ App: https://mabena71.github.io/bena-fitness/ · Demo: https://mabena71.github.i
 | 2 | Feedback einarbeiten | Anpassungen nach dem Studio-Test | Claude | Sonnet | 60 | hoch | offen | 1 |
 | 3 | Sabine und Remy anmelden | App installieren, mit eigenem Konto anmelden; Claude prüft danach in der Datenbank | Sabine, Remy | — | 10 | hoch | offen | — |
 | 4 | Familien-Geräte testen | Remy/Sabine: „Aus Familien-Geräten wählen“ im Win4; Studio-Logos erscheinen | Sabine, Remy | — | 10 | mittel | offen | 3 |
-| 5 | Withings-Entwicklerkonto | `docs/WITHINGS-UND-PUSH.md` Teil A (Freigabe eventuell einige Tage), Claude führt durch | Maurice | — | 15 | mittel | offen | — |
-| 6 | Withings und Push einschalten | Schlüssel-Seite, Secrets, Edge Functions bereitstellen, Zeitplan (Teile B–F), VAPID_PUBLIC_KEY in `js/config.js`, Test | Claude + Maurice | Opus | 45 | mittel | offen | 5 |
+| 6 | Push einschalten | Schlüssel-Seite, VAPID-Secrets, Edge Function `notify`, Zeitplan (pg_cron, CRON_SECRET über Vault), VAPID_PUBLIC_KEY in `js/config.js`, Test | Claude + Maurice | Opus | 45 | mittel | offen | — |
 | 7 | Challenge testen | Code erzeugen, beitreten, Wochenwertung prüfen | Maurice + Sabine | — | 10 | niedrig | offen | 3 |
 | 8 | Erholungs-Karte | Körper-Grafik: welche Muskeln Pause brauchen (rot/grün), Vorschlag „Heute ideal: …“ (Empfehlung) | Claude | Opus | 60 | mittel | Idee | — |
 | 9 | Maximalkraft-Schätzung | Geschätztes 1-Wiederholungs-Maximum pro Gerät (Epley) als Diagramm-Option und Rekord (Empfehlung) | Claude | Sonnet | 30 | mittel | Idee | — |
@@ -41,6 +40,9 @@ App: https://mabena71.github.io/bena-fitness/ · Demo: https://mabena71.github.i
 | E11 | Familien-Geräte | Geräte anderer übernehmen (Name, Art, Muskelgruppe, Foto); Studio-Logos für die ganze Familie | Claude | Opus | 18.10.2026 |
 | E12 | Activfitness-Logos | Logo als PNG bereitgestellt (nicht im Repo), von Maurice bei allen Studios hochgeladen | Maurice + Claude | Opus | 18.10.2026 |
 | E13 | Tests | `tests.html`: 45 automatische Tests | Claude | Opus | 18.10.2026 |
+| E20 | Withings | Entwicklerkonto, Edge Functions, Verbindung für Maurice; Werte ab 11.10.2026; Abruf beim Öffnen (alle 15 Min.); Handy-Schritte über Minutenwerte | Claude + Maurice | Opus | 18.10.2026 |
+| E21 | Kleinigkeiten | Sauna zählt als Studiobesuch, Kalender auf schmalen Handys, veraltete „bald“-Texte, Knopf „Fotografieren“ mit Kamera | Claude | Opus | 19.10.2026 |
+| E22 | Schritte-Ziel | Karte auf der Startseite (Ring, Serie „Tage in Folge“ ohne Joker, Woche), Ziel pro Person änderbar, Abzeichen für Serien, Zieltage, perfekte Woche, +20 Punkte pro Zieltag | Claude | Opus | 19.10.2026 |
 
 ## Rückfragen
 

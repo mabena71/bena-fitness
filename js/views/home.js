@@ -58,7 +58,8 @@ export default {
           </div>
           <div class="muted small" style="margin-top:6px">Zuletzt gemessen ${ago(w.lastAt)}</div>` : `<p class="muted">Noch keine Messung. Tippe auf „+ Messung“.</p>`}
         </div>
-        <div class="card tap" data-go="#/rewards">
+        ${stepsCard(r.steps, stepsToday)}
+        <div class="card tap" data-go="#/rewards" style="grid-column:1/-1">
           <div class="level">
             <div class="badge-lvl">${r.level}</div>
             <div class="grow">
@@ -71,13 +72,6 @@ export default {
             <div><div class="muted small">${esc(fmtMonth(now))}</div><b>${month.days} Trainings · ${tons(month.volume)}${month.sauna?.count ? ` · ${month.sauna.count} Sauna` : ''}</b></div>
             <div class="muted small" style="text-align:right">${r.earned.length} Abzeichen<br>${r.records.length} Rekorde</div>
           </div>
-        </div>
-      </div>
-
-      <div class="card" style="margin-top:12px">
-        <div class="row spread">
-          <div><span class="muted small">Schritte heute</span><div style="font-weight:800;font-size:1.2rem">${stepsToday ? n0(stepsToday.steps) : '–'}</div></div>
-          <button class="btn sm" data-steps>${stepsToday ? 'Ändern' : '+ Eintragen'}</button>
         </div>
       </div>
 
@@ -116,7 +110,7 @@ export default {
     });
     el.querySelectorAll('[data-go]').forEach(c => c.addEventListener('click', e => { if (!e.target.closest('button')) location.hash = c.dataset.go; }));
     el.querySelector('[data-add-body]').onclick = async e => { e.stopPropagation(); if (await openBodyEntry()) ctx.refresh(); };
-    el.querySelector('[data-steps]').onclick = async () => { if (await openStepsEntry()) ctx.refresh(); };
+    el.querySelector('[data-steps]').onclick = async e => { e.stopPropagation(); if (await openStepsEntry()) ctx.refresh(); };
     el.querySelector('[data-add-gym]').onclick = async () => {
       const name = await modal((m, close) => {
         m.innerHTML = `<h2>Neues Studio</h2><label class="field"><span>Name</span><input class="input" autofocus placeholder="z. B. Hotelgym Ferien"></label>
@@ -138,6 +132,34 @@ export default {
  * Standort-Erkennung: Ist die Ortung erlaubt, wird das Studio in der Nähe einmal pro
  * App-Start automatisch geöffnet. Sonst gibt es einen Knopf, der danach fragt.
  */
+const WD = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+
+/** Schritte-Karte: Ring bis zum Ziel, Serie in Folge und die laufende Woche. */
+function stepsCard(st, entry) {
+  const pct = Math.min(1, st.today / st.goal), R = 40, C = 2 * Math.PI * R;
+  const goal = n0(st.goal);
+  const streakText = st.current
+    ? `<b>${st.current} ${st.current === 1 ? 'Tag' : 'Tage'} in Folge</b><div class="muted small">${st.todayDone ? 'Heute geschafft!' : `Heute noch ${n0(st.remaining)}, damit die Serie weiterläuft`}</div>`
+    : `<b>Noch keine Serie</b><div class="muted small">${st.todayDone ? 'Heute geschafft – die Serie beginnt!' : `Ab ${goal} Schritten am Tag beginnt sie`}</div>`;
+  return `
+        <div class="card steps-card tap" data-go="#/body">
+          <div class="row spread"><b>Schritte</b><button class="btn sm" data-steps>${entry ? 'Ändern' : '+ Eintragen'}</button></div>
+          <div class="row" style="gap:16px;margin-top:8px;align-items:center">
+            <svg class="steps-ring" viewBox="0 0 100 100" width="104" height="104" aria-label="${n0(st.today)} von ${goal} Schritten">
+              <circle cx="50" cy="50" r="${R}" class="track"/>
+              ${pct > 0 ? `<circle cx="50" cy="50" r="${R}" class="fill ${st.todayDone ? 'done' : ''}" stroke-dasharray="${(pct * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 50 50)"/>` : ''}
+              <text x="50" y="49" class="num">${st.today ? n0(st.today) : '–'}</text>
+              <text x="50" y="65" class="sub">von ${goal}</text>
+            </svg>
+            <div class="grow" style="min-width:0">
+              <div class="streak ${st.current ? 'on' : ''}">${icon('flame', 22)}<div>${streakText}</div></div>
+              <div class="muted small" style="margin-top:6px">Beste Serie ${st.best} ${st.best === 1 ? 'Tag' : 'Tage'} · ${st.goalDays} Zieltage</div>
+            </div>
+          </div>
+          <div class="week-dots">${st.week.map((d, i) => `<div class="wd ${d.state}" title="${d.steps ? n0(d.steps) + ' Schritte' : ''}"><i></i><span>${WD[i]}</span></div>`).join('')}</div>
+        </div>`;
+}
+
 async function detectGym(el, gyms) {
   const withGeo = gyms.filter(g => g.lat != null);
   const box = el.querySelector('[data-geo-box]');

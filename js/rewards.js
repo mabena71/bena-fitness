@@ -1,11 +1,11 @@
 // Erfahrungspunkte, Level und Abzeichen. Alles wird aus den Daten berechnet, nichts gespeichert.
 import {
   sessions, recordEvents, bodyRecordEvents, bodyLoss, sinkingWeekStreak, weekStreak,
-  working, volume, dayKey,
+  working, volume, dayKey, stepStats, DEFAULT_STEP_GOAL,
 } from './stats.js';
 import { MUSCLES, categoryOf } from './ui.js';
 
-export const XP = { set: 10, warmup: 2, session: 50, measure: 15, record: 50, bodyRecord: 50, badge: 100, sauna: 5 };
+export const XP = { set: 10, warmup: 2, session: 50, measure: 15, record: 50, bodyRecord: 50, badge: 100, sauna: 5, stepGoal: 20 };
 
 export const levelNeed = L => 100 * (L - 1) * L;
 export const muscleNeed = L => 25 * (L - 1) * L;
@@ -35,8 +35,9 @@ export function computeRewards(data) {
   const totalVol = ws.reduce((a, s) => a + volume(s), 0);
   const measureDays = new Set(data.body.map(m => dayKey(m.measured_at)));
   const steps = data.steps || [];
+  const stepInfo = stepStats(steps, data.stepGoal || DEFAULT_STEP_GOAL);
 
-  const badges = computeBadges({ data, exById, sess, recs, bodyRecs, ws, days, totalVol, measureDays, steps });
+  const badges = computeBadges({ data, exById, sess, recs, bodyRecs, ws, days, totalVol, measureDays, steps, stepInfo });
   const earned = badges.filter(b => b.done);
 
   let xp = 0;
@@ -44,6 +45,7 @@ export function computeRewards(data) {
   xp += sess.length * XP.session;
   xp += measureDays.size * XP.measure;
   xp += steps.reduce((a, s) => a + Math.min(15, 5 + Math.floor((s.steps || 0) / 2000) * 2), 0);
+  xp += stepInfo.goalDays * XP.stepGoal;
   xp += recs.length * XP.record + bodyRecs.length * XP.bodyRecord;
   xp += earned.length * XP.badge;
   xp += (data.sauna || []).length * XP.sauna;
@@ -55,7 +57,7 @@ export function computeRewards(data) {
   const muscles = Object.entries(muscleXp).map(([k, v]) => ({ key: k, ...levelOf(v, muscleNeed) }));
 
   const lvl = levelOf(xp, levelNeed);
-  return { ...lvl, title: titleFor(lvl.level), muscles, badges, earned, records: recs, bodyRecords: bodyRecs, sessions: sess };
+  return { ...lvl, title: titleFor(lvl.level), muscles, badges, earned, records: recs, bodyRecords: bodyRecs, sessions: sess, steps: stepInfo };
 }
 
 function computeBadges(c) {
@@ -97,9 +99,13 @@ function computeBadges(c) {
 
   const maxSteps = c.steps.reduce((a, s) => Math.max(a, s.steps || 0), 0);
   const totalSteps = c.steps.reduce((a, s) => a + (s.steps || 0), 0);
-  add('steps_10k', 'steps', '10 000 Schritte', 'An einem Tag 10 000 Schritte', maxSteps >= 10000, 'Schritte');
-  add('steps_20k', 'steps', '20 000 Schritte', 'An einem Tag 20 000 Schritte', maxSteps >= 20000, 'Schritte');
+  add('steps_10k', 'steps', "10'000 Schritte", "An einem Tag 10'000 Schritte", maxSteps >= 10000, 'Schritte');
+  add('steps_20k', 'steps', "20'000 Schritte", "An einem Tag 20'000 Schritte", maxSteps >= 20000, 'Schritte');
   add('steps_1m', 'globe', 'Millionär', '1 Million Schritte gesamt', totalSteps >= 1e6, 'Schritte');
+  const si = c.stepInfo, goal = si.goal.toLocaleString('de-CH');
+  for (const n of [3, 7, 14, 30, 60, 100]) add(`stepstreak_${n}`, n >= 30 ? 'zap' : 'flame', `${n} Tage in Folge`, `${n} Tage in Folge mindestens ${goal} Schritte`, si.best >= n, 'Schritte');
+  for (const n of [10, 50, 100, 365]) add(`stepdays_${n}`, 'steps', `${n} Zieltage`, `An ${n} Tagen mindestens ${goal} Schritte`, si.goalDays >= n, 'Schritte');
+  add('stepweek_1', 'star', 'Perfekte Woche', `Montag bis Sonntag jeden Tag mindestens ${goal} Schritte`, si.perfectWeeks >= 1, 'Schritte');
   return out;
 }
 

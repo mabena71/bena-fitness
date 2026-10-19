@@ -52,7 +52,10 @@ export default {
         <div class="row" style="align-items:flex-start">
           <div class="hero"><div class="ph" data-preview>${existingPhoto ? `<img src="${existingPhoto}" alt="">` : icon(KINDS[st.kind].icon, 36)}</div></div>
           <div class="grow">
-            <label class="btn block" style="cursor:pointer">${icon('camera', 18)} Foto aufnehmen / wählen<input type="file" accept="image/*" data-photo hidden></label>
+            <div class="row" style="gap:6px">
+              <label class="btn primary grow" style="cursor:pointer">${icon('camera', 18)} Fotografieren<input type="file" accept="image/*" capture="environment" data-photo hidden></label>
+              <label class="btn grow" style="cursor:pointer">${icon('image', 18)} Aus Galerie<input type="file" accept="image/*" data-photo hidden></label>
+            </div>
             <label class="toggle"><input type="checkbox" data-sketch ${sketchPreferred() ? 'checked' : ''}> Als Zeichnung darstellen</label>
             ${existingPhoto ? '<button type="button" class="btn sm block" data-sketch-existing style="margin-top:6px">Bisheriges Foto in Zeichnung umwandeln</button>' : ''}
             <p class="muted small">Zeichnungen wirken einheitlich und sachlich. Das Foto wird verkleinert gespeichert.</p>
@@ -112,7 +115,7 @@ export default {
       st.photo = sketch ? await toSketch(original) : original;
       $('[data-preview]').innerHTML = `<img src="${URL.createObjectURL(st.photo)}" alt="">`;
     };
-    $('[data-photo]').onchange = async e => {
+    el.querySelectorAll('[data-photo]').forEach(inp => inp.onchange = async e => {
       const file = e.target.files[0];
       if (!file) return;
       try {
@@ -122,7 +125,8 @@ export default {
         console.error(err);
         toast('Foto konnte nicht gelesen werden');
       }
-    };
+      e.target.value = '';
+    });
     $('[data-sketch]').onchange = () => { setSketchPreferred($('[data-sketch]').checked); showPhoto(); };
     const convert = $('[data-sketch-existing]');
     if (convert) convert.onclick = async () => {

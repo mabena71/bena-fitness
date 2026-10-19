@@ -1,5 +1,5 @@
 import * as db from '../db.js';
-import { profile, saveProfile } from '../data.js';
+import { profile, saveProfile, stepGoal } from '../data.js';
 import { setTop, esc, toast, confirmDialog, downloadFile } from '../ui.js';
 import { getMode, setMode, MODES, reloadApp } from '../app.js';
 import { APP_VERSION } from '../version.js';
@@ -21,6 +21,8 @@ export default {
       <div class="card">
         <div class="card-title"><h3>Profil</h3></div>
         <label class="field"><span>Name</span><input class="input" data-name value="${esc(p.display_name || '')}" placeholder="z. B. Maurice"></label>
+        <label class="field"><span>Schritte-Ziel pro Tag</span><input class="input" data-step-goal type="number" inputmode="numeric" min="1000" max="50000" step="500" value="${stepGoal()}"></label>
+        <p class="muted small" style="margin-top:-4px">Zählt für die Serie „Tage in Folge“ und die Schritte-Abzeichen. Standard: 10 000.</p>
         <button class="btn primary" data-save>Speichern</button>
       </div>
 
@@ -73,7 +75,9 @@ export default {
       <div class="center" style="margin-top:10px"><button class="btn sm" data-reload>App neu laden</button><p class="muted small">BENA Fit · Version ${APP_VERSION}</p></div>`;
 
     el.querySelector('[data-save]').onclick = async () => {
-      await saveProfile({ display_name: el.querySelector('[data-name]').value.trim() });
+      const goal = Math.round(+el.querySelector('[data-step-goal]').value / 100) * 100;
+      if (!(goal >= 1000 && goal <= 50000)) { toast('Schritte-Ziel bitte zwischen 1000 und 50 000'); return; }
+      await saveProfile({ display_name: el.querySelector('[data-name]').value.trim(), settings: { ...(profile().settings || {}), stepGoal: goal } });
       toast('Profil gespeichert');
       ctx.refresh();
     };

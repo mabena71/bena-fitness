@@ -377,3 +377,24 @@ h2 { font-size: 1rem; font-weight: 600; }
   display: flex; align-items: center; gap: 12px; width: min(94vw, 460px); padding: 10px 12px 10px 16px;
   background: var(--surface); color: var(--text); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 24px rgba(15,23,42,.18); font-weight: 600; font-size: .92rem; }
 .update-bar span { flex: 1; }
+
+/* Schritte-Karte auf der Startseite: Ring bis zum Ziel, Serie, Woche */
+.steps-ring { flex: 0 0 auto; }
+.steps-ring circle { fill: none; stroke-width: 9; }
+.steps-ring .track { stroke: var(--surface-2); }
+.steps-ring .fill { stroke: var(--primary); stroke-linecap: round; transition: stroke-dasharray .6s ease; }
+.steps-ring .fill.done { stroke: var(--good); }
+.steps-ring text { text-anchor: middle; fill: var(--text, #0f172a); font-family: inherit; }
+.steps-ring .num { font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.steps-ring .sub { font-size: 10px; fill: var(--muted); }
+.streak { display: flex; gap: 8px; align-items: flex-start; color: var(--muted); }
+.streak > .ic { margin-top: 1px; }
+.streak b { color: var(--text, #0f172a); }
+.streak.on > .ic { color: #f59e0b; }
+.week-dots { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin-top: 12px; }
+.week-dots .wd { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: .7rem; color: var(--muted); }
+.week-dots .wd i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--line); }
+.week-dots .wd.done i { background: var(--good); border-color: var(--good); }
+.week-dots .wd.missed i { background: var(--surface-2); border-color: #cbd5e1; }
+.week-dots .wd.open i { border-color: var(--primary); border-style: dashed; }
+.week-dots .wd.open span { color: var(--primary); font-weight: 700; }

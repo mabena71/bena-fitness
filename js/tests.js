@@ -1,7 +1,7 @@
 // Tests für die reinen Rechenfunktionen. Aufruf: tests.html im Browser öffnen.
 import {
   sessions, isRecord, recordEvents, ghostCompare, comeback, prefill, rolling, bodyRecordEvents,
-  weekStreak, sinkingWeekStreak, roundStep, dayKey, addDays, analyze, saunaStats, challengeScore,
+  weekStreak, sinkingWeekStreak, roundStep, dayKey, addDays, analyze, saunaStats, challengeScore, stepStats,
 } from './stats.js';
 import { levelNeed, computeRewards } from './rewards.js';
 import * as fun from './fun.js';
@@ -202,6 +202,36 @@ test('Kategorien: alte Muskelgruppen werden Push/Pull/Legs zugeordnet', () => {
   eq(categoryOf('arms', 'Armstrecker'), 'push');
   eq(categoryOf('legs', 'Beinpresse'), 'legs');
   eq(categoryOf('push', 'egal'), 'push');
+});
+
+test('Schritte: Serie, beste Serie, perfekte Woche und Wochenleiste', () => {
+  const now = new Date(2026, 9, 21, 12); // Mittwoch
+  const st = (day, steps) => ({ day, steps });
+  const base = [
+    ...['05', '06', '07', '08', '09', '10', '11'].map(d => st(`2026-10-${d}`, 10000)), // Mo–So: perfekte Woche
+    st('2026-10-15', 9999), st('2026-10-19', 12000), st('2026-10-20', 11000),
+  ];
+  let r = stepStats([...base, st('2026-10-21', 3000)], 10000, now);
+  eq([r.current, r.todayDone, r.remaining, r.best, r.goalDays, r.perfectWeeks], [2, false, 7000, 7, 9, 1]);
+  eq(r.week.map(w => w.state), ['done', 'done', 'open', 'future', 'future', 'future', 'future']);
+  eq(r.bestDay, { day: '2026-10-19', steps: 12000 });
+  r = stepStats([...base, st('2026-10-21', 10500)], 10000, now);
+  eq([r.current, r.todayDone, r.remaining], [3, true, 0]);
+});
+
+test('Schritte: Lücke beendet die Serie, eigenes Ziel zählt', () => {
+  const now = new Date(2026, 9, 21, 12);
+  eq(stepStats([{ day: '2026-10-19', steps: 15000 }], 10000, now).current, 0);
+  const r = stepStats([{ day: '2026-10-20', steps: 8200 }, { day: '2026-10-21', steps: 8000 }], 8000, now);
+  eq([r.current, r.todayDone, r.week[1].state], [2, true, 'done']);
+  eq(stepStats([{ day: '2026-10-20', steps: 8200 }], 10000, now).week[1].state, 'missed');
+});
+
+test('Schritte: Abzeichen für Serien und Zieltage', () => {
+  const steps = Array.from({ length: 7 }, (_, i) => ({ day: dayKey(addDays(new Date(), -i)), steps: 11000 }));
+  const r = computeRewards({ gyms: [], exercises: [], sets: [], body: [], steps, stepGoal: 10000 });
+  const got = id => r.badges.find(b => b.id === id).done;
+  eq([got('stepstreak_3'), got('stepstreak_7'), got('stepstreak_14'), got('stepdays_10')], [true, true, false, false]);
 });
 
 // Abgleich gegen simulierten Server (asynchron)
