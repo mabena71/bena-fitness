@@ -53,7 +53,7 @@ export default {
             <div class="card">
         <div class="card-title"><h3>Speicherort</h3></div>
         <p class="small">Aktuell: <b>${esc(MODES[mode].label)}</b>${mode === 'demo' ? ' – mit Beispieldaten' : ''}</p>
-        ${mode === 'local' ? `<p class="muted small">Die Daten liegen nur in diesem Browser. Mit dem Login (Etappe 3) werden sie auf Handy und PC synchronisiert; ${pending} Einträge sind dafür vorgemerkt.</p>` : ''}
+        ${mode === 'local' ? `<p class="muted small">Die Daten liegen nur in diesem Browser. Nach dem Anmelden mit Konto kannst du sie einmalig ins Konto übernehmen; ${pending} Einträge sind dafür vorgemerkt.</p>` : ''}
         <div class="row wrap">
           ${mode === 'demo' ? '<button class="btn primary" data-mode="local">Eigenes Tagebuch starten</button><button class="btn" data-reset>Demo zurücksetzen</button>' : '<button class="btn" data-mode="demo">Demo ansehen</button>'}
           ${cloudConfigured() && mode !== 'cloud' ? '<button class="btn primary" data-to-login>Mit Konto anmelden</button>' : ''}
@@ -61,9 +61,10 @@ export default {
       </div>
 
       ${mode === 'cloud' ? cloudExtrasHtml() : `<div class="card">
-        <div class="card-title"><h3>Mit Konto (bald)</h3></div>
+        <div class="card-title"><h3>Nur mit Konto</h3></div>
+        <p class="muted small">Du bist auf diesem Gerät nicht angemeldet. Mit „Mit Konto anmelden“ oben bekommst du:</p>
         <ul class="list">
-          <li><span class="emoji">${icon('cloud', 18)}</span><div class="grow"><b>Login und Abgleich</b><div class="muted small">Gleiche Daten auf Handy und PC, getrennte Konten für Maurice und Sabine</div></div></li>
+          <li><span class="emoji">${icon('cloud', 18)}</span><div class="grow"><b>Login und Abgleich</b><div class="muted small">Gleiche Daten auf Handy und PC, jede Person mit eigenem Konto</div></div></li>
           <li><span class="emoji">${icon('scale', 18)}</span><div class="grow"><b>Withings</b><div class="muted small">Gewicht, Fett und Schritte automatisch übernehmen</div></div></li>
           <li><span class="emoji">${icon('crown', 18)}</span><div class="grow"><b><a href="#/challenge" style="color:inherit">Paar-Challenge</a></b><div class="muted small">Wochenduell nur mit Kennzahlen</div></div></li>
           <li><span class="emoji">${icon('bell', 18)}</span><div class="grow"><b>Benachrichtigungen</b><div class="muted small">Wochenbilanz am Sonntag und Erinnerungen</div></div></li>

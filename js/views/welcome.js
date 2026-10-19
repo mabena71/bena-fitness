@@ -14,7 +14,7 @@ export default {
           <button class="btn primary big block" data-m="demo">▶ Demo ausprobieren</button>
           <p class="muted small">Mit Beispieldaten aus 10 Wochen, damit du alle Diagramme, Rekorde und Abzeichen siehst.</p>
           <button class="btn big block" data-m="local">Eigenes Tagebuch starten</button>
-          <p class="muted small">Leer, mit deinen drei Studios. Die Daten bleiben vorerst auf diesem Gerät. Mit dem Login (kommt bald) werden sie zwischen Handy und PC synchronisiert.</p>
+          <p class="muted small">Leer, mit deinen drei Studios. Die Daten bleiben nur auf diesem Gerät. Du kannst sie später beim Anmelden ins Konto übernehmen.</p>
           ${cloudConfigured() ? '<a class="btn primary big block" href="#/login">Mit Konto anmelden</a><p class="muted small">Gleiche Daten auf Handy und PC.</p>' : '<button class="btn big block" disabled>Mit Konto anmelden (bald)</button>'}
         </div>
       </div>`;
