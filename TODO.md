@@ -31,6 +31,7 @@ Aufwand = Schätzung in Minuten · Modell = empfohlenes Claude-Modell (Opus = kn
 
 | Nr | Thema | Details | Erledigt am |
 |---|---|---|---|
+| E39 | Startseite neu geordnet | Körper → Schritte → Studios (darüber «Diese Woche: 2 Trainings · 1 Sauna · 4.3 t», Tipp öffnet Statistik) → «Erfolge & Rekorde» in einer Karte (Level, 3 letzte Rekorde, neueste Abzeichen, Fast geschafft); Karte «Aktivität» entfällt (Variante a). PC: Körper und Schritte nebeneinander, Studios und Erfolge über die ganze Breite (Entscheid Maurice 20.10.) | 20.10.2026 |
 | E38 | Bildeffekte A und B | Auswahl im Geräte-Formular nur noch «Farbstift» (Variante A, ganzes Bild als Farbzeichnung, sofort, ohne Download) und «Gerät hervorgehoben» (Variante B); Rückfall bei zu langem Freistellen ist jetzt Farbstift (Entscheid Maurice 20.10.) | 20.10.2026 |
 | E37 | Freistellen auf dem Handy | Laufende Anzeige «Gerät wird erkannt … 23 s», Abbruch nach 3 Minuten mit Bleistift-Zeichnung als Rückfall, Speichern wartet auf das fertige Bild (auf dem Handy blieb das Bild grau mit «…»). Grafikchip (WebGPU) geprüft: mit der Bibliothek in aktuellem Chrome nicht nutzbar | 20.10.2026 |
 | E36 | Heute erledigte Geräte grün | In der Studio-Ansicht grüner Rahmen, grüner Name und Stempel «✓ heute 3 Sätze» ab dem ersten Arbeitssatz (Aufwärmen allein zählt nicht; Entscheid Maurice 20.10.; Nr. 22) | 20.10.2026 |
