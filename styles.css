@@ -429,3 +429,8 @@ h2 { font-size: 1rem; font-weight: 600; }
 .level .badge-lvl.lg { width: 76px; height: 82px; }
 .level .badge-lvl.lg small { font-size: .66rem; }
 .level .badge-lvl.lg span { font-size: 2rem; }
+
+/* Studio: heute schon gemachte Geräte grün */
+.tile.done { box-shadow: 0 0 0 3px var(--good), var(--shadow); }
+.tile.done .name { color: var(--good); }
+.tile .ph .done-stamp { position: absolute; top: 6px; right: 6px; display: inline-flex; align-items: center; gap: 3px; background: var(--good); color: #fff; font-size: .72rem; font-weight: 700; border-radius: 8px; padding: 2px 8px 2px 6px; box-shadow: 0 1px 4px rgba(0,0,0,.25); }

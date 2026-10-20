@@ -52,15 +52,25 @@ export async function toSketch(blob, max = 1280) {
  * «Gerät hervorgehoben»: das Gerät bleibt als farbiges Foto, die Umgebung wird zur Bleistiftzeichnung.
  * Das Freistellen läuft im Browser (beim ersten Mal ca. 40 MB Download, danach aus dem Cache).
  */
-export async function toFocus(blob, onStatus = () => {}) {
+export async function toFocus(blob, onStatus = () => {}, timeoutMs = 180000) {
   const sketchBlob = await toSketch(blob);
-  onStatus('Gerät wird freigestellt …');
+  onStatus('Werkzeug wird geladen …');
   const { removeBackground } = await import('https://esm.sh/@imgly/background-removal@1.4.5');
-  const maskBlob = await removeBackground(blob, {
+  let downloading = false;
+  const t0 = Date.now();
+  // Laufende Anzeige, damit man sieht, dass gerechnet wird (auf dem Handy bis etwa eine Minute)
+  const tick = setInterval(() => { if (!downloading) onStatus(`Gerät wird erkannt … ${Math.round((Date.now() - t0) / 1000)} s (auf dem Handy bis etwa 2 Min.)`); }, 1000);
+  const opts = () => ({
     model: 'small',
     output: { format: 'image/png', type: 'mask' },
-    progress: (key, cur, total) => { if (/fetch/.test(key) && total) onStatus(`Einmaliger Download ${Math.round(cur / total * 100)} % …`); },
+    progress: (key, cur, total) => {
+      if (/fetch/.test(key) && total) { downloading = cur < total; onStatus(`Einmaliger Download ${Math.round(cur / total * 100)} % …`); }
+    },
   });
+  let maskBlob;
+  try {
+    maskBlob = await Promise.race([removeBackground(blob, opts()), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), timeoutMs))]);
+  } finally { clearInterval(tick); }
   const [sk, orig, mk] = await Promise.all([bitmap(sketchBlob), bitmap(blob), bitmap(maskBlob)]);
   const w = sk.width, h = sk.height;
   const read = img => { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0, w, h); return g.getImageData(0, 0, w, h); };

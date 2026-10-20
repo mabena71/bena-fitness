@@ -113,10 +113,12 @@ export default {
     let style = photoStyle();
     let run = 0;
     const status = t => { $('[data-style-status]').textContent = t; };
-    const showPhoto = async () => {
+    let pending = null;
+    const showPhoto = () => (pending = render().finally(() => { pending = null; }));
+    const render = async () => {
       if (!original) return;
       const my = ++run;
-      $('[data-preview]').innerHTML = '<span class="muted small">…</span>';
+      $('[data-preview]').innerHTML = '<span class="muted small">wird berechnet …</span>';
       try {
         const out = await renderStyle(original, style, t => { if (my === run) status(t); });
         if (my !== run) return;
@@ -125,8 +127,11 @@ export default {
       } catch (err) {
         console.error(err);
         if (my !== run) return;
-        st.photo = original;
-        status('Freistellen hat nicht geklappt (Netz?). Das Foto wird unverändert gespeichert.');
+        // Rückfall: Bleistiftzeichnung, damit das Gerät trotzdem ein einheitliches Bild bekommt
+        try { st.photo = await renderStyle(original, 'sketch'); } catch { st.photo = original; }
+        status(err.message === 'timeout'
+          ? 'Das Freistellen dauert auf diesem Gerät zu lange. Gespeichert wird die Bleistiftzeichnung; am PC geht es schneller.'
+          : 'Freistellen hat nicht geklappt (Netz?). Gespeichert wird die Bleistiftzeichnung.');
       }
       $('[data-preview]').innerHTML = `<img src="${URL.createObjectURL(st.photo)}" alt="">`;
     };
@@ -174,6 +179,7 @@ export default {
     $('[data-save]').onclick = async () => {
       const name = $('[data-k="name"]').value.trim();
       if (!name) { toast('Bitte einen Namen eingeben'); $('[data-k="name"]').focus(); return; }
+      if (pending) { toast('Das Bild wird noch berechnet – gespeichert wird, sobald es fertig ist'); await pending; }
       const row = {
         ...(ex ? { id: ex.id } : {}),
         name,

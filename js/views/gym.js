@@ -1,7 +1,7 @@
 import * as db from '../db.js';
 import { gymName } from '../data.js';
 import { setTop, esc, ago, setText, MUSCLES, KINDS, categoryOf, modal, confirmDialog, toast } from '../ui.js';
-import { working, byTime } from '../stats.js';
+import { working, byTime, dayKey } from '../stats.js';
 import { resizeImage } from '../photo.js';
 import { icon } from '../icons.js';
 import { currentPosition } from '../geo.js';
@@ -46,6 +46,9 @@ export default {
 
     const lastSet = new Map();
     for (const s of working(db.all('sets')).sort(byTime)) lastSet.set(s.exercise_id, s);
+    // Heute schon gemacht: ab dem ersten Arbeitssatz (Aufwärmen allein zählt nicht)
+    const today = dayKey(new Date()), doneToday = new Map();
+    for (const s of working(db.all('sets'))) if (dayKey(s.performed_at) === today) doneToday.set(s.exercise_id, (doneToday.get(s.exercise_id) || 0) + 1);
 
     const ownBanner = gym?.photo_path ? await db.photoUrl(gymPhotoKey(gym.id)) : null;
     const banner = ownBanner || (gym ? await Promise.race([familyGymPhotoUrl(gym.name), new Promise(r => setTimeout(() => r(null), 1500))]) : null);
@@ -81,15 +84,17 @@ export default {
       const list = all.filter(e => (filter === 'all' || (categoryOf(e.muscle_group, e.name)) === filter) && (!q || e.name.toLowerCase().includes(q)));
       tiles.innerHTML = list.map((e, i) => {
         const s = lastSet.get(e.id);
-        return `<a class="tile" href="#/ex/${e.id}">
-          <div class="ph" data-photo="${e.photo_path ? e.id : ''}">${icon(KINDS[e.kind]?.icon || 'machine', 36)}${hasOrder && e.sort_order != null ? `<span class="order">${i + 1}</span>` : ''}</div>
+        const n = doneToday.get(e.id);
+        const stamp = n ? `<span class="done-stamp">${icon('check', 14)} heute ${n} ${e.kind === 'sauna' ? (n === 1 ? 'Gang' : 'Gänge') : (n === 1 ? 'Satz' : 'Sätze')}</span>` : '';
+        return `<a class="tile ${n ? 'done' : ''}" href="#/ex/${e.id}">
+          <div class="ph" data-photo="${e.photo_path ? e.id : ''}">${icon(KINDS[e.kind]?.icon || 'machine', 36)}${hasOrder && e.sort_order != null ? `<span class="order">${i + 1}</span>` : ''}${stamp}</div>
           <div class="body"><div class="name">${esc(e.name)}</div>
           <div class="last">${s ? `${setText(s, e.kind)} · ${ago(s.performed_at)}` : 'noch nie'}</div></div></a>`;
       }).join('');
       for (const ph of tiles.querySelectorAll('[data-photo]')) {
         if (!ph.dataset.photo) continue;
         const u = await db.photoUrl(ph.dataset.photo);
-        if (u) { const badge = ph.querySelector('.order'); ph.innerHTML = `<img src="${u}" alt="" loading="lazy">`; if (badge) ph.appendChild(badge); }
+        if (u) { const keep = [...ph.querySelectorAll('.order, .done-stamp')]; ph.innerHTML = `<img src="${u}" alt="" loading="lazy">`; keep.forEach(k => ph.appendChild(k)); }
       }
     };
     draw();

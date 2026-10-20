@@ -10,7 +10,6 @@ Aufwand = Schätzung in Minuten · Modell = empfohlenes Claude-Modell (Opus = kn
 |---|---|---|---|---|---|---|---|---|---|
 | 20 | 1 | Neue Version am Handy ansehen | Startseite (Schritte-Karte, Aktivität, Erfolge, Level-Plakette), Erfolge (Abzeichen X von Y, Rang-Stufen), Knopf «Fotografieren» beim Gerätefoto | Maurice | – | 10 | hoch | offen | – |
 | 1 | 1 | Studio-Test | Geräte mit Foto anlegen, Sätze erfassen, Flugmodus, Sauna, Standort speichern; Feedback mit Screenshots. Erster Teil erledigt (Standort gespeichert, Sauna erfasst) | Maurice | – | 60 | hoch | in Arbeit | – |
-| 22 | 1 | Heute erledigte Geräte grün | In der Studio-Ansicht Geräte, an denen heute schon mindestens ein Arbeitssatz erfasst wurde, grün markieren (grüner Rahmen und Häkchen-Stempel, z. B. «✓ heute 3 Sätze»); Aufwärmsätze allein zählen nicht? – beim Bau klären. Wunsch Maurice 20.10. | Claude | Sonnet | 20 | hoch | offen | – |
 | 2 | 1 | Feedback einarbeiten | Anpassungen nach dem Studio-Test | Claude | Sonnet | 60 | hoch | laufend | 1 |
 | 3 | 1 | Sabine und Remy anmelden | Sabine ist angemeldet (Name fehlt noch), Remy hat sich angemeldet; Claude prüft danach in der Datenbank | Sabine, Remy | – | 10 | hoch | in Arbeit | – |
 | 19 | 1 | Withings für Sabine | Sabine verbindet unter Mehr → Withings ihr eigenes Konto (Uhr und Waage); Werte ab 11.10.2026 | Sabine | – | 5 | hoch | offen | 3 |
@@ -32,6 +31,8 @@ Aufwand = Schätzung in Minuten · Modell = empfohlenes Claude-Modell (Opus = kn
 
 | Nr | Thema | Details | Erledigt am |
 |---|---|---|---|
+| E37 | Freistellen auf dem Handy | Laufende Anzeige «Gerät wird erkannt … 23 s», Abbruch nach 3 Minuten mit Bleistift-Zeichnung als Rückfall, Speichern wartet auf das fertige Bild (auf dem Handy blieb das Bild grau mit «…»). Grafikchip (WebGPU) geprüft: mit der Bibliothek in aktuellem Chrome nicht nutzbar | 20.10.2026 |
+| E36 | Heute erledigte Geräte grün | In der Studio-Ansicht grüner Rahmen, grüner Name und Stempel «✓ heute 3 Sätze» ab dem ersten Arbeitssatz (Aufwärmen allein zählt nicht; Entscheid Maurice 20.10.; Nr. 22) | 20.10.2026 |
 | E35 | Gerät hervorgehoben | Neue Darstellung der Gerätefotos (Variante B, Wahl Maurice 20.10.): Gerät farbig als Foto, Umgebung als Bleistiftzeichnung; Freistellen im Browser (einmalig ca. 40 MB Download, Modell «small»). Wahl Foto · Bleistift · Gerät hervorgehoben im Geräte-Formular, Standard «Gerät hervorgehoben». Originalfoto wird ab jetzt mitgespeichert (`<id>-orig`), damit die Darstellung jederzeit wechselbar ist; bestehende Fotos umstellbar, sofern noch farbig gespeichert | 20.10.2026 |
 | E34 | Vorbelegung Satz für Satz | Der n-te Satz heute bekommt die Werte des n-ten Satzes vom letzten Trainingstag (inkl. Aufwärmsatz mit Haken); mehr Sätze als letztes Mal → letzter Arbeitssatz von heute; Comeback-Abschlag gilt für alle Sätze (Wunsch Maurice 20.10.) | 20.10.2026 |
 | E33 | Rekorde ab 8 Wiederholungen | Bei Geräten und freien Gewichten zählt ein Satz erst ab 8 Wiederholungen als Rekord bzw. Bestwert (Eigengewicht ohne Zusatzgewicht, Cardio und Sauna wie bisher). Bisherige Rekorde werden neu berechnet (Wunsch Maurice 20.10.) | 20.10.2026 |
