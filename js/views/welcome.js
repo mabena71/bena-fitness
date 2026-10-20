@@ -9,12 +9,12 @@ export default {
       <div class="welcome">
         <img src="icons/icon-192.png" alt="">
         <h1>BENA Fit</h1>
-        <p class="muted">Geräte, Gewichte und Wiederholungen in Bellevue, Archhöfe und Win4 festhalten und die Fortschritte sehen.</p>
+        <p class="muted">Geräte, Gewichte und Wiederholungen im Fitnessstudio festhalten und die Fortschritte sehen.</p>
         <div class="stack">
           <button class="btn primary big block" data-m="demo">▶ Demo ausprobieren</button>
           <p class="muted small">Mit Beispieldaten aus 10 Wochen, damit du alle Diagramme, Rekorde und Abzeichen siehst.</p>
           <button class="btn big block" data-m="local">Eigenes Tagebuch starten</button>
-          <p class="muted small">Leer, mit deinen drei Studios. Die Daten bleiben nur auf diesem Gerät. Du kannst sie später beim Anmelden ins Konto übernehmen.</p>
+          <p class="muted small">Leer, du legst dein Studio selbst an. Die Daten bleiben nur auf diesem Gerät. Du kannst sie später beim Anmelden ins Konto übernehmen.</p>
           ${cloudConfigured() ? '<a class="btn primary big block" href="#/login">Mit Konto anmelden</a><p class="muted small">Gleiche Daten auf Handy und PC.</p>' : '<button class="btn big block" disabled>Mit Konto anmelden (bald)</button>'}
         </div>
       </div>`;
@@ -22,7 +22,7 @@ export default {
       if (b.dataset.m === 'local') {
         const name = await modal((m, close) => {
           m.innerHTML = `<h2>Wie heisst du?</h2>
-            <label class="field"><span>Vorname</span><input class="input" autofocus placeholder="z. B. Maurice" autocomplete="given-name"></label>
+            <label class="field"><span>Vorname</span><input class="input" autofocus placeholder="z. B. Alex" autocomplete="given-name"></label>
             <p class="muted small">Erscheint in der Begrüssung, im Level-Titel und in der Paar-Challenge.</p>
             <div class="actions"><button class="btn" data-x>Überspringen</button><button class="btn primary" data-ok>Weiter</button></div>`;
           const inp = m.querySelector('input');

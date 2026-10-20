@@ -7,6 +7,7 @@ import { levelNeed, computeRewards, rankFor } from './rewards.js';
 import * as fun from './fun.js';
 import { categoryOf } from './ui.js';
 import { distanceM, nearestGym } from './geo.js';
+import { studioRecords } from './data.js';
 
 const results = [];
 function test(name, fn) {
@@ -258,6 +259,14 @@ test('Vorbelegung: Satz für Satz wie beim letzten Mal, auch Aufwärmen', () => 
   eq(prefill([...last, set('p', at(0, 0, 1), 30, 12, { is_warmup: true })], e), { weight_kg: 50, reps: 10 }, 'nach dem Aufwärmen Satz 2 vom letzten Mal');
   const today3 = [...noWarm, set('p', at(0, 0, 1), 52.5, 9), set('p', at(0, 0, 2), 55, 8)];
   eq(prefill(today3, e), { weight_kg: 55, reps: 8 }, 'mehr Sätze als letztes Mal: letzter Satz von heute');
+});
+
+test('Eigenes Studio: Name getrimmt, Saunen ohne Leere und Doppelte', () => {
+  const { gym, rows } = studioRecords('  Mein Studio ', ['Dampfbad', ' ', 'dampfbad', 'Finnische Sauna'], 2);
+  eq([gym.name, gym.sort], ['Mein Studio', 2]);
+  eq(rows.map(r => r.name), ['Dampfbad', 'Finnische Sauna']);
+  ok(rows.every(r => r.gym_id === gym.id && r.kind === 'sauna' && r.muscle_group === 'recovery'), 'Saunen gehören zum Studio');
+  eq(studioRecords('Solo').rows.length, 0);
 });
 
 // Abgleich gegen simulierten Server (asynchron)

@@ -5,7 +5,6 @@ import { working, byTime, dayKey } from '../stats.js';
 import { resizeImage } from '../photo.js';
 import { icon } from '../icons.js';
 import { currentPosition } from '../geo.js';
-import { familyGymPhotoUrl } from '../family.js';
 
 let filter = 'all';
 
@@ -50,8 +49,7 @@ export default {
     const today = dayKey(new Date()), doneToday = new Map();
     for (const s of working(db.all('sets'))) if (dayKey(s.performed_at) === today) doneToday.set(s.exercise_id, (doneToday.get(s.exercise_id) || 0) + 1);
 
-    const ownBanner = gym?.photo_path ? await db.photoUrl(gymPhotoKey(gym.id)) : null;
-    const banner = ownBanner || (gym ? await Promise.race([familyGymPhotoUrl(gym.name), new Promise(r => setTimeout(() => r(null), 1500))]) : null);
+    const banner = gym?.photo_path ? await db.photoUrl(gymPhotoKey(gym.id)) : null;
 
     let detected = null;
     try { detected = sessionStorage.getItem('geo.detected'); sessionStorage.removeItem('geo.detected'); } catch { /* egal */ }

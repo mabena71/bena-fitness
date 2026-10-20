@@ -1,11 +1,11 @@
 import * as db from '../db.js';
-import { snapshot, rewards, profile, gymName, latestBadges } from '../data.js';
+import { snapshot, rewards, profile, gymName, latestBadges, createStudio, SAUNA_SUGGESTIONS } from '../data.js';
 import { bodyTrend, sessions, periodSummary, dayKey, weekKey, dayFromKey } from '../stats.js';
 import { setTop, esc, n1, n0, signed, ago, tons, modal, toast, setText } from '../ui.js';
 import { openBodyEntry, openStepsEntry } from './body.js';
 import { gymPhotoKey } from './gym.js';
-import { familyGymPhotoUrl } from '../family.js';
 import { icon, globeIcon } from '../icons.js';
+import { getMode } from '../app.js';
 import { permissionState, currentPosition, nearestGym } from '../geo.js';
 
 export default {
@@ -62,11 +62,12 @@ export default {
       </div>
 
       <div class="row spread" style="margin-top:22px;align-items:baseline"><h2 style="margin:0">Studios</h2>
-        <a class="week-line small" href="#/stats">${weekLine(week)}</a></div>
+        ${gyms.length ? `<a class="week-line small" href="#/stats">${weekLine(week)}</a>` : ''}</div>
+      ${gyms.length ? '' : '<div data-first-gym style="margin-top:10px"></div>'}
       <div class="stack" id="gyms" style="margin-top:10px">
         ${gyms.map(g => `
           <a class="card tap gym-row" href="#/gym/${g.id}" style="text-decoration:none;color:inherit;display:flex">
-            <div class="gym-ico" ${g.photo_path ? `data-gym-photo="${g.id}"` : `data-fam-photo="${esc(g.name)}"`}>${icon('building', 24)}</div>
+            <div class="gym-ico" ${g.photo_path ? `data-gym-photo="${g.id}"` : ''}>${icon('building', 24)}</div>
             <div class="grow"><b>${esc(g.name)}</b><div class="muted small">${exCount(g.id)} Übungen${lastVisit.get(g.id) ? ' · zuletzt ' + ago(lastVisit.get(g.id)) : ''}${saunaText(g.id)}</div></div>
             <span class="muted">›</span>
           </a>`).join('')}
@@ -100,13 +101,10 @@ export default {
     `;
 
     detectGym(el, data.gyms);
+    if (!gyms.length) firstGymCard(el.querySelector('[data-first-gym]'), ctx);
     latestBadges(3).then(list => {
       const box = el.querySelector('[data-latest]');
       if (box && list.length) box.innerHTML = list.map(b => `<span class="lb" title="${esc(b.desc)}">${icon(b.icon, 18)}<span>${esc(b.title)}</span></span>`).join('');
-    });
-    el.querySelectorAll('[data-fam-photo]').forEach(async ic => {
-      const u = await familyGymPhotoUrl(ic.dataset.famPhoto);
-      if (u) ic.innerHTML = `<img src="${u}" alt="">`;
     });
     el.querySelectorAll('[data-gym-photo]').forEach(async ic => {
       const u = await db.photoUrl(gymPhotoKey(ic.dataset.gymPhoto));
@@ -116,21 +114,65 @@ export default {
     el.querySelector('[data-add-body]').onclick = async e => { e.stopPropagation(); if (await openBodyEntry()) ctx.refresh(); };
     el.querySelector('[data-steps]').onclick = async e => { e.stopPropagation(); if (await openStepsEntry()) ctx.refresh(); };
     el.querySelector('[data-add-gym]').onclick = async () => {
-      const name = await modal((m, close) => {
-        m.innerHTML = `<h2>Neues Studio</h2><label class="field"><span>Name</span><input class="input" autofocus placeholder="z. B. Hotelgym Ferien"></label>
-          <div class="actions"><button class="btn" data-x>Abbrechen</button><button class="btn primary" data-ok>Speichern</button></div>`;
-        const inp = m.querySelector('input');
-        m.querySelector('[data-x]').onclick = () => close(null);
-        m.querySelector('[data-ok]').onclick = () => close(inp.value.trim());
-        inp.onkeydown = e => { if (e.key === 'Enter') close(inp.value.trim()); };
-      });
-      if (!name) return;
-      await db.put('gyms', { name, sort: data.gyms.length, lat: null, lng: null });
-      toast(`Studio „${esc(name)}“ angelegt`);
+      const r = await studioDialog('Neues Studio', 'z. B. Hotelgym Ferien');
+      if (!r) return;
+      await createStudio(r.name, r.saunas);
+      toast(`Studio „${esc(r.name)}“ angelegt`);
       ctx.refresh();
     };
   },
 };
+
+/**
+ * Leerer Zustand ohne Studio: führt zum eigenen Studio. In einem Konto erst nach dem ersten
+ * Abgleich, sonst würde bei bestehenden Daten ein zweites Studio entstehen.
+ */
+async function firstGymCard(box, ctx) {
+  if (!box) return;
+  if (getMode() === 'cloud' && !(await db.getMeta('initialPullDone'))) {
+    box.innerHTML = `<div class="card muted small">${navigator.onLine ? 'Deine Daten werden geladen …' : 'Sobald du online bist, werden deine Daten geladen.'}</div>`;
+    const sync = await import('../sync.js');
+    const off = sync.onStatus(st => { if (st.state === 'ok') { off(); if (box.isConnected) ctx.refresh(); } });
+    return;
+  }
+  box.innerHTML = `<div class="card first-gym">
+    <div class="gym-ico" style="margin-bottom:10px">${icon('building', 24)}</div>
+    <b>Willkommen! Lege dein Studio an.</b>
+    <p class="muted small">Dort erfasst du deine Geräte, Gewichte und Wiederholungen. Weitere Studios kannst du jederzeit hinzufügen.</p>
+    <button class="btn primary block" data-first>Dein Studio anlegen</button></div>`;
+  box.querySelector('[data-first]').onclick = async () => {
+    const r = await studioDialog('Dein Studio', 'z. B. Fitness im Quartier', true);
+    if (!r) return;
+    if (!db.all('gyms').length) await createStudio(r.name, r.saunas);
+    toast(`Studio „${esc(r.name)}“ angelegt`);
+    ctx.refresh();
+  };
+}
+
+/** Dialog für Studio-Name und (optional) Sauna-Arten. Liefert { name, saunas } oder null. */
+function studioDialog(title, placeholder, withSauna = false) {
+  return modal((m, close) => {
+    m.innerHTML = `<h2>${title}</h2>
+      <label class="field"><span>Name</span><input class="input" data-name autofocus placeholder="${placeholder}"></label>
+      ${withSauna ? `<div class="field"><span>Sauna oder Dampfbad im Studio? (optional)</span>
+        <div class="chips" data-saunas>${SAUNA_SUGGESTIONS.map(n => `<button type="button" class="chip" data-s="${esc(n)}">${esc(n)}</button>`).join('')}</div>
+        <input class="input" data-own placeholder="Weitere, mit Komma trennen" style="margin-top:8px"></div>` : ''}
+      <div class="actions"><button class="btn" data-x>Abbrechen</button><button class="btn primary" data-ok>Speichern</button></div>`;
+    const name = m.querySelector('[data-name]');
+    m.querySelectorAll('[data-s]').forEach(b => b.onclick = () => b.classList.toggle('on'));
+    const done = () => {
+      const v = name.value.trim();
+      if (!v) { toast('Bitte einen Namen eingeben'); name.focus(); return; }
+      const saunas = [...m.querySelectorAll('[data-s].on')].map(b => b.dataset.s);
+      const own = m.querySelector('[data-own]');
+      if (own) saunas.push(...own.value.split(',').map(x => x.trim()).filter(Boolean));
+      close({ name: v, saunas });
+    };
+    m.querySelector('[data-x]').onclick = () => close(null);
+    m.querySelector('[data-ok]').onclick = done;
+    name.onkeydown = e => { if (e.key === 'Enter') done(); };
+  });
+}
 
 /**
  * Standort-Erkennung: Ist die Ortung erlaubt, wird das Studio in der Nähe einmal pro

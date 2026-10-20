@@ -19,7 +19,7 @@ export default {
           <label class="field"><span>E-Mail</span><input class="input" type="email" autocomplete="username" data-email required></label>
           <label class="field"><span>Passwort</span><input class="input" type="password" autocomplete="current-password" data-pw required></label>
           <button class="btn primary big block" type="submit" data-go>Anmelden</button>
-          <p class="muted small">Die Konten für Maurice und Sabine werden im Supabase-Dashboard angelegt. Eine Registrierung in der App gibt es nicht.</p>
+          <p class="muted small">Noch kein Konto? Frag die Person, die dir die App empfohlen hat.</p>
         </form>
       </div>`;
     el.querySelector('[data-form]').onsubmit = async e => {

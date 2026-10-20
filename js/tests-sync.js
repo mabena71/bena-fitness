@@ -58,7 +58,7 @@ export async function runSyncTests() {
 
   // Gerät A: Daten anlegen und hochladen
   await db.open(A, uid);
-  const gym = await db.put('gyms', { name: 'Win4', sort: 0, lat: null, lng: null });
+  const gym = await db.put('gyms', { name: 'Testclub', sort: 0, lat: null, lng: null });
   const ex = await db.put('exercises', { gym_id: gym.id, name: 'Beinpresse', kind: 'machine', muscle_group: 'legs', settings: [{ label: 'Sitz', value: '5' }], photo_path: `local/${'x'}.jpg`, archived: false, localOnly: 'nicht hochladen' });
   await db.put('exercises', { id: ex.id, photo_path: `local/${ex.id}.jpg` });
   await db.putPhoto(ex.id, new Blob(['bild'], { type: 'image/jpeg' }));
@@ -123,7 +123,7 @@ export async function runSyncTests() {
   await db.deleteDatabase(L).catch(() => {});
   await db.deleteDatabase(C).catch(() => {});
   await db.open(L, 'local');
-  const lg = await db.put('gyms', { name: 'Bellevue' });
+  const lg = await db.put('gyms', { name: 'Testgym' });
   const le = await db.put('exercises', { gym_id: lg.id, name: 'Latzug', kind: 'machine', photo_path: null });
   await db.put('exercises', { id: le.id, photo_path: `local/${le.id}.jpg` });
   await db.putPhoto(le.id, new Blob(['x'], { type: 'image/jpeg' }));
