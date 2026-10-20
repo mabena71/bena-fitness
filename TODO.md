@@ -10,6 +10,7 @@ Aufwand = Schätzung in Minuten · Modell = empfohlenes Claude-Modell (Opus = kn
 |---|---|---|---|---|---|---|---|---|---|
 | 20 | 1 | Neue Version am Handy ansehen | Startseite (Schritte-Karte, Aktivität, Erfolge, Level-Plakette), Erfolge (Abzeichen X von Y, Rang-Stufen), Knopf «Fotografieren» beim Gerätefoto | Maurice | – | 10 | hoch | offen | – |
 | 1 | 1 | Studio-Test | Geräte mit Foto anlegen, Sätze erfassen, Flugmodus, Sauna, Standort speichern; Feedback mit Screenshots. Erster Teil erledigt (Standort gespeichert, Sauna erfasst) | Maurice | – | 60 | hoch | in Arbeit | – |
+| 22 | 1 | Heute erledigte Geräte grün | In der Studio-Ansicht Geräte, an denen heute schon mindestens ein Arbeitssatz erfasst wurde, grün markieren (grüner Rahmen und Häkchen-Stempel, z. B. «✓ heute 3 Sätze»); Aufwärmsätze allein zählen nicht? – beim Bau klären. Wunsch Maurice 20.10. | Claude | Sonnet | 20 | hoch | offen | – |
 | 2 | 1 | Feedback einarbeiten | Anpassungen nach dem Studio-Test | Claude | Sonnet | 60 | hoch | laufend | 1 |
 | 3 | 1 | Sabine und Remy anmelden | Sabine ist angemeldet (Name fehlt noch), Remy hat sich angemeldet; Claude prüft danach in der Datenbank | Sabine, Remy | – | 10 | hoch | in Arbeit | – |
 | 19 | 1 | Withings für Sabine | Sabine verbindet unter Mehr → Withings ihr eigenes Konto (Uhr und Waage); Werte ab 11.10.2026 | Sabine | – | 5 | hoch | offen | 3 |
