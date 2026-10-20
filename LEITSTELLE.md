@@ -5,7 +5,7 @@ Lies zuerst diese Datei, dann [TODO.md](TODO.md). Die Vorgeschichte steht in der
 
 ## Rolle
 
-- Du bist die Leitstelle für **BENA Fit**, die Fitness-App von Maurice Bena für sich, seine Frau Sabine und Sohn Remy.
+- Du bist die Leitstelle für **BENA Fit**, die Fitness-App von Maurice Bena. Heute nutzen sie er, seine Frau Sabine und Sohn Remy; als Nächstes Freunde, später alle über Google Play und den Apple App Store (siehe «Grundsatzentscheid»).
 - Aufgaben: mit Maurice besprechen, TODO.md und die To-do-Seite führen, grössere Aufträge an Arbeitssitzungen mit passendem Modell abgeben (Haiku = Kleinigkeiten/Texte, Sonnet = Routine, Opus = knifflig), Ergebnisse prüfen, zusammenführen, testen, hochladen.
 - Die Leitstelle läuft mit **Opus** (Wunsch Maurice, wie bei Roundabout Hunter). Wird sie sehr lang, diese Datei nachführen und an eine frische Leitstelle übergeben.
 - **Kleinigkeiten (bis ca. 20–30 Min.) erledigst du selbst**; eine Arbeitssitzung lohnt sich erst für grössere Aufträge oder wenn mehrere Dinge parallel laufen sollen.
@@ -23,7 +23,7 @@ Lies zuerst diese Datei, dann [TODO.md](TODO.md). Die Vorgeschichte steht in der
 
 ## TODO.md und To-do-Seite
 
-- TODO.md im Format von Roundabout Hunter: «Offene Punkte» (Nr | Phase | Thema | Details | Wer | Modell | Aufwand | Prio | Status | Abhängig von), «Erledigt» (Nr | Thema | Details | Erledigt am, neueste zuoberst, Nummern E1…E41), Reihenfolge, Rückfragen, Kosten, Phasen (1 Im Alltag, 2 Familie und Push, 3 Mehr Motivation, 4 Ausbau). Offene Nummern zuletzt 22 → nächste neue Nr. **23**.
+- TODO.md im Format von Roundabout Hunter: «Offene Punkte» (Nr | Phase | Thema | Details | Wer | Modell | Aufwand | Prio | Status | Abhängig von), «Erledigt» (Nr | Thema | Details | Erledigt am, neueste zuoberst, Nummern E1…E41), Reihenfolge, Rückfragen, Kosten, Phasen (1 Im Alltag, 2 Für Freunde, 3 Push und Motivation, 4 Stores; neu seit 20.10.). Gestrichene Punkte unter der Tabelle «Offene Punkte» vermerken. Offene Nummern zuletzt 30 → nächste neue Nr. **31**.
 - **To-do-Seite** = Artifact «To-do BENA Fit» https://claude.ai/artifact/3w2zoeas6bpthwQcZBHSdZ, Quelle `docs/todo-uebersicht.html`. Design und Farben **1:1 von der Roundabout-Hunter-Liste** (Maurice will genau diese, nicht das App-Blau). Nach JEDEM Statuswechsel von Hand nachführen (Kennzahlen, «Online seit», Erledigt-Zähler) und mit `url` neu veröffentlichen. «Tokens bisher» mit `python scripts/tokens_zaehlen.py` messen.
 
 ## Technik
@@ -38,9 +38,17 @@ Lies zuerst diese Datei, dann [TODO.md](TODO.md). Die Vorgeschichte steht in der
 - **Withings:** Entwickler-App «BENA Fit» (Org BENA, Development). Edge Functions `withings-auth` (OAuth) und `withings-sync` bereitgestellt; Secrets WITHINGS_CLIENT_ID/SECRET/REDIRECT_URI, APP_URL gesetzt. Maurice ist verbunden, Sabine noch nicht (Nr. 19). Werte erst **ab 11.10.2026** (Diätbeginn, `WITHINGS_START_DAY`), ältere gelöscht. App holt beim Öffnen automatisch (höchstens alle 15 Min.). Handy-Schritte kommen über Health Connect → Withings-App; die Tagessumme von Withings enthält sie verspätet, darum zusätzlich Minutenwerte (getintradayactivity) für heute/gestern, grösserer Wert gewinnt. Steht in BENA Fit zu wenig: erst Withings-App öffnen und runterziehen. Die Function loggt «Schritte …» zur Diagnose (Supabase → Edge Functions → withings-sync → Logs).
 - **Push (Nr. 6, offen):** `supabase/functions/notify` gebaut, nicht bereitgestellt. Maurice erzeugt Schlüssel mit `tools/schluessel.html` und trägt VAPID_PRIVATE_KEY und CRON_SECRET selbst in die Secrets ein; VAPID_PUBLIC_KEY in `js/config.js`. Zeitplan per pg_cron/pg_net, CRON_SECRET am besten über Supabase Vault referenzieren. Danach auch nächtlicher Withings-Abruf. Anleitung `docs/WITHINGS-UND-PUSH.md`.
 
+## Grundsatzentscheid 20.10.2026: generisch statt Familien-App
+
+- BENA Fit soll später in den **Google Play Store und den Apple App Store**. Zwischenschritt: Maurice gibt die App jetzt an **Freunde** weiter.
+- Familienspezifisches fällt weg, vor allem «Aus Familien-Geräten wählen» und gemeinsame Studio-Bilder: **Jeder erfasst seine Geräte und Studios selbst.** Neue Funktionen immer so generisch wie möglich bauen, keine Namen (Maurice, Sabine, Win4 …) fest im Code oder in Texten.
+- Keine fest eingebauten Studios mehr: erster Start = eigenes Studio anlegen. **Bestehende Daten von Maurice, Sabine und Remy bleiben unangetastet.**
+- Gemeinsames nur noch bewusst und per Einladung (Freundes-Challenge, nur Kennzahlen). Daten anderer nie über breite Policies lesbar machen: Die Storage-Policy «Familie darf Fotos lesen» lässt heute jedes Konto den ganzen Foto-Ordner lesen und muss weg, **bevor Freunde ein Konto bekommen** (Nr. 23 vor Nr. 26).
+- Umsetzung: TODO.md Nr. 23–30 (Phase 2 «Für Freunde», Phase 4 «Stores»).
+
 ## App-Regeln (von Maurice festgelegt)
 
-- Studios Bellevue, Archhöfe, Win4 (Activfitness). **Keine Activfitness-Logos/Marke ins Repo** (öffentlich); Studio-Bilder lädt jeder selbst hoch, Familie sieht sie.
+- Maurices Studios Bellevue, Archhöfe, Win4 (Activfitness) – nur noch als seine Daten, nicht mehr im Code vorgegeben (Nr. 24). **Keine Activfitness-Logos/Marke ins Repo** (öffentlich); Studio-Bilder lädt jeder selbst hoch (künftig nur für sich selbst sichtbar).
 - Kategorien Push / Pull / Legs + Bauch/Rumpf, Cardio, Erholung. Sauna (Win4: Bio-Sauna, Dampfbad, Hot-Sauna) zählt nicht als Training, aber als Studiobesuch.
 - **Vorbelegung Satz für Satz:** n-ter Satz heute = n-ter Satz vom letzten Trainingstag (inkl. Aufwärmsatz mit Haken); Comeback-Abschlag nach Pausen.
 - **Rekorde** bei Gewichten erst ab **8 Wiederholungen**; Aufwärmsätze zählen nie.

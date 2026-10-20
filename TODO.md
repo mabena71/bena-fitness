@@ -4,6 +4,10 @@ Leitstelle und Arbeitsweise: [LEITSTELLE.md](LEITSTELLE.md) · App: https://mabe
 Aufwand = Schätzung in Minuten · Modell = empfohlenes Claude-Modell (Opus = knifflig, Sonnet = Routine, Haiku = Kleinigkeiten, – = Aufgabe von Maurice, Sabine oder Remy)
 Übersicht als Seite: Artifact «To-do BENA Fit» https://claude.ai/artifact/3w2zoeas6bpthwQcZBHSdZ, Quelle `docs/todo-uebersicht.html` (gleiches Design wie Roundabout Hunter; von Hand nachführen und gleiche Datei neu veröffentlichen, nach jedem Statuswechsel). Tokens messen: `python scripts/tokens_zaehlen.py`.
 
+## Grundsatzentscheid 20.10.2026
+
+BENA Fit soll später in den Google Play Store und den Apple App Store, ist also **keine reine Familien-App**. Als Zwischenschritt gibt Maurice die App jetzt an Freunde weiter. Familienspezifisches fällt weg (vor allem «Aus Familien-Geräten wählen»): Jeder erfasst seine Geräte und Studios selbst, alles so generisch wie möglich. Bestehende Daten von Maurice, Sabine und Remy bleiben unangetastet.
+
 ## Offene Punkte
 
 | Nr | Phase | Thema | Details | Wer | Modell | Aufwand | Prio | Status | Abhängig von |
@@ -13,19 +17,26 @@ Aufwand = Schätzung in Minuten · Modell = empfohlenes Claude-Modell (Opus = kn
 | 2 | 1 | Feedback einarbeiten | Anpassungen nach dem Studio-Test | Claude | Sonnet | 60 | hoch | laufend | 1 |
 | 3 | 1 | Sabine und Remy anmelden | Sabine ist angemeldet (Name fehlt noch), Remy hat sich angemeldet; Claude prüft danach in der Datenbank | Sabine, Remy | – | 10 | hoch | in Arbeit | – |
 | 19 | 1 | Withings für Sabine | Sabine verbindet unter Mehr → Withings ihr eigenes Konto (Uhr und Waage); Werte ab 11.10.2026 | Sabine | – | 5 | hoch | offen | 3 |
-| 4 | 2 | Familien-Geräte testen | Remy/Sabine: «Aus Familien-Geräten wählen» im Win4; Studio-Logos erscheinen | Sabine, Remy | – | 10 | mittel | offen | 3 |
-| 6 | 2 | Push einschalten | Schlüssel-Seite, VAPID-Secrets, Edge Function `notify`, Zeitplan (pg_cron, CRON_SECRET über Vault), VAPID_PUBLIC_KEY in `js/config.js`, Test; dann auch nächtlicher Withings-Abruf | Claude + Maurice | Opus | 45 | mittel | offen | – |
-| 7 | 2 | Challenge testen | Code erzeugen, beitreten, Wochenwertung prüfen | Maurice + Sabine | – | 10 | niedrig | offen | 3 |
+| 23 | 2 | Familien-Funktionen entfernen | «Aus Familien-Geräten wählen» (`pickFamilyDevice` in `js/views/exercise-edit.js`), `js/family.js` mit gemeinsamen Studio-Bildern (`familyGymPhotoUrl` in `gym.js`, `home.js`); in Supabase RPCs `family_exercises`, `family_gym_photos` und Storage-Policy «Familie darf Fotos lesen» löschen (heute darf **jedes** Konto den ganzen Foto-Ordner lesen → muss weg, bevor Freunde ein Konto bekommen); `supabase/family-devices.sql` und `schema.sql` nachführen. Maurices eigene Studio-Logos bleiben bei ihm | Claude | Sonnet | 45 | hoch | offen | – |
+| 24 | 2 | Eigenes Studio statt fest eingebauter | `ensureDefaultGyms`/`ensureDefaultSaunas` (`js/demo.js`, `js/app.js`) legen heute Bellevue, Archhöfe, Win4 + Win4-Saunen an. Neu: erster Start führt durch «Eigenes Studio anlegen» (Name, optional Sauna-Arten); bestehende Studios und Daten bleiben unangetastet | Claude | Sonnet | 60 | hoch | offen | – |
+| 25 | 2 | Allgemeine Texte | Ohne «Maurice und Sabine» und Familie (`login.js`, `welcome.js`, `settings.js`, Hilfetexte, Demo), Beispielnamen neutral | Claude | Haiku | 20 | hoch | offen | – |
+| 26 | 2 | Anmeldung für Freunde | Heute keine Registrierung (Konten von Hand). Neu: Registrierung mit E-Mail-Bestätigung oder Einladungscode (analog Roundabout Hunter), «Passwort vergessen», «Konto löschen» in der App (Store-Pflicht) | Claude | Opus | 90 | hoch | offen | 23 |
+| 27 | 2 | Datenschutz und Impressum | Seite in der App und im Repo: welche Daten (Gesundheit, Fotos, Standort, Withings), wo gespeichert (Supabase EU/Irland), Löschen; Impressum. Entwurf Claude, Maurice prüft | Claude + Maurice | Sonnet | 45 | hoch | offen | – |
+| 28 | 2 | Withings auf Production | Entwickler-App «BENA Fit» von Development auf Production stellen; Bedingungen für neue Konten (Withings+, Nutzerzahl) prüfen | Maurice + Claude | Sonnet | 20 | mittel | offen | – |
+| 6 | 3 | Push einschalten | Schlüssel-Seite, VAPID-Secrets, Edge Function `notify`, Zeitplan (pg_cron, CRON_SECRET über Vault), VAPID_PUBLIC_KEY in `js/config.js`, Test; dann auch nächtlicher Withings-Abruf | Claude + Maurice | Opus | 45 | mittel | offen | – |
+| 29 | 3 | Freundes-Challenge | Paar-Challenge verallgemeinern: mehrere Personen per Einladungscode, sichtbar nur Kennzahlen (keine Sätze, Fotos oder Körperwerte im Detail) | Claude | Opus | 60 | mittel | offen | 26 |
+| 7 | 3 | Challenge testen | Code erzeugen, beitreten, Wochenwertung prüfen (mit Sabine und einem Freund) | Maurice + Sabine | – | 10 | niedrig | offen | 29 |
 | 8 | 3 | Erholungs-Karte | Körper-Grafik: welche Muskeln Pause brauchen (rot/grün), Vorschlag «Heute ideal: …» (Empfehlung) | Claude | Opus | 60 | mittel | Idee | – |
 | 9 | 3 | Maximalkraft-Schätzung | Geschätztes 1-Wiederholungs-Maximum pro Gerät (Epley) als Diagramm-Option und Rekord (Empfehlung) | Claude | Sonnet | 30 | mittel | Idee | – |
 | 10 | 3 | Rekord als Bild teilen | Rekord/Monatsrückblick als Bild, Teilen per WhatsApp (Web Share API) (Empfehlung) | Claude | Sonnet | 40 | mittel | Idee | – |
 | 11 | 3 | Kalorien-Schätzung | Ungefährer Verbrauch pro Training, Cardio, Sauna (MET-Werte) | Claude | Sonnet | 30 | niedrig | Idee | – |
 | 12 | 3 | Gewichts-Prognose | «Bei diesem Tempo erreichst du X kg etwa im …» | Claude | Sonnet | 20 | niedrig | Idee | – |
-| 13 | 2 | Familien-Feed | Freiwillig: Rekorde/Abzeichen der anderen, «Daumen hoch» | Claude | Opus | 90 | niedrig | Idee | 3 |
-| 14 | 2 | Ins-Studio-Meldung | «Ich gehe jetzt ins Win4» als Benachrichtigung an die Familie | Claude | Opus | 45 | niedrig | Idee | 6 |
-| 15 | 2 | Gerät defekt melden | Gerät als defekt/gesperrt markieren, Familie sieht es im gleichen Studio | Claude | Sonnet | 30 | niedrig | Idee | – |
-| 17 | 4 | Sprachauswahl D/E/F/I | App auf Deutsch, Englisch, Französisch und Italienisch; Wahl pro Person unter Mehr → Profil; alle Texte in Sprachdateien auslagern, Datums- und Zahlenformate pro Sprache (Wunsch Maurice 19.10., Prio niedrig bestätigt) | Claude | Sonnet | 120 | niedrig | Idee | – |
-| 16 | 4 | Weitere Ideen | Pausen-Timer, Steigerungs-Vorschlag, Ziele, Trainingspläne, Sprach-Eingabe, Familien-Challenge für 3, Fortschrittsfotos, PIN, «Passwort ändern», «bester Schritte-Tag» anzeigen | – | Sonnet | – | niedrig | Idee | – |
+| 13 | 3 | Freundes-Feed | Umgedeutet (vorher Familien-Feed): freiwillig Rekorde/Abzeichen der Challenge-Freunde, «Daumen hoch» | Claude | Opus | 90 | niedrig | Idee | 29 |
+| 17 | 4 | Sprachauswahl D/E/F/I | App auf Deutsch, Englisch, Französisch und Italienisch; Wahl pro Person unter Mehr → Profil; alle Texte in Sprachdateien auslagern, Datums- und Zahlenformate pro Sprache (Wunsch Maurice 19.10.; wegen Stores höher priorisiert 20.10.) | Claude | Sonnet | 120 | mittel | Idee | 25 |
+| 30 | 4 | Store-Paket | App für Google Play und Apple App Store verpacken (z. B. Capacitor wie Roundabout Hunter Nr. 43/44), Store-Einträge, Bilder, Konten bei Google (25 USD einmalig) und Apple (99 USD/Jahr) | Claude + Maurice | Opus | 240 | niedrig | Idee | 26, 27 |
+| 16 | 4 | Weitere Ideen | Pausen-Timer, Steigerungs-Vorschlag, Ziele, Trainingspläne, Sprach-Eingabe, Fortschrittsfotos, PIN, «Passwort ändern», «bester Schritte-Tag» anzeigen | – | Sonnet | – | niedrig | Idee | – |
+
+**Gestrichen am 20.10.2026** (Grundsatzentscheid, familienspezifisch): Nr. 4 Familien-Geräte testen, Nr. 14 Ins-Studio-Meldung an die Familie, Nr. 15 Gerät defekt melden (nur mit gemeinsamen Geräten sinnvoll). Nr. 13 umgedeutet zum Freundes-Feed.
 
 ## Erledigt
 
@@ -67,16 +78,18 @@ Aufwand = Schätzung in Minuten · Modell = empfohlenes Claude-Modell (Opus = kn
 | E2 | Etappe 1: Kern | Studios, Übungen aller Arten, Gerätefotos, Einstellungen, Laufweg, Sätze mit Gefühl/Aufwärmen, Geister-Training, Comeback-Hilfe, Energie-Check, Verlauf und Diagramm | 17.10.2026 |
 | E1 | Planung | Funktionsumfang, Etappen, Datenmodell | 17.10.2026 |
 
-## Reihenfolge (Vorschlag 20.10.2026)
+## Reihenfolge (Vorschlag 20.10.2026, nach Grundsatzentscheid)
 
-1. Neue Version am Handy ansehen (Nr. 20), Studio-Test weiterführen (Nr. 1), Feedback einarbeiten (Nr. 2)
-2. Familie dazuholen: Sabine und Remy (Nr. 3), Withings für Sabine (Nr. 19), Familien-Geräte (Nr. 4)
-3. Push einschalten (Nr. 6), danach Challenge testen (Nr. 7)
-4. Motivation ausbauen: Erholungs-Karte (Nr. 8), Maximalkraft (Nr. 9), Rekord teilen (Nr. 10)
+1. Am Handy und im Studio weiter (Nr. 20, 1), Feedback laufend (Nr. 2)
+2. Generisch machen in einer Arbeitssitzung: Familien-Funktionen entfernen (Nr. 23), eigenes Studio (Nr. 24), allgemeine Texte (Nr. 25)
+3. Für Freunde öffnen: Datenschutz (Nr. 27), Anmeldung (Nr. 26), parallel Withings auf Production (Nr. 28)
+4. Push (Nr. 6) und Freundes-Challenge (Nr. 29), dann testen (Nr. 7)
+5. Motivation (Nr. 8–12), Sprachen (Nr. 17), Store-Paket (Nr. 30)
 
 ## Rückfragen
 
-- Familien-Challenge für drei Personen (mit Remy)?
+- Anmeldung für Freunde: offene Registrierung oder nur mit Einladungscode?
+- App-Name «BENA Fit» auch für die Stores?
 - PIN für die App und «Passwort ändern» in der App gewünscht?
 
 ## Kosten (ohne Claude)
@@ -87,13 +100,15 @@ Aufwand = Schätzung in Minuten · Modell = empfohlenes Claude-Modell (Opus = kn
 | Supabase | Datenbank, Login, Fotos, Edge Functions (Irland) | Free | CHF 0 | 0 (Pro 25 USD/Monat, falls nötig) | – |
 | Withings | Schnittstelle für Gewicht, Fett, Schritte | Public API, gratis | CHF 0 | 0 | – |
 | Schriften und Bibliotheken | IBM Plex Sans (Google Fonts), Chart.js, supabase-js | frei | CHF 0 | 0 | – |
+| Google Play | Store-Konto (geplant, Nr. 30) | einmalig | CHF 0 | 25 USD einmalig | – |
+| Apple Developer | Store-Konto (geplant, Nr. 30) | jährlich | CHF 0 | 99 USD/Jahr | – |
 | **Total** | | | **CHF 0** | **CHF 0** | |
 
 ## Phasen
 
 | Phase | Name | Inhalt |
 |---|---|---|
-| 1 | Im Alltag | Am Handy und im Studio testen, Feedback einarbeiten, Familie anmelden, Withings |
-| 2 | Familie und Push | Benachrichtigungen, Paar-Challenge, Familien-Geräte, Familien-Feed |
-| 3 | Mehr Motivation | Erholung, Maximalkraft, Teilen, Kalorien, Prognose |
-| 4 | Ausbau | Sprachen, weitere Ideen |
+| 1 | Im Alltag | Am Handy und im Studio testen, Feedback einarbeiten, Sabine und Remy, Withings |
+| 2 | Für Freunde | Familienspezifisches entfernen, eigenes Studio, Anmeldung, Datenschutz, Withings Production |
+| 3 | Push und Motivation | Benachrichtigungen, Freundes-Challenge, Erholung, Maximalkraft, Teilen, Kalorien, Prognose |
+| 4 | Stores | Sprachen, Store-Paket, weitere Ideen |
