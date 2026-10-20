@@ -31,6 +31,7 @@ Aufwand = Schätzung in Minuten · Modell = empfohlenes Claude-Modell (Opus = kn
 
 | Nr | Thema | Details | Erledigt am |
 |---|---|---|---|
+| E41 | Daten exportieren: alles oder nichts | Statt drei CSV-Knöpfen (Trainings, Körper, Schritte) ein Knopf «Alle Daten exportieren»: eine Excel-Datei mit je einem Blatt (SheetJS 0.18.5 von cdnjs, wird erst beim Export geladen). Export und Datensicherung in einer Karte «Daten» zusammengelegt (Wunsch Maurice 20.10.) | 20.10.2026 |
 | E40 | Standort-Karte im Studio verständlicher | «Studio per Standort erkennen / Hier speichern» → «Automatisch öffnen: Bist du gerade in diesem Studio? Dann speichere hier den Standort …» mit Knopf «Standort speichern»; gespeichert: «Öffnest du die App hier, springt sie direkt zu «Win4»» (Frage Maurice 20.10.) | 20.10.2026 |
 | E39 | Startseite neu geordnet | Körper → Schritte → Studios (darüber «Diese Woche: 2 Trainings · 1 Sauna · 4.3 t», Tipp öffnet Statistik) → «Erfolge & Rekorde» in einer Karte (Level, 3 letzte Rekorde, neueste Abzeichen, Fast geschafft); Karte «Aktivität» entfällt (Variante a). PC: Körper und Schritte nebeneinander, Studios und Erfolge über die ganze Breite (Entscheid Maurice 20.10.) | 20.10.2026 |
 | E38 | Bildeffekte A und B | Auswahl im Geräte-Formular nur noch «Farbstift» (Variante A, ganzes Bild als Farbzeichnung, sofort, ohne Download) und «Gerät hervorgehoben» (Variante B); Rückfall bei zu langem Freistellen ist jetzt Farbstift (Entscheid Maurice 20.10.) | 20.10.2026 |

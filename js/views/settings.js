@@ -3,7 +3,7 @@ import { profile, saveProfile, stepGoal } from '../data.js';
 import { setTop, esc, toast, confirmDialog, downloadFile } from '../ui.js';
 import { getMode, setMode, MODES, reloadApp } from '../app.js';
 import { APP_VERSION } from '../version.js';
-import { setsCsv, bodyCsv, stepsCsv } from '../csv.js';
+import { allDataXlsx } from '../csv.js';
 import { createBackup, restoreBackup } from '../backup.js';
 import { icon } from '../icons.js';
 import { cloudConfigured } from '../config.js';
@@ -27,20 +27,11 @@ export default {
       </div>
 
       <div class="card">
-        <div class="card-title"><h3>Daten exportieren</h3></div>
-        <p class="muted small">Als CSV-Datei, die du direkt in Excel öffnen kannst.</p>
+        <div class="card-title"><h3>Daten</h3></div>
+        <p class="muted small">Alle Trainings, Körperwerte und Schritte in einer Excel-Datei (je ein Blatt). Die Sicherung enthält zusätzlich die Fotos und lässt sich wieder einspielen. Auf dem Handy landen beide im Ordner „Downloads“.</p>
         <div class="row wrap">
-          <button class="btn" data-csv="sets">${icon('table', 18)} Trainings</button>
-          <button class="btn" data-csv="body">${icon('table', 18)} Körper</button>
-          <button class="btn" data-csv="steps">${icon('table', 18)} Schritte</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title"><h3>Datensicherung</h3></div>
-        <p class="muted small">Alle Trainings, Messungen und Fotos als eine Datei. Auf dem Handy landet sie im Ordner „Downloads“. Mach ab und zu eine Sicherung, solange die Daten nur auf diesem Gerät liegen.</p>
-        <div class="row wrap">
-          <button class="btn primary" data-backup>${icon('download', 18)} Sicherung herunterladen</button>
+          <button class="btn primary" data-export>${icon('table', 18)} Alle Daten exportieren</button>
+          <button class="btn" data-backup>${icon('download', 18)} Sicherung herunterladen</button>
           <label class="btn" style="cursor:pointer">${icon('upload', 18)} Sicherung einspielen<input type="file" accept=".json,application/json" data-restore hidden></label>
         </div>
         <p class="muted small" data-persist></p>
@@ -81,11 +72,13 @@ export default {
       toast('Profil gespeichert');
       ctx.refresh();
     };
-    el.querySelectorAll('[data-csv]').forEach(b => b.onclick = () => {
-      const k = b.dataset.csv;
-      const content = k === 'sets' ? setsCsv() : k === 'body' ? bodyCsv() : stepsCsv();
-      downloadFile(`fitness-${k === 'sets' ? 'trainings' : k === 'body' ? 'koerper' : 'schritte'}-${stamp}.csv`, content);
-    });
+    el.querySelector('[data-export]').onclick = async e => {
+      const btn = e.currentTarget;
+      btn.disabled = true;
+      try { downloadFile(`bena-fit-daten-${stamp}.xlsx`, await allDataXlsx()); toast('Excel-Datei erstellt'); }
+      catch (err) { toast(esc(err.message), '', 3500); }
+      finally { btn.disabled = false; }
+    };
     el.querySelector('[data-backup]').onclick = async () => {
       const json = await createBackup();
       downloadFile(`bena-fitness-sicherung-${stamp}.json`, json, 'application/json');
