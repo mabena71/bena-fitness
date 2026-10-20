@@ -65,4 +65,31 @@ export function icon(name, size = 20, cls = '') {
   return `<svg class="ic ${cls}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
 }
 
+/** Farbiger Schulglobus (Europa/Afrika) für «Überall»; gross genug für die Studio-Kachel. */
+export function globeIcon(size = 42) {
+  const land = [
+    'M38 39L41 31L44 27L42 22L47 19L52 21L55 16L61 14L66 17L73 18L80 23L84 30L78 33L71 32L66 35L61 34L57 37L52 35L48 38L43 40Z',
+    'M30 26L34 22L37 25L35 30L31 31Z',
+    'M36 43L44 41L52 41L58 42L63 44L67 49L74 51L77 53L72 60L68 66L66 73L61 80L57 86L53 85L51 77L49 69L46 62L40 60L34 58L30 52L32 46Z',
+    'M65 41L72 42L78 46L80 52L76 55L71 50L67 46Z',
+    'M73 70L76 68L78 72L76 79L73 78Z',
+    'M4 50L10 52L16 57L17 63L13 70L10 78L7 82L5 72L4 62Z',
+  ].map(d => `<path d="${d}"/>`).join('');
+  return `<svg class="globe" width="${size}" height="${size}" viewBox="0 0 100 100" aria-hidden="true"><defs>
+    <radialGradient id="gl-sea" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#5cb2ff"/><stop offset=".55" stop-color="#1f6fd1"/><stop offset="1" stop-color="#0b3a7e"/></radialGradient>
+    <radialGradient id="gl-shade" cx="35%" cy="30%" r="80%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></radialGradient>
+    <radialGradient id="gl-shine" cx="32%" cy="26%" r="30%"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    <linearGradient id="gl-land" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fc46a"/><stop offset=".5" stop-color="#4f9a45"/><stop offset=".75" stop-color="#c9a85a"/><stop offset="1" stop-color="#3f8a3c"/></linearGradient>
+    <clipPath id="gl-clip"><circle cx="50" cy="50" r="46"/></clipPath></defs>
+    <g transform="translate(9 3) scale(.74)">
+      <circle cx="50" cy="50" r="46" fill="url(#gl-sea)"/>
+      <g clip-path="url(#gl-clip)" fill="url(#gl-land)">${land}</g>
+      <circle cx="50" cy="50" r="46" fill="url(#gl-shade)"/>
+      <circle cx="50" cy="50" r="46" fill="url(#gl-shine)"/>
+    </g>
+    <path d="M83 14A44 44 0 0 1 22 76" fill="none" stroke="#8a6a3a" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M44 80v9" stroke="#8a6a3a" stroke-width="5" stroke-linecap="round"/>
+    <path d="M28 93h34" stroke="#6b4f27" stroke-width="6" stroke-linecap="round"/></svg>`;
+}
+
 export const ICON_NAMES = Object.keys(P);

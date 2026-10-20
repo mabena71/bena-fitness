@@ -5,7 +5,7 @@ import { setTop, esc, n1, n0, signed, ago, tons, modal, toast, setText } from '.
 import { openBodyEntry, openStepsEntry } from './body.js';
 import { gymPhotoKey } from './gym.js';
 import { familyGymPhotoUrl } from '../family.js';
-import { icon } from '../icons.js';
+import { icon, globeIcon } from '../icons.js';
 import { permissionState, currentPosition, nearestGym } from '../geo.js';
 
 export default {
@@ -71,7 +71,7 @@ export default {
             <span class="muted">›</span>
           </a>`).join('')}
         <a class="card tap gym-row" href="#/gym/anywhere" style="text-decoration:none;color:inherit;display:flex">
-          <div class="gym-ico">${icon('globe', 24)}</div>
+          <div class="gym-ico">${globeIcon()}</div>
           <div class="grow"><b>Überall</b><div class="muted small">${exCount(null)} Übungen ohne Studio (Eigengewicht, Cardio)</div></div>
           <span class="muted">›</span>
         </a>
