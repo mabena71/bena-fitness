@@ -41,7 +41,7 @@ BENA Fit soll später in den Google Play Store und den Apple App Store, ist also
 
 | Nr | Thema | Details | Erledigt am |
 |---|---|---|---|
-| E43 | Startseite: Standort-Knopf und Erdkugel | Knopf «Studio per Standort finden» steht jetzt unter der Studio-Liste; «Überall» zeigt einen farbigen Schulglobus statt der Linien-Weltkugel (Wahl Maurice 20.10.). Version 2026.10.20-9 | 20.10.2026 |
+| E43 | Startseite: Standort-Knopf und Erdkugel | Knopf «Studio per Standort finden» steht jetzt unter der Studio-Liste; «Überall» zeigt eine farbige Erdkugel statt der Linien-Weltkugel (Wahl Maurice 20.10., Variante G). Version 2026.10.20-10 | 20.10.2026 |
 | E42 | Neue Version am Handy angesehen | Version 2026.10.20-8 läuft; Startseite, Erfolge, «Fotografieren» und Farbstift gut. Wünsche: Knopf «Studio per Standort finden» weiter nach unten und anderes Symbol für «Überall» (siehe E43) (Nr. 20) | 20.10.2026 |
 | E41 | Daten exportieren: alles oder nichts | Statt drei CSV-Knöpfen (Trainings, Körper, Schritte) ein Knopf «Alle Daten exportieren»: eine Excel-Datei mit je einem Blatt (SheetJS 0.18.5 von cdnjs, wird erst beim Export geladen). Export und Datensicherung in einer Karte «Daten» zusammengelegt (Wunsch Maurice 20.10.) | 20.10.2026 |
 | E40 | Standort-Karte im Studio verständlicher | «Studio per Standort erkennen / Hier speichern» → «Automatisch öffnen: Bist du gerade in diesem Studio? Dann speichere hier den Standort …» mit Knopf «Standort speichern»; gespeichert: «Öffnest du die App hier, springt sie direkt zu «Win4»» (Frage Maurice 20.10.) | 20.10.2026 |
