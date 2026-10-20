@@ -32,6 +32,7 @@ Aufwand = Schätzung in Minuten · Modell = empfohlenes Claude-Modell (Opus = kn
 
 | Nr | Thema | Details | Erledigt am |
 |---|---|---|---|
+| E34 | Vorbelegung Satz für Satz | Der n-te Satz heute bekommt die Werte des n-ten Satzes vom letzten Trainingstag (inkl. Aufwärmsatz mit Haken); mehr Sätze als letztes Mal → letzter Arbeitssatz von heute; Comeback-Abschlag gilt für alle Sätze (Wunsch Maurice 20.10.) | 20.10.2026 |
 | E33 | Rekorde ab 8 Wiederholungen | Bei Geräten und freien Gewichten zählt ein Satz erst ab 8 Wiederholungen als Rekord bzw. Bestwert (Eigengewicht ohne Zusatzgewicht, Cardio und Sauna wie bisher). Bisherige Rekorde werden neu berechnet (Wunsch Maurice 20.10.) | 20.10.2026 |
 | E32 | Vorbelegung: erster Satz vom letzten Mal | Neuer Tag: Gewicht und Wiederholungen des ersten Satzes vom letzten Trainingstag, auch wenn es ein Aufwärmsatz war (Haken «Aufwärmsatz» dann gesetzt); am gleichen Tag weiter mit dem letzten Arbeitssatz von heute; Comeback-Abschlag bleibt (Nr. 21, Wunsch Maurice 20.10.) | 20.10.2026 |
 | E31 | Level-Plakette | Blau mit Beschriftung «LEVEL», daneben nur der Rang (z. B. «Anfänger I») – Startseite und Erfolge. Version 2026.10.19-6 | 19.10.2026 |

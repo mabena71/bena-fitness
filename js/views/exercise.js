@@ -163,7 +163,12 @@ export default {
       } else {
         toast(`Gespeichert: ${setText(saved, ex.kind)}${saved.is_warmup ? ' (Aufwärmen)' : ''}`);
       }
-      entry.note = ''; showNote = false; entry.is_warmup = false;
+      entry.note = ''; showNote = false;
+      // nächster Satz: Werte des entsprechenden Satzes vom letzten Mal
+      const next = prefill(exerciseSets(ex.id), ex);
+      if (!isSauna && !isCardio) { entry.weight_kg = next.weight_kg ?? entry.weight_kg; entry.reps = next.reps ?? entry.reps; }
+      else if (isCardio) { entry.duration_min = next.duration_min ?? entry.duration_min; entry.distance_km = next.distance_km ?? entry.distance_km; }
+      entry.is_warmup = !!next.is_warmup;
       if (entry.at) entry.at = null;
       paint();
       announceRewards();

@@ -180,11 +180,13 @@ export function prefill(exSets, ex, now = new Date()) {
   const today = dayKey(now);
   const sorted = [...exSets].sort(byTime);
   const todays = sorted.filter(s => dayKey(s.performed_at) === today);
-  // Neuer Tag: erster Satz des letzten Trainingstags (auch ein Aufwärmsatz); am gleichen Tag der letzte Arbeitssatz von heute.
-  const lastDay = sorted.length ? dayKey(sorted[sorted.length - 1].performed_at) : null;
-  const ref = todays.length
-    ? [...todays].reverse().find(s => !s.is_warmup) || todays[todays.length - 1]
-    : sorted.find(s => dayKey(s.performed_at) === lastDay);
+  // Satz für Satz wie beim letzten Trainingstag: der n-te Satz heute bekommt die Werte des n-ten Satzes von damals
+  // (Aufwärmsätze eingeschlossen). Hat das letzte Mal weniger Sätze, gilt der letzte Arbeitssatz von heute.
+  const before = sorted.filter(s => dayKey(s.performed_at) < today);
+  const lastDay = before.length ? dayKey(before[before.length - 1].performed_at) : null;
+  const lastSession = before.filter(s => dayKey(s.performed_at) === lastDay);
+  const fromLast = lastSession[todays.length] || null;
+  const ref = fromLast || [...todays].reverse().find(s => !s.is_warmup) || todays[todays.length - 1] || null;
   const step = ex.step || (ex.kind === 'free' ? 1 : 2.5);
   if (ex.kind === 'sauna') return { duration_min: ref ? ref.duration_min : 12 };
   if (!ref) {
@@ -192,9 +194,9 @@ export function prefill(exSets, ex, now = new Date()) {
   }
   if (ex.kind === 'cardio') return { duration_min: ref.duration_min, distance_km: ref.distance_km };
   const out = { weight_kg: ref.weight_kg ?? null, reps: ref.reps };
-  if (!todays.length && ref.is_warmup) out.is_warmup = true;
-  if (!todays.length) {
-    const cb = comeback(exSets, now);
+  if (fromLast && fromLast.is_warmup) out.is_warmup = true;
+  if (fromLast) {
+    const cb = comeback(before, now);
     if (cb && out.weight_kg) {
       out.weight_kg = roundStep(out.weight_kg * cb.factor, step);
       out.comeback = cb;

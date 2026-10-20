@@ -249,14 +249,15 @@ test('Rekorde zählen bei Gewichten erst ab 8 Wiederholungen', () => {
   ok(isRecord(set('b', at(0), null, 12), [set('b', at(2), null, 10)], 'bodyweight'), 'Eigengewicht zählt Wiederholungen');
 });
 
-test('Vorbelegung: neuer Tag startet mit dem ersten Satz vom letzten Mal, auch Aufwärmen', () => {
+test('Vorbelegung: Satz für Satz wie beim letzten Mal, auch Aufwärmen', () => {
   const e = ex('p');
   const last = [set('p', at(1, 18, 0), 30, 12, { is_warmup: true }), set('p', at(1, 18, 3), 50, 10), set('p', at(1, 18, 6), 55, 8)];
   eq(prefill(last, e), { weight_kg: 30, reps: 12, is_warmup: true });
   const noWarm = last.slice(1);
   eq(prefill(noWarm, e), { weight_kg: 50, reps: 10 });
-  const todayToo = [...noWarm, set('p', at(0, 9), 52.5, 9)];
-  eq(prefill(todayToo, e), { weight_kg: 52.5, reps: 9 }, 'am gleichen Tag der letzte Satz von heute');
+  eq(prefill([...last, set('p', at(0, 0, 1), 30, 12, { is_warmup: true })], e), { weight_kg: 50, reps: 10 }, 'nach dem Aufwärmen Satz 2 vom letzten Mal');
+  const today3 = [...noWarm, set('p', at(0, 0, 1), 52.5, 9), set('p', at(0, 0, 2), 55, 8)];
+  eq(prefill(today3, e), { weight_kg: 55, reps: 8 }, 'mehr Sätze als letztes Mal: letzter Satz von heute');
 });
 
 // Abgleich gegen simulierten Server (asynchron)
