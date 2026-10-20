@@ -13,7 +13,6 @@ Aufwand = Schätzung in Minuten · Modell = empfohlenes Claude-Modell (Opus = kn
 | 2 | 1 | Feedback einarbeiten | Anpassungen nach dem Studio-Test | Claude | Sonnet | 60 | hoch | laufend | 1 |
 | 3 | 1 | Sabine und Remy anmelden | Sabine ist angemeldet (Name fehlt noch), Remy hat sich angemeldet; Claude prüft danach in der Datenbank | Sabine, Remy | – | 10 | hoch | in Arbeit | – |
 | 19 | 1 | Withings für Sabine | Sabine verbindet unter Mehr → Withings ihr eigenes Konto (Uhr und Waage); Werte ab 11.10.2026 | Sabine | – | 5 | hoch | offen | 3 |
-| 18 | 1 | Zeichnung: nur das Gerät | Hintergrund weiss statt Studio (Test mit Hintergrund-Entfernung im Browser gemacht: ca. 40–80 MB einmaliger Download, 20–60 s pro Foto). Entscheid Maurice offen | Maurice + Claude | Sonnet | 45 | mittel | Entscheid offen | – |
 | 4 | 2 | Familien-Geräte testen | Remy/Sabine: «Aus Familien-Geräten wählen» im Win4; Studio-Logos erscheinen | Sabine, Remy | – | 10 | mittel | offen | 3 |
 | 6 | 2 | Push einschalten | Schlüssel-Seite, VAPID-Secrets, Edge Function `notify`, Zeitplan (pg_cron, CRON_SECRET über Vault), VAPID_PUBLIC_KEY in `js/config.js`, Test; dann auch nächtlicher Withings-Abruf | Claude + Maurice | Opus | 45 | mittel | offen | – |
 | 7 | 2 | Challenge testen | Code erzeugen, beitreten, Wochenwertung prüfen | Maurice + Sabine | – | 10 | niedrig | offen | 3 |
@@ -32,6 +31,7 @@ Aufwand = Schätzung in Minuten · Modell = empfohlenes Claude-Modell (Opus = kn
 
 | Nr | Thema | Details | Erledigt am |
 |---|---|---|---|
+| E35 | Gerät hervorgehoben | Neue Darstellung der Gerätefotos (Variante B, Wahl Maurice 20.10.): Gerät farbig als Foto, Umgebung als Bleistiftzeichnung; Freistellen im Browser (einmalig ca. 40 MB Download, Modell «small»). Wahl Foto · Bleistift · Gerät hervorgehoben im Geräte-Formular, Standard «Gerät hervorgehoben». Originalfoto wird ab jetzt mitgespeichert (`<id>-orig`), damit die Darstellung jederzeit wechselbar ist; bestehende Fotos umstellbar, sofern noch farbig gespeichert | 20.10.2026 |
 | E34 | Vorbelegung Satz für Satz | Der n-te Satz heute bekommt die Werte des n-ten Satzes vom letzten Trainingstag (inkl. Aufwärmsatz mit Haken); mehr Sätze als letztes Mal → letzter Arbeitssatz von heute; Comeback-Abschlag gilt für alle Sätze (Wunsch Maurice 20.10.) | 20.10.2026 |
 | E33 | Rekorde ab 8 Wiederholungen | Bei Geräten und freien Gewichten zählt ein Satz erst ab 8 Wiederholungen als Rekord bzw. Bestwert (Eigengewicht ohne Zusatzgewicht, Cardio und Sauna wie bisher). Bisherige Rekorde werden neu berechnet (Wunsch Maurice 20.10.) | 20.10.2026 |
 | E32 | Vorbelegung: erster Satz vom letzten Mal | Neuer Tag: Gewicht und Wiederholungen des ersten Satzes vom letzten Trainingstag, auch wenn es ein Aufwärmsatz war (Haken «Aufwärmsatz» dann gesetzt); am gleichen Tag weiter mit dem letzten Arbeitssatz von heute; Comeback-Abschlag bleibt (Nr. 21, Wunsch Maurice 20.10.) | 20.10.2026 |
@@ -70,7 +70,6 @@ Aufwand = Schätzung in Minuten · Modell = empfohlenes Claude-Modell (Opus = kn
 
 ## Rückfragen
 
-- Zeichnung nur mit dem Gerät (Nr. 18): einbauen, trotz Download und Wartezeit?
 - Familien-Challenge für drei Personen (mit Remy)?
 - PIN für die App und «Passwort ändern» in der App gewünscht?
 

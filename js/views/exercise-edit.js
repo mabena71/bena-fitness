@@ -1,7 +1,7 @@
 import * as db from '../db.js';
 import { setTop, esc, KINDS, MUSCLES, categoryOf, toast, confirmDialog, parseNum, modal } from '../ui.js';
 import { resizeImage } from '../photo.js';
-import { toSketch, sketchPreferred, setSketchPreferred } from '../sketch.js';
+import { renderStyle, photoStyle, setPhotoStyle, PHOTO_STYLES, isGrayscale } from '../sketch.js';
 import { icon } from '../icons.js';
 import { getMode } from '../app.js';
 
@@ -56,8 +56,10 @@ export default {
               <label class="btn primary grow" style="cursor:pointer">${icon('camera', 18)} Fotografieren<input type="file" accept="image/*" capture="environment" data-photo hidden></label>
               <label class="btn grow" style="cursor:pointer">${icon('image', 18)} Aus Galerie<input type="file" accept="image/*" data-photo hidden></label>
             </div>
-            <label class="toggle"><input type="checkbox" data-sketch ${sketchPreferred() ? 'checked' : ''}> Als Zeichnung darstellen</label>
-            ${existingPhoto ? '<button type="button" class="btn sm block" data-sketch-existing style="margin-top:6px">Bisheriges Foto in Zeichnung umwandeln</button>' : ''}
+            <div class="muted small" style="margin:10px 0 4px">Darstellung</div>
+            <div class="seg" data-style>${Object.entries(PHOTO_STYLES).map(([k, v]) => `<button type="button" data-v="${k}" class="${photoStyle() === k ? 'on' : ''}">${v}</button>`).join('')}</div>
+            <p class="muted small" data-style-status style="margin:6px 0 0"></p>
+            ${existingPhoto ? '<button type="button" class="btn sm block" data-restyle style="margin-top:6px">Bisheriges Foto in dieser Darstellung</button>' : ''}
             <p class="muted small">Zeichnungen wirken einheitlich und sachlich. Das Foto wird verkleinert gespeichert.</p>
           </div>
         </div>
@@ -106,13 +108,26 @@ export default {
       if (st.muscle_group === prevDefault) { st.muscle_group = DEFAULT_MUSCLE[st.kind]; $('[data-k="muscle_group"]').value = st.muscle_group; }
       stepVisible();
     });
-    // Original merken, damit "Als Zeichnung" jederzeit umgeschaltet werden kann
+    // Original merken, damit die Darstellung jederzeit umgeschaltet werden kann
     let original = null;
+    let style = photoStyle();
+    let run = 0;
+    const status = t => { $('[data-style-status]').textContent = t; };
     const showPhoto = async () => {
       if (!original) return;
-      const sketch = $('[data-sketch]').checked;
+      const my = ++run;
       $('[data-preview]').innerHTML = '<span class="muted small">…</span>';
-      st.photo = sketch ? await toSketch(original) : original;
+      try {
+        const out = await renderStyle(original, style, t => { if (my === run) status(t); });
+        if (my !== run) return;
+        st.photo = out;
+        status(style === 'focus' ? 'Gerät farbig, Umgebung als Zeichnung.' : '');
+      } catch (err) {
+        console.error(err);
+        if (my !== run) return;
+        st.photo = original;
+        status('Freistellen hat nicht geklappt (Netz?). Das Foto wird unverändert gespeichert.');
+      }
       $('[data-preview]').innerHTML = `<img src="${URL.createObjectURL(st.photo)}" alt="">`;
     };
     el.querySelectorAll('[data-photo]').forEach(inp => inp.onchange = async e => {
@@ -120,6 +135,7 @@ export default {
       if (!file) return;
       try {
         original = await resizeImage(file);
+        st.original = original;
         await showPhoto();
       } catch (err) {
         console.error(err);
@@ -127,15 +143,32 @@ export default {
       }
       e.target.value = '';
     });
-    $('[data-sketch]').onchange = () => { setSketchPreferred($('[data-sketch]').checked); showPhoto(); };
-    const convert = $('[data-sketch-existing]');
-    if (convert) convert.onclick = async () => {
-      const blob = await db.getPhotoBlob(ex.id);
-      if (!blob) return;
-      original = blob;
-      $('[data-sketch]').checked = true;
+    el.querySelectorAll('[data-style] button').forEach(b => b.onclick = () => {
+      style = b.dataset.v; setPhotoStyle(style);
+      el.querySelectorAll('[data-style] button').forEach(x => x.classList.toggle('on', x === b));
+      status('');
+      showPhoto();
+    });
+    const restyle = $('[data-restyle]');
+    if (restyle) restyle.onclick = async () => {
+      status('Originalfoto wird gesucht …');
+      let blob = await db.getPhotoBlob(`${ex.id}-orig`);
+      if (!blob && getMode() === 'cloud') {
+        try {
+          const sync = await import('../sync.js');
+          const c = await sync.getClient();
+          const { data } = await c.storage.from('photos').download(`${db.currentUser()}/${ex.id}-orig.jpg`);
+          if (data) { blob = data; await db.savePhotoFromRemote(`${ex.id}-orig`, data); }
+        } catch { /* kein Original */ }
+      }
+      if (!blob) {
+        const cur = await db.getPhotoBlob(ex.id);
+        if (cur && !(await isGrayscale(cur))) blob = cur;   // bisher als Foto gespeichert: das ist das Original
+      }
+      if (!blob) { status('Dieses Foto ist schon als Bleistiftzeichnung gespeichert, das farbige Original fehlt. Für die neue Darstellung das Gerät bitte neu fotografieren.'); return; }
+      original = blob; st.original = blob;
       await showPhoto();
-      toast('Vorschau umgewandelt – mit „Speichern“ übernehmen');
+      toast('Vorschau fertig – mit „Speichern“ übernehmen');
     };
 
     $('[data-save]').onclick = async () => {
@@ -156,6 +189,7 @@ export default {
       const saved = await db.put('exercises', row);
       if (st.photo) {
         await db.putPhoto(saved.id, st.photo);
+        if (st.original && st.original !== st.photo) await db.putPhoto(`${saved.id}-orig`, st.original);
         await db.put('exercises', { id: saved.id, photo_path: `${db.currentUser()}/${saved.id}.jpg` });
       }
       toast(isNew ? 'Übung angelegt' : 'Gespeichert');
