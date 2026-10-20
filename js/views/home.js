@@ -61,7 +61,6 @@ export default {
         ${stepsCard(r.steps, stepsToday)}
       </div>
 
-      <div data-geo-box></div>
       <div class="row spread" style="margin-top:22px;align-items:baseline"><h2 style="margin:0">Studios</h2>
         <a class="week-line small" href="#/stats">${weekLine(week)}</a></div>
       <div class="stack" id="gyms" style="margin-top:10px">
@@ -78,6 +77,7 @@ export default {
         </a>
       </div>
       <button class="btn block" style="margin-top:10px" data-add-gym>+ Studio hinzufügen</button>
+      <div data-geo-box></div>
 
       <div class="card tap" data-go="#/rewards" style="margin-top:22px">
         <div class="row spread" style="flex-wrap:wrap;gap:4px 12px"><b style="white-space:nowrap">Erfolge &amp; Rekorde</b><span class="muted small">${r.earned.length} Abzeichen · ${r.records.length} Rekorde</span></div>
@@ -191,7 +191,7 @@ async function detectGym(el, gyms) {
     return;
   }
   if (state === 'prompt' || (state === 'granted' && done)) {
-    box.innerHTML = `<button class="btn block" data-locate style="margin-top:12px">${icon('pin', 18)} Studio per Standort finden</button>`;
+    box.innerHTML = `<button class="btn block" data-locate style="margin-top:10px">${icon('pin', 18)} Studio per Standort finden</button>`;
     box.querySelector('[data-locate]').onclick = async (e) => {
       const b = e.currentTarget; b.disabled = true; b.textContent = 'Suche Standort …';
       try {
