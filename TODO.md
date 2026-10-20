@@ -1,6 +1,6 @@
 # TODO – BENA Fit
 
-App: https://mabena71.github.io/bena-fitness/ · Demo: https://mabena71.github.io/bena-fitness/?demo · Repo: https://github.com/mabena71/bena-fitness
+Leitstelle und Arbeitsweise: [LEITSTELLE.md](LEITSTELLE.md) · App: https://mabena71.github.io/bena-fitness/ · Demo: https://mabena71.github.io/bena-fitness/?demo · Repo: https://github.com/mabena71/bena-fitness
 Aufwand = Schätzung in Minuten · Modell = empfohlenes Claude-Modell (Opus = knifflig, Sonnet = Routine, Haiku = Kleinigkeiten, – = Aufgabe von Maurice, Sabine oder Remy)
 Übersicht als Seite: Artifact «To-do BENA Fit» https://claude.ai/artifact/3w2zoeas6bpthwQcZBHSdZ, Quelle `docs/todo-uebersicht.html` (gleiches Design wie Roundabout Hunter; von Hand nachführen und gleiche Datei neu veröffentlichen, nach jedem Statuswechsel). Tokens messen: `python scripts/tokens_zaehlen.py`.
 
