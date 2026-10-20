@@ -10,7 +10,6 @@ Aufwand = Schätzung in Minuten · Modell = empfohlenes Claude-Modell (Opus = kn
 |---|---|---|---|---|---|---|---|---|---|
 | 20 | 1 | Neue Version am Handy ansehen | Startseite (Schritte-Karte, Aktivität, Erfolge, Level-Plakette), Erfolge (Abzeichen X von Y, Rang-Stufen), Knopf «Fotografieren» beim Gerätefoto | Maurice | – | 10 | hoch | offen | – |
 | 1 | 1 | Studio-Test | Geräte mit Foto anlegen, Sätze erfassen, Flugmodus, Sauna, Standort speichern; Feedback mit Screenshots. Erster Teil erledigt (Standort gespeichert, Sauna erfasst) | Maurice | – | 60 | hoch | in Arbeit | – |
-| 21 | 1 | Vorbelegung: erster Satz vom letzten Mal | An einem neuen Tag startet ein Gerät mit Gewicht und Wiederholungen des **ersten** Arbeitssatzes vom letzten Trainingstag (heute: des letzten). Beispiel: gestern 3 Sätze → heute Satz 1 von gestern. Am gleichen Tag weiter wie bisher (Werte des letzten Satzes von heute). Aufwärmsätze zählen nicht; Comeback-Abschlag bleibt (Wunsch Maurice 20.10.) | Claude | Sonnet | 15 | hoch | offen | – |
 | 2 | 1 | Feedback einarbeiten | Anpassungen nach dem Studio-Test | Claude | Sonnet | 60 | hoch | laufend | 1 |
 | 3 | 1 | Sabine und Remy anmelden | Sabine ist angemeldet (Name fehlt noch), Remy hat sich angemeldet; Claude prüft danach in der Datenbank | Sabine, Remy | – | 10 | hoch | in Arbeit | – |
 | 19 | 1 | Withings für Sabine | Sabine verbindet unter Mehr → Withings ihr eigenes Konto (Uhr und Waage); Werte ab 11.10.2026 | Sabine | – | 5 | hoch | offen | 3 |
@@ -33,6 +32,8 @@ Aufwand = Schätzung in Minuten · Modell = empfohlenes Claude-Modell (Opus = kn
 
 | Nr | Thema | Details | Erledigt am |
 |---|---|---|---|
+| E33 | Rekorde ab 8 Wiederholungen | Bei Geräten und freien Gewichten zählt ein Satz erst ab 8 Wiederholungen als Rekord bzw. Bestwert (Eigengewicht ohne Zusatzgewicht, Cardio und Sauna wie bisher). Bisherige Rekorde werden neu berechnet (Wunsch Maurice 20.10.) | 20.10.2026 |
+| E32 | Vorbelegung: erster Satz vom letzten Mal | Neuer Tag: Gewicht und Wiederholungen des ersten Satzes vom letzten Trainingstag, auch wenn es ein Aufwärmsatz war (Haken «Aufwärmsatz» dann gesetzt); am gleichen Tag weiter mit dem letzten Arbeitssatz von heute; Comeback-Abschlag bleibt (Nr. 21, Wunsch Maurice 20.10.) | 20.10.2026 |
 | E31 | Level-Plakette | Blau mit Beschriftung «LEVEL», daneben nur der Rang (z. B. «Anfänger I») – Startseite und Erfolge. Version 2026.10.19-6 | 19.10.2026 |
 | E30 | Erfolge-Seite | Abzeichen als «X von Y» mit Balken, aufklappbar «Erreicht» und «Noch offen» (mit Fortschritt, z. B. 8/10); Rang mit «Stufe 1 von 2» und Übersicht aller Ränge. Version 2026.10.19-5 | 19.10.2026 |
 | E29 | Startseite neu geordnet | Karten Körper → Schritte → Aktivität (Woche gross, Monat klein, letztes Training) → Erfolge (Level, 3 neueste Abzeichen, «Fast geschafft»); Ränge mit Stufen (Neuling I–II … Legende). Version 2026.10.19-4 | 19.10.2026 |

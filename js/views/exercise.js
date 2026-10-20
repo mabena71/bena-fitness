@@ -29,7 +29,7 @@ export default {
     const entry = {
       weight_kg: init.weight_kg ?? null, reps: init.reps ?? 10,
       duration_min: init.duration_min ?? (isSauna ? 12 : 20), distance_km: init.distance_km ?? null,
-      feel: 2, is_warmup: false, note: '', at: null,
+      feel: 2, is_warmup: !!init.is_warmup, note: '', at: null,
     };
     const comebackInfo = init.comeback || null;
     let showNote = false;

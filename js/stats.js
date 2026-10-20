@@ -77,6 +77,15 @@ export function sessions(sets, exById) {
 }
 
 // --- Rekorde ---------------------------------------------------------------
+/** Ein Gewicht zählt erst als Rekord bzw. Bestwert, wenn es mindestens so oft gestemmt wurde. */
+export const MIN_RECORD_REPS = 8;
+/** Zählt dieser Arbeitssatz für Rekorde? Bei Gewichtsübungen nur ab MIN_RECORD_REPS Wiederholungen. */
+export function recordable(s, kind) {
+  if (s.is_warmup) return false;
+  if (kind === 'cardio' || kind === 'sauna') return true;
+  if (kind === 'bodyweight' && !s.weight_kg) return true;
+  return (s.reps || 0) >= MIN_RECORD_REPS;
+}
 /** >0 wenn a besser ist als b. */
 export function compareSets(a, b, kind) {
   if (kind === 'sauna') return (a.duration_min || 0) - (b.duration_min || 0);
@@ -93,7 +102,7 @@ export function compareSets(a, b, kind) {
 
 export function best(sets, kind) {
   let b = null;
-  for (const s of working(sets)) if (!b || compareSets(s, b, kind) > 0) b = s;
+  for (const s of working(sets)) if (recordable(s, kind) && (!b || compareSets(s, b, kind) > 0)) b = s;
   return b;
 }
 
@@ -102,12 +111,12 @@ export function best(sets, kind) {
  * Voraussetzung: Es gibt schon Sätze von einem früheren Tag (der allererste Tag setzt nur die Basis).
  */
 export function isRecord(set, previous, kind) {
-  if (set.is_warmup) return false;
+  if (!recordable(set, kind)) return false;
   const prev = working(previous).filter(p => p.id !== set.id && p.performed_at < set.performed_at);
   const today = dayKey(set.performed_at);
   if (!prev.some(p => dayKey(p.performed_at) < today)) return false;
   const b = best(prev, kind);
-  return !b || compareSets(set, b, kind) > 0;
+  return !!b && compareSets(set, b, kind) > 0; // der erste zählende Satz setzt nur die Basis
 }
 
 /** Alle Rekord-Ereignisse chronologisch. */
@@ -123,6 +132,7 @@ export function recordEvents(sets, exById) {
       if (s.is_warmup) continue;
       const d = dayKey(s.performed_at);
       if (!firstDay) firstDay = d;
+      if (!recordable(s, ex.kind)) continue;
       if (bestSoFar && d > firstDay && compareSets(s, bestSoFar, ex.kind) > 0) out.push({ set: s, ex, prev: bestSoFar });
       if (!bestSoFar || compareSets(s, bestSoFar, ex.kind) > 0) bestSoFar = s;
     }
@@ -170,7 +180,11 @@ export function prefill(exSets, ex, now = new Date()) {
   const today = dayKey(now);
   const sorted = [...exSets].sort(byTime);
   const todays = sorted.filter(s => dayKey(s.performed_at) === today);
-  const ref = [...(todays.length ? todays : sorted)].reverse().find(s => !s.is_warmup) || sorted[sorted.length - 1];
+  // Neuer Tag: erster Satz des letzten Trainingstags (auch ein Aufwärmsatz); am gleichen Tag der letzte Arbeitssatz von heute.
+  const lastDay = sorted.length ? dayKey(sorted[sorted.length - 1].performed_at) : null;
+  const ref = todays.length
+    ? [...todays].reverse().find(s => !s.is_warmup) || todays[todays.length - 1]
+    : sorted.find(s => dayKey(s.performed_at) === lastDay);
   const step = ex.step || (ex.kind === 'free' ? 1 : 2.5);
   if (ex.kind === 'sauna') return { duration_min: ref ? ref.duration_min : 12 };
   if (!ref) {
@@ -178,6 +192,7 @@ export function prefill(exSets, ex, now = new Date()) {
   }
   if (ex.kind === 'cardio') return { duration_min: ref.duration_min, distance_km: ref.distance_km };
   const out = { weight_kg: ref.weight_kg ?? null, reps: ref.reps };
+  if (!todays.length && ref.is_warmup) out.is_warmup = true;
   if (!todays.length) {
     const cb = comeback(exSets, now);
     if (cb && out.weight_kg) {

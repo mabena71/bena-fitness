@@ -1,6 +1,6 @@
 // Tests für die reinen Rechenfunktionen. Aufruf: tests.html im Browser öffnen.
 import {
-  sessions, isRecord, recordEvents, ghostCompare, comeback, prefill, rolling, bodyRecordEvents,
+  sessions, isRecord, recordEvents, ghostCompare, comeback, prefill, best, rolling, bodyRecordEvents,
   weekStreak, sinkingWeekStreak, roundStep, dayKey, addDays, analyze, saunaStats, challengeScore, stepStats,
 } from './stats.js';
 import { levelNeed, computeRewards, rankFor } from './rewards.js';
@@ -239,6 +239,24 @@ test('Ränge: Stufen innerhalb eines Rangs und nächster Rang', () => {
   eq(rankFor(4).next, { name: 'Stammgast', at: 5 });
   eq([rankFor(3).sub, rankFor(3).of, rankFor(10).of, rankFor(26).of], [1, 2, 4, null]);
   eq(rankFor(30).next, null);
+});
+
+test('Rekorde zählen bei Gewichten erst ab 8 Wiederholungen', () => {
+  const prev = [set('r', at(3), 50, 10), set('r', at(3, 18, 5), 70, 3)];
+  eq(best(prev, 'machine').weight_kg, 50, '70 × 3 ist kein Bestwert');
+  ok(!isRecord(set('r', at(0), 60, 7), prev, 'machine'), '60 × 7 ist kein Rekord');
+  ok(isRecord(set('r', at(0), 52.5, 8), prev, 'machine'), '52.5 × 8 ist ein Rekord');
+  ok(isRecord(set('b', at(0), null, 12), [set('b', at(2), null, 10)], 'bodyweight'), 'Eigengewicht zählt Wiederholungen');
+});
+
+test('Vorbelegung: neuer Tag startet mit dem ersten Satz vom letzten Mal, auch Aufwärmen', () => {
+  const e = ex('p');
+  const last = [set('p', at(1, 18, 0), 30, 12, { is_warmup: true }), set('p', at(1, 18, 3), 50, 10), set('p', at(1, 18, 6), 55, 8)];
+  eq(prefill(last, e), { weight_kg: 30, reps: 12, is_warmup: true });
+  const noWarm = last.slice(1);
+  eq(prefill(noWarm, e), { weight_kg: 50, reps: 10 });
+  const todayToo = [...noWarm, set('p', at(0, 9), 52.5, 9)];
+  eq(prefill(todayToo, e), { weight_kg: 52.5, reps: 9 }, 'am gleichen Tag der letzte Satz von heute');
 });
 
 // Abgleich gegen simulierten Server (asynchron)
