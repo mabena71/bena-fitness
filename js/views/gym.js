@@ -73,9 +73,9 @@ export default {
       ${all.length > 1 && !hasOrder ? '<p class="muted small">Optional: Lege deinen Laufweg fest. Dann zeigt dir die App nach jedem Gerät das nächste an.</p>' : ''}
       ${gym ? `<div class="card" style="margin-top:14px"><div class="row">
         <span style="color:var(--primary)">${icon('pin', 22)}</span>
-        <div class="grow">${gym.lat != null ? `<b>Standort gespeichert</b><div class="muted small">Die App öffnet dieses Studio automatisch, wenn du hier bist.</div>`
-          : `<b>Studio per Standort erkennen</b><div class="muted small">Tippe hier, wenn du im Studio bist. Danach öffnet sich die App hier automatisch.</div>`}</div>
-        <button class="btn sm" data-geo>${gym.lat != null ? 'Neu setzen' : 'Hier speichern'}</button></div></div>` : ''}
+        <div class="grow">${gym.lat != null ? `<b>Standort gespeichert</b><div class="muted small">Öffnest du die App hier, springt sie direkt zu «${esc(gym.name)}».</div>`
+          : `<b>Automatisch öffnen</b><div class="muted small">Bist du gerade in diesem Studio? Dann speichere hier den Standort. Danach öffnet die App «${esc(gym.name)}» von selbst, sobald du hier bist.</div>`}</div>
+        <button class="btn sm" data-geo>${gym.lat != null ? 'Neu speichern' : 'Standort speichern'}</button></div></div>` : ''}
     `;
 
     const tiles = el.querySelector('[data-tiles]');
@@ -106,13 +106,13 @@ export default {
     if (other) other.onclick = () => { try { sessionStorage.setItem('geo.autoDone', '1'); } catch { /* egal */ } };
     const geoBtn = el.querySelector('[data-geo]');
     if (geoBtn) geoBtn.onclick = async () => {
-      geoBtn.disabled = true; geoBtn.textContent = 'Suche …';
+      geoBtn.disabled = true; geoBtn.textContent = 'Wird gemessen …';
       try {
         const pos = await currentPosition({ maximumAge: 0 });
         await db.put('gyms', { id: gym.id, lat: pos.lat, lng: pos.lng, geo_acc: Math.round(pos.acc) });
         toast(`Standort von ${esc(gym.name)} gespeichert (Genauigkeit ca. ${Math.round(pos.acc)} m)`, '', 3500);
         ctx.refresh();
-      } catch (err) { toast(esc(err.message), '', 3500); geoBtn.disabled = false; geoBtn.textContent = 'Hier speichern'; }
+      } catch (err) { toast(esc(err.message), '', 3500); geoBtn.disabled = false; geoBtn.textContent = 'Standort speichern'; }
     };
     const ob = el.querySelector('[data-order]');
     if (ob) ob.onclick = async () => { if (await orderDialog(all)) ctx.refresh(); };
