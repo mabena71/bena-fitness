@@ -49,6 +49,30 @@ export async function toSketch(blob, max = 1280) {
 }
 
 /**
+ * Farbstift: Strichstärke aus der Bleistiftzeichnung, Farben aus dem Foto (etwas kräftiger).
+ * Läuft sofort, ohne Download.
+ */
+export async function toColorSketch(blob) {
+  const sketchBlob = await toSketch(blob);
+  const [sk, orig] = await Promise.all([bitmap(sketchBlob), bitmap(blob)]);
+  const w = sk.width, h = sk.height;
+  const read = img => { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0, w, h); return g.getImageData(0, 0, w, h); };
+  const S = read(sk), O = read(orig).data, d = S.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const ink = (255 - d[i]) / 255;                                   // 0 = Papier, 1 = Strich
+    const l = 0.3 * O[i] + 0.59 * O[i + 1] + 0.11 * O[i + 2];
+    const a = Math.min(1, ink * 1.1 + 0.5);                           // Farbfläche plus Striche
+    for (let k = 0; k < 3; k++) {
+      const sat = Math.max(0, Math.min(255, l + (O[i + k] - l) * 1.5));
+      d[i + k] = 255 - (255 - sat * (1 - ink * 0.5)) * a;
+    }
+  }
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  c.getContext('2d').putImageData(S, 0, 0);
+  return new Promise(res => c.toBlob(r => res(r || sketchBlob), 'image/jpeg', 0.9));
+}
+
+/**
  * «Gerät hervorgehoben»: das Gerät bleibt als farbiges Foto, die Umgebung wird zur Bleistiftzeichnung.
  * Das Freistellen läuft im Browser (beim ersten Mal ca. 40 MB Download, danach aus dem Cache).
  */
@@ -96,19 +120,15 @@ export async function isGrayscale(blob) {
   return diff / (64 * 64) < 3;
 }
 
-/** Darstellung der Gerätefotos: 'photo' | 'sketch' | 'focus' (Standard: Gerät hervorgehoben). */
-export const PHOTO_STYLES = { photo: 'Foto', sketch: 'Bleistift', focus: 'Gerät hervorgehoben' };
+/** Darstellung der Gerätefotos: 'color' (Farbstift) | 'focus' (Gerät hervorgehoben, Standard). */
+export const PHOTO_STYLES = { color: 'Farbstift', focus: 'Gerät hervorgehoben' };
 const PREF = 'fitness.photoStyle';
 export function photoStyle() {
-  try {
-    const v = localStorage.getItem(PREF);
-    if (PHOTO_STYLES[v]) return v;
-    if (localStorage.getItem('fitness.sketchPhotos') === '0') return 'photo';
-  } catch { /* egal */ }
+  try { const v = localStorage.getItem(PREF); if (PHOTO_STYLES[v]) return v; } catch { /* egal */ }
   return 'focus';
 }
 export function setPhotoStyle(v) { try { localStorage.setItem(PREF, v); } catch { /* egal */ } }
 /** Bild in der gewählten Darstellung. */
 export function renderStyle(blob, style, onStatus) {
-  return style === 'sketch' ? toSketch(blob) : style === 'focus' ? toFocus(blob, onStatus) : Promise.resolve(blob);
+  return style === 'focus' ? toFocus(blob, onStatus) : toColorSketch(blob);
 }

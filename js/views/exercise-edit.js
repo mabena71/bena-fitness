@@ -127,11 +127,11 @@ export default {
       } catch (err) {
         console.error(err);
         if (my !== run) return;
-        // Rückfall: Bleistiftzeichnung, damit das Gerät trotzdem ein einheitliches Bild bekommt
-        try { st.photo = await renderStyle(original, 'sketch'); } catch { st.photo = original; }
+        // Rückfall: Farbstift, damit das Gerät trotzdem ein einheitliches Bild bekommt
+        try { st.photo = await renderStyle(original, 'color'); } catch { st.photo = original; }
         status(err.message === 'timeout'
-          ? 'Das Freistellen dauert auf diesem Gerät zu lange. Gespeichert wird die Bleistiftzeichnung; am PC geht es schneller.'
-          : 'Freistellen hat nicht geklappt (Netz?). Gespeichert wird die Bleistiftzeichnung.');
+          ? 'Das Freistellen dauert auf diesem Gerät zu lange. Gespeichert wird der Farbstift; am PC geht es schneller.'
+          : 'Freistellen hat nicht geklappt (Netz?). Gespeichert wird der Farbstift.');
       }
       $('[data-preview]').innerHTML = `<img src="${URL.createObjectURL(st.photo)}" alt="">`;
     };
