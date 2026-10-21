@@ -24,7 +24,7 @@ Lies zuerst diese Datei, dann [TODO.md](TODO.md). Die Vorgeschichte steht in der
 ## TODO.md und To-do-Seite
 
 - TODO.md im Format von Roundabout Hunter: «Offene Punkte» (Nr | Phase | Thema | Details | Wer | Modell | Aufwand | Prio | Status | Abhängig von), «Erledigt» (Nr | Thema | Details | Erledigt am, neueste zuoberst, Nummern E1…E41), Reihenfolge, Rückfragen, Kosten, Phasen (1 Im Alltag, 2 Für Freunde, 3 Push und Motivation, 4 Stores; neu seit 20.10.). Gestrichene Punkte unter der Tabelle «Offene Punkte» vermerken. Offene Nummern zuletzt 31 → nächste neue Nr. **32**.
-- **To-do-Seite** = Artifact «To-do BENA Fit» https://claude.ai/artifact/3w2zoeas6bpthwQcZBHSdZ, Quelle `docs/todo-uebersicht.html`. Design und Farben **1:1 von der Roundabout-Hunter-Liste** (Maurice will genau diese, nicht das App-Blau). Nach JEDEM Statuswechsel von Hand nachführen (Kennzahlen, «Online seit», Erledigt-Zähler) und mit `url` neu veröffentlichen. «Tokens bisher» mit `python scripts/tokens_zaehlen.py` messen.
+- **To-do-Seite** = Artifact «To-do BENA Fit» https://claude.ai/artifact/3w2zoeas6bpthwQcZBHSdZ, Quelle `docs/todo-uebersicht.html`. Design und Farben **1:1 von der Roundabout-Hunter-Liste** (Maurice will genau diese, nicht das App-Blau). Nach JEDEM Statuswechsel von Hand nachführen (Kennzahlen, «Online seit» nur Datum und Version ohne Liste der Neuerungen – Wunsch Maurice 22.10., Erledigt-Zähler) und mit `url` neu veröffentlichen. «Tokens bisher» mit `python scripts/tokens_zaehlen.py` messen.
 
 ## Technik
 
