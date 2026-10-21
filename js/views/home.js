@@ -1,5 +1,5 @@
 import * as db from '../db.js';
-import { snapshot, rewards, profile, gymName, latestBadges, createStudio, SAUNA_SUGGESTIONS } from '../data.js';
+import { snapshot, rewards, profile, saveProfile, stepGoal, gymName, latestBadges, createStudio, SAUNA_SUGGESTIONS } from '../data.js';
 import { bodyTrend, sessions, periodSummary, dayKey, weekKey, dayFromKey } from '../stats.js';
 import { setTop, esc, n1, n0, signed, ago, tons, modal, toast, setText } from '../ui.js';
 import { openBodyEntry, openStepsEntry } from './body.js';
@@ -113,6 +113,7 @@ export default {
     el.querySelectorAll('[data-go]').forEach(c => c.addEventListener('click', e => { if (!e.target.closest('button')) location.hash = c.dataset.go; }));
     el.querySelector('[data-add-body]').onclick = async e => { e.stopPropagation(); if (await openBodyEntry()) ctx.refresh(); };
     el.querySelector('[data-steps]').onclick = async e => { e.stopPropagation(); if (await openStepsEntry()) ctx.refresh(); };
+    el.querySelector('[data-goal]').onclick = async e => { e.stopPropagation(); if (await openStepGoal()) ctx.refresh(); };
     el.querySelector('[data-add-gym]').onclick = async () => {
       const r = await studioDialog('Neues Studio', 'z. B. Hotelgym Ferien');
       if (!r) return;
@@ -122,6 +123,34 @@ export default {
     };
   },
 };
+
+/** Schritte-Ziel pro Tag ändern (zählt für Serie, Zieltage und Abzeichen). */
+function openStepGoal() {
+  const QUICK = [6000, 8000, 10000, 12000, 15000];
+  return modal((m, close) => {
+    m.innerHTML = `<h2>Schritte-Ziel pro Tag</h2>
+      <div class="chips" data-quick>${QUICK.map(n => `<button type="button" class="chip ${n === stepGoal() ? 'on' : ''}" data-n="${n}">${n0(n)}</button>`).join('')}</div>
+      <label class="field"><span>Eigenes Ziel</span><input class="input" type="number" inputmode="numeric" min="1000" max="50000" step="500" value="${stepGoal()}"></label>
+      <p class="muted small">Zählt für die Serie «Tage in Folge», die Zieltage und die Schritte-Abzeichen.</p>
+      <div class="actions"><button class="btn" data-x>Abbrechen</button><button class="btn primary" data-ok>Speichern</button></div>`;
+    const inp = m.querySelector('input');
+    m.querySelectorAll('[data-n]').forEach(b => b.onclick = () => {
+      inp.value = b.dataset.n;
+      m.querySelectorAll('[data-n]').forEach(x => x.classList.toggle('on', x === b));
+    });
+    inp.oninput = () => m.querySelectorAll('[data-n]').forEach(x => x.classList.toggle('on', +x.dataset.n === +inp.value));
+    const save = async () => {
+      const goal = Math.round(+inp.value / 100) * 100;
+      if (!(goal >= 1000 && goal <= 50000)) { toast('Ziel bitte zwischen 1000 und 50 000'); return; }
+      await saveProfile({ settings: { ...(profile().settings || {}), stepGoal: goal } });
+      toast(`Neues Ziel: ${n0(goal)} Schritte`);
+      close(true);
+    };
+    m.querySelector('[data-x]').onclick = () => close(false);
+    m.querySelector('[data-ok]').onclick = save;
+    inp.onkeydown = e => { if (e.key === 'Enter') save(); };
+  });
+}
 
 /**
  * Leerer Zustand ohne Studio: führt zum eigenen Studio. In einem Konto erst nach dem ersten
@@ -195,7 +224,7 @@ function stepsCard(st, entry) {
     : `<b>Noch keine Serie</b><div class="muted small">${st.todayDone ? 'Heute geschafft – die Serie beginnt!' : `Ab ${goal} Schritten am Tag beginnt sie`}</div>`;
   return `
         <div class="card steps-card tap" data-go="#/body">
-          <div class="row spread"><b>Schritte</b><button class="btn sm" data-steps>${entry ? 'Ändern' : '+ Eintragen'}</button></div>
+          <div class="row spread"><b>Schritte</b><div class="row" style="gap:8px"><button class="btn sm" data-goal>Ziel</button><button class="btn sm" data-steps>${entry ? 'Ändern' : '+ Eintragen'}</button></div></div>
           <div class="row" style="gap:16px;margin-top:8px;align-items:center">
             <svg class="steps-ring" viewBox="0 0 100 100" width="104" height="104" aria-label="${n0(st.today)} von ${goal} Schritten">
               <circle cx="50" cy="50" r="${R}" class="track"/>
