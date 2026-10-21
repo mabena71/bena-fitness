@@ -2,6 +2,7 @@
 import {
   sessions, isRecord, recordEvents, ghostCompare, comeback, prefill, best, rolling, bodyRecordEvents,
   weekStreak, sinkingWeekStreak, roundStep, dayKey, addDays, analyze, saunaStats, challengeScore, stepStats,
+  bodyLoss, bodyTrend,
 } from './stats.js';
 import { levelNeed, computeRewards, rankFor } from './rewards.js';
 import * as fun from './fun.js';
@@ -258,6 +259,14 @@ test('Vorbelegung: Satz für Satz wie beim letzten Mal, auch Aufwärmen', () => 
   eq(prefill([...last, set('p', at(0, 0, 1), 30, 12, { is_warmup: true })], e), { weight_kg: 50, reps: 10 }, 'nach dem Aufwärmen Satz 2 vom letzten Mal');
   const today3 = [...noWarm, set('p', at(0, 0, 1), 52.5, 9), set('p', at(0, 0, 2), 55, 8)];
   eq(prefill(today3, e), { weight_kg: 55, reps: 8 }, 'mehr Sätze als letztes Mal: letzter Satz von heute');
+});
+
+test('Seit Beginn: erste gegen letzte Messung, nicht Wochenschnitte', () => {
+  const kg = [93.4, 92.5, 91.1, 90.05, 89.6, 89.4, 89.6, 89.15, 89, 88.75, 88.5];
+  const body = kg.map((w, i) => ({ measured_at: new Date(2026, 9, 11 + i, 6).toISOString(), weight_kg: w }));
+  ok(Math.abs(bodyLoss(body, 'weight_kg') - 4.9) < 1e-9, String(bodyLoss(body, 'weight_kg')));
+  ok(Math.abs(bodyTrend(body, 'weight_kg', new Date(2026, 9, 21, 12)).sinceStart + 4.9) < 1e-9, 'sinceStart');
+  eq(bodyLoss(body.slice(0, 1), 'weight_kg'), 0);
 });
 
 // Abgleich gegen simulierten Server (asynchron)

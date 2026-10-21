@@ -102,7 +102,7 @@ function computeBadges(c) {
   for (const n of [10, 50, 100]) add(`km_${n}`, 'route', `${n} km Cardio`, `${n} km auf Cardio-Geräten`, km >= n, 'Training', [Math.floor(km), n]);
 
   const loss = bodyLoss(c.data.body, 'weight_kg');
-  for (const n of [1, 2, 3, 5, 10]) add(`loss_${n}`, n >= 5 ? 'star' : 'trendDown', `−${n} kg`, `${n} kg leichter seit Beginn (7-Tage-Schnitt)`, loss >= n - 1e-9, 'Körper');
+  for (const n of [1, 2, 3, 5, 10]) add(`loss_${n}`, n >= 5 ? 'star' : 'trendDown', `−${n} kg`, `${n} kg leichter seit der ersten Messung`, loss >= n - 1e-9, 'Körper');
   const fat = bodyLoss(c.data.body, 'fat_pct');
   for (const n of [1, 2, 3, 5]) add(`fat_${n}`, 'trendDown', `−${n} % Fett`, `${n} Prozentpunkte weniger Fett`, fat >= n - 1e-9, 'Körper');
   const sink = sinkingWeekStreak(c.data.body, 'weight_kg');

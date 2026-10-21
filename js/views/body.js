@@ -36,7 +36,7 @@ export default {
         <button class="btn primary grow" data-add>+ Messung</button>
         <button class="btn" data-steps>${icon('steps', 18)} Schritte</button>
       </div>
-      <p class="muted small" style="margin:-4px 0 12px">Bald automatisch von der Withings-Waage. Bis dahin hier von Hand eintragen.</p>
+      <p class="muted small" style="margin:-4px 0 12px">Mit einer Withings-Waage kommen die Werte automatisch (Mehr → Withings), sonst hier von Hand eintragen.</p>
       <div class="kpis">
         ${kpi('Gewicht', w, 'kg', -1)}
         ${kpi('Fettanteil', f, '%', -1)}

@@ -272,21 +272,16 @@ export function bodyTrend(metrics, field, now = new Date()) {
   return {
     last: last.v, lastAt: last.t, avg: last.avg,
     delta7: before ? last.avg - before.avg : null,
-    sinceStart: r.length > 1 ? last.avg - firstWeekAvg(r) : null,
+    sinceStart: r.length > 1 ? last.v - first.v : null,
     first: first.v,
   };
 }
-function firstWeekAvg(r) {
-  const t0 = new Date(r[0].t).getTime();
-  const wk = r.filter(x => new Date(x.t).getTime() - t0 < 7 * DAY);
-  return wk.reduce((a, x) => a + x.v, 0) / wk.length;
-}
 
-/** Gewichtsverlust seit Beginn (positiv = abgenommen), basierend auf Wochenschnitten. */
+/** Verlust seit der ersten Messung (positiv = abgenommen): erster gegen letzten gemessenen Wert. */
 export function bodyLoss(metrics, field) {
   const r = rolling(metrics, field);
   if (r.length < 2) return 0;
-  return firstWeekAvg(r) - r[r.length - 1].avg;
+  return r[0].v - r[r.length - 1].v;
 }
 
 export function weeklyAverages(metrics, field) {
