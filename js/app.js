@@ -2,7 +2,7 @@
 import * as db from './db.js';
 import { seedDemo, DEMO_VERSION } from './demo.js';
 import { primeRewards, migrateCategories } from './data.js';
-import { esc } from './ui.js';
+import { esc, toast } from './ui.js';
 import { icon } from './icons.js';
 
 import welcome from './views/welcome.js';
@@ -17,8 +17,10 @@ import review from './views/review.js';
 import settings from './views/settings.js';
 import login from './views/login.js';
 import challenge from './views/challenge.js';
+import password from './views/password.js';
 import { cloudConfigured } from './config.js';
 import { APP_VERSION } from './version.js';
+import { parseAuthRedirect, codeFromHash } from './invite.js';
 
 const MODE_KEY = 'fitness.mode';
 export const MODES = {
@@ -41,6 +43,7 @@ const routes = [
   [/^\/review\/(month|year)\/([\d-]+)$/, review],
   [/^\/settings$/, settings],
   [/^\/challenge$/, challenge],
+  [/^\/password$/, password],
 ];
 
 const NAV = [
@@ -53,6 +56,7 @@ const NAV = [
 
 let cleanup = null;
 let mode = null;
+let cloudFirstName = ''; // Vorname aus der Registrierung, falls die Bestätigung auf einem anderen Gerät kam
 
 export function getMode() { return mode; }
 
@@ -72,7 +76,10 @@ function renderNav(path) {
 async function route() {
   let path = ((location.hash || '#/').slice(1) || '/').split('?')[0] || '/';
   if (!mode && path !== '/welcome' && path !== '/login') { location.hash = '#/welcome'; return; }
-  if (mode && (path === '/welcome' || path === '/login')) path = '/';
+  // Einladungslink (#/login?code=…) auch aus Demo oder «Nur dieses Gerät» heraus öffnen
+  const inviteLink = path === '/login' && mode !== 'cloud' && codeFromHash(location.hash);
+  if (mode && (path === '/welcome' || (path === '/login' && !inviteLink))) path = '/';
+  if (path === '/password' && mode !== 'cloud') path = mode ? '/' : '/login';
   renderNav(path);
   const el = document.getElementById('view');
   if (cleanup) { try { cleanup(); } catch (e) { console.error(e); } cleanup = null; }
@@ -93,6 +100,7 @@ async function route() {
 }
 
 async function boot() {
+  await handleAuthRedirect();
   mode = localStorage.getItem(MODE_KEY);
   if (mode && !MODES[mode]) mode = null;
   // Link zum Weitergeben: …/?demo öffnet direkt die Demo (nur wenn noch kein Modus gewählt ist)
@@ -115,16 +123,21 @@ async function boot() {
     await migrateCategories();
     await primeRewards();
     try {
-      const pending = localStorage.getItem('fitness.pendingName');
+      const pending = localStorage.getItem('fitness.pendingName') || cloudFirstName;
       if (pending) {
         const { profile, saveProfile } = await import('./data.js');
         if (!profile().display_name) await saveProfile({ display_name: pending });
         localStorage.removeItem('fitness.pendingName');
+        cloudFirstName = '';
       }
     } catch { /* egal */ }
     // Android/Chrome darf die Daten sonst bei knappem Speicher löschen
     try { if (navigator.storage?.persist && !(await navigator.storage.persisted())) await navigator.storage.persist(); } catch { /* egal */ }
   }
+  try {
+    const flash = sessionStorage.getItem('fitness.flash');
+    if (flash) { sessionStorage.removeItem('fitness.flash'); setTimeout(() => toast(esc(flash), '', 5000), 300); }
+  } catch { /* egal */ }
   window.addEventListener('hashchange', route);
   window.addEventListener('scroll', () => document.getElementById('topbar').classList.toggle('scrolled', window.scrollY > 4), { passive: true });
   route();
@@ -173,6 +186,7 @@ async function openCloud() {
   try { session = await sync.currentSession(); } catch (e) { console.warn(e); }
   if (!session) { localStorage.removeItem(MODE_KEY); return false; }
   const uid = session.user.id;
+  cloudFirstName = (session.user.user_metadata?.first_name || '').trim();
   await db.open(`fitness-u-${uid}`, uid);
   if (!(await db.getMeta('localImportOffered'))) await offerLocalImport(uid);
   if (!(await db.getMeta('initialPullDone')) && navigator.onLine) await Promise.race([sync.sync(), new Promise(r => setTimeout(r, 15000))]);
@@ -180,6 +194,32 @@ async function openCloud() {
   sync.startAutoSync();
   sync.startAutoWithings();
   return true;
+}
+
+/**
+ * Rücksprung aus einer Supabase-Mail (E-Mail bestätigen, Passwort vergessen): Sitzung übernehmen,
+ * Konto-Modus einschalten und den Link aus der Adresszeile entfernen. Fehler als Meldung zeigen.
+ */
+async function handleAuthRedirect() {
+  const link = parseAuthRedirect(location.hash, location.search);
+  if (!link) return;
+  const clean = hash => history.replaceState(null, '', location.pathname + hash);
+  if (link.kind === 'error') {
+    try { sessionStorage.setItem('fitness.flash', link.message); } catch { /* egal */ }
+    clean(localStorage.getItem(MODE_KEY) ? '#/' : '#/login');
+    return;
+  }
+  try {
+    const sync = await import('./sync.js');
+    await sync.adoptAuthRedirect(link);
+    localStorage.setItem(MODE_KEY, 'cloud');
+    const recovery = link.type === 'recovery';
+    try { sessionStorage.setItem('fitness.flash', recovery ? 'Bitte jetzt ein neues Passwort wählen.' : 'E-Mail bestätigt. Willkommen bei BENA Fit!'); } catch { /* egal */ }
+    clean(recovery ? '#/password' : '#/');
+  } catch (e) {
+    try { sessionStorage.setItem('fitness.flash', e.message); } catch { /* egal */ }
+    clean('#/login');
+  }
 }
 
 /** Einmalig: bisherige Daten aus „Nur dieses Gerät“ ins Konto übernehmen. */

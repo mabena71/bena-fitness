@@ -5,6 +5,7 @@
 // jüngere Änderung (updated_at).
 import * as db from './db.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY, cloudConfigured } from './config.js';
+import { authErrorText } from './invite.js';
 
 const SUPABASE_ESM = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
 const BUCKET = 'photos';
@@ -38,9 +39,53 @@ export async function getClient() {
   if (!cloudConfigured()) throw new Error('Supabase ist noch nicht eingerichtet.');
   if (!client) {
     const { createClient } = await import(SUPABASE_ESM);
-    client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, storageKey: 'bena-fitness-auth' } });
+    // Rücksprünge aus Mails (#access_token=…) wertet app.js selbst aus, siehe adoptAuthRedirect()
+    client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'bena-fitness-auth' } });
   }
   return client;
+}
+
+/** Adresse der App ohne Hash, für Links in Mails (muss in Supabase unter Redirect URLs stehen). */
+export const appBaseUrl = () => location.origin + location.pathname;
+
+/**
+ * Registrieren mit Einladungscode. Liefert die Sitzung oder null, wenn die E-Mail zuerst
+ * bestätigt werden muss (je nach Einstellung «Confirm email» in Supabase).
+ */
+export async function signUp({ email, password, firstName, code }) {
+  const c = await getClient();
+  const { data, error } = await c.auth.signUp({
+    email, password,
+    options: { data: { invite_code: code, first_name: firstName }, emailRedirectTo: appBaseUrl() },
+  });
+  if (error) throw new Error(authErrorText(error.message));
+  // Bei aktiver Bestätigung meldet Supabase eine schon registrierte Adresse nicht als Fehler,
+  // sondern liefert einen Benutzer ohne Identitäten.
+  if (!data.session && data.user && Array.isArray(data.user.identities) && !data.user.identities.length) {
+    throw new Error(authErrorText('already registered'));
+  }
+  return data.session || null;
+}
+
+export async function resetPassword(email) {
+  const c = await getClient();
+  const { error } = await c.auth.resetPasswordForEmail(email, { redirectTo: appBaseUrl() });
+  if (error) throw new Error(authErrorText(error.message));
+}
+
+export async function updatePassword(password) {
+  const c = await getClient();
+  const { error } = await c.auth.updateUser({ password });
+  if (error) throw new Error(authErrorText(error.message));
+}
+
+/** Sitzung aus einem Mail-Link übernehmen (siehe parseAuthRedirect in invite.js). */
+export async function adoptAuthRedirect(link) {
+  const c = await getClient();
+  const { error } = link.kind === 'session'
+    ? await c.auth.setSession({ access_token: link.access_token, refresh_token: link.refresh_token })
+    : await c.auth.verifyOtp({ token_hash: link.token_hash, type: link.type });
+  if (error) throw new Error(authErrorText(error.message));
 }
 
 export async function currentSession() {
@@ -53,7 +98,7 @@ export async function currentSession() {
 export async function signIn(email, password) {
   const c = await getClient();
   const { data, error } = await c.auth.signInWithPassword({ email, password });
-  if (error) throw new Error(error.message === 'Invalid login credentials' ? 'E-Mail oder Passwort stimmt nicht.' : error.message);
+  if (error) throw new Error(authErrorText(error.message));
   return data.session;
 }
 

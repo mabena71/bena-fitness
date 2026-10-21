@@ -8,6 +8,7 @@ import { createBackup, restoreBackup } from '../backup.js';
 import { icon } from '../icons.js';
 import { cloudConfigured } from '../config.js';
 import { cloudExtrasHtml, wireCloudExtras } from './settings-cloud.js';
+import { inviteCardHtml, deleteCardHtml, wireAccount } from './settings-account.js';
 
 export default {
   async render(el, _p, ctx) {
@@ -40,8 +41,9 @@ export default {
         <div class="card-title"><h3>${icon('cloud', 18)} Konto und Abgleich</h3></div>
         <p class="small" data-account>Angemeldet.</p>
         <p class="muted small" data-sync-status></p>
-        <div class="row wrap"><button class="btn primary" data-sync-now>Jetzt abgleichen</button><button class="btn" data-logout>Abmelden</button></div>
-      </div>` : ''}
+        <div class="row wrap"><button class="btn primary" data-sync-now>Jetzt abgleichen</button><a class="btn" href="#/password">Passwort ändern</a><button class="btn" data-logout>Abmelden</button></div>
+      </div>
+      ${inviteCardHtml()}` : ''}
             <div class="card">
         <div class="card-title"><h3>Speicherort</h3></div>
         <p class="small">Aktuell: <b>${esc(MODES[mode].label)}</b>${mode === 'demo' ? ' – mit Beispieldaten' : ''}</p>
@@ -52,7 +54,7 @@ export default {
         </div>
       </div>
 
-      ${mode === 'cloud' ? cloudExtrasHtml() : `<div class="card">
+      ${mode === 'cloud' ? cloudExtrasHtml() + deleteCardHtml() : `<div class="card">
         <div class="card-title"><h3>Nur mit Konto</h3></div>
         <p class="muted small">Du bist auf diesem Gerät nicht angemeldet. Mit „Mit Konto anmelden“ oben bekommst du:</p>
         <ul class="list">
@@ -124,6 +126,7 @@ export default {
       };
       cleanupFn = () => off();
       wireCloudExtras(el, ctx);
+      wireAccount(el, ctx);
     }
     el.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => setMode(b.dataset.mode));
     const reset = el.querySelector('[data-reset]');
