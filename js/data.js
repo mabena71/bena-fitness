@@ -40,6 +40,31 @@ export async function saveProfile(p) {
   return db.put('profiles', { ...(cur || {}), ...p, id: cur ? cur.id : db.currentUser() });
 }
 
+/** Vorschläge für Sauna-Arten beim Anlegen des eigenen Studios (frei erweiterbar). */
+export const SAUNA_SUGGESTIONS = ['Bio-Sauna', 'Dampfbad', 'Finnische Sauna'];
+
+/** Baut Studio und Sauna-Geräte aus der Eingabe: Namen getrimmt, ohne Leere und Doppelte. */
+export function studioRecords(name, saunas = [], sort = 0) {
+  const gym = { id: db.uuid(), name: String(name || '').trim(), sort, lat: null, lng: null };
+  const seen = new Set();
+  const rows = [];
+  for (const raw of saunas) {
+    const n = String(raw || '').trim();
+    if (!n || seen.has(n.toLowerCase())) continue;
+    seen.add(n.toLowerCase());
+    rows.push({ id: db.uuid(), gym_id: gym.id, name: n, kind: 'sauna', muscle_group: 'recovery', photo_path: null, notes: '', settings: [], sort_order: null, archived: false });
+  }
+  return { gym, rows };
+}
+
+/** Legt ein Studio samt Saunen an. */
+export async function createStudio(name, saunas = []) {
+  const { gym, rows } = studioRecords(name, saunas, db.all('gyms').length);
+  await db.put('gyms', gym);
+  if (rows.length) await db.bulkPut('exercises', rows);
+  return gym;
+}
+
 export function gymName(id) {
   if (!id) return 'Überall';
   const g = db.get('gyms', id);

@@ -1,7 +1,6 @@
 # BENA Fitness-Tagebuch
 
-Web-App (PWA) für Maurice und Sabine: Geräte, Gewichte und Wiederholungen in den Studios
-Bellevue, Archhöfe und Win4 festhalten, dazu Körpergewicht, Fett, Schritte, Statistik,
+Web-App (PWA): Geräte, Gewichte und Wiederholungen im eigenen Fitnessstudio festhalten, dazu Körpergewicht, Fett, Schritte, Statistik,
 Rekorde, Level und Rückblicke. Sie läuft im Browser am PC und auf Android (auf den
 Startbildschirm legen).
 
@@ -42,7 +41,7 @@ gegen einen simulierten Server (`js/tests-sync.js`). Erwartet wird: „Alle 44 T
 | `js/stats.js` | Reine Rechenfunktionen: Trainings, Rekorde, Geister, Comeback, Körper, Statistik, Rückblicke |
 | `js/rewards.js` | Erfahrungspunkte, Level, Abzeichen |
 | `js/fun.js` | Lustige Vergleiche („so schwer wie 25 Autos“) |
-| `js/demo.js` | Beispieldaten, Standard-Studios und die Saunen im Win4 |
+| `js/demo.js` | Beispieldaten für den Demo-Modus |
 | `js/sync.js`, `js/config.js` | Login und Abgleich mit Supabase (Etappe 3) |
 | `js/geo.js` | Standort-Erkennung der Studios |
 | `js/icons.js` | Linien-Icons |

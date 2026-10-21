@@ -1,6 +1,6 @@
 // Einstieg: Modus wählen (Demo / lokal), Datenbank öffnen, Router und Navigation.
 import * as db from './db.js';
-import { seedDemo, ensureDefaultGyms, ensureDefaultSaunas, DEMO_VERSION } from './demo.js';
+import { seedDemo, DEMO_VERSION } from './demo.js';
 import { primeRewards, migrateCategories } from './data.js';
 import { esc } from './ui.js';
 import { icon } from './icons.js';
@@ -112,10 +112,6 @@ async function boot() {
       await seedDemo();
       await db.setMeta('seeded', DEMO_VERSION);
     }
-    if (mode !== 'cloud' || (await db.getMeta('initialPullDone'))) {
-      await ensureDefaultGyms();
-      await ensureDefaultSaunas();
-    }
     await migrateCategories();
     await primeRewards();
     try {
@@ -180,9 +176,6 @@ async function openCloud() {
   await db.open(`fitness-u-${uid}`, uid);
   if (!(await db.getMeta('localImportOffered'))) await offerLocalImport(uid);
   if (!(await db.getMeta('initialPullDone')) && navigator.onLine) await Promise.race([sync.sync(), new Promise(r => setTimeout(r, 15000))]);
-  sync.onStatus(async s => {
-    if (s.state === 'ok' && !db.all('gyms').length) { await ensureDefaultGyms(); await ensureDefaultSaunas(); }
-  });
   db.onChange(t => { if (t === 'remote' && !document.querySelector('.modal-back')) route(); });
   sync.startAutoSync();
   sync.startAutoWithings();

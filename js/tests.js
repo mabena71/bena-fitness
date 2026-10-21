@@ -8,6 +8,7 @@ import { levelNeed, computeRewards, rankFor } from './rewards.js';
 import * as fun from './fun.js';
 import { categoryOf } from './ui.js';
 import { distanceM, nearestGym } from './geo.js';
+import { studioRecords } from './data.js';
 
 const results = [];
 function test(name, fn) {
@@ -267,6 +268,14 @@ test('Seit Beginn: erste gegen letzte Messung, nicht Wochenschnitte', () => {
   ok(Math.abs(bodyLoss(body, 'weight_kg') - 4.9) < 1e-9, String(bodyLoss(body, 'weight_kg')));
   ok(Math.abs(bodyTrend(body, 'weight_kg', new Date(2026, 9, 21, 12)).sinceStart + 4.9) < 1e-9, 'sinceStart');
   eq(bodyLoss(body.slice(0, 1), 'weight_kg'), 0);
+});
+
+test('Eigenes Studio: Name getrimmt, Saunen ohne Leere und Doppelte', () => {
+  const { gym, rows } = studioRecords('  Mein Studio ', ['Dampfbad', ' ', 'dampfbad', 'Finnische Sauna'], 2);
+  eq([gym.name, gym.sort], ['Mein Studio', 2]);
+  eq(rows.map(r => r.name), ['Dampfbad', 'Finnische Sauna']);
+  ok(rows.every(r => r.gym_id === gym.id && r.kind === 'sauna' && r.muscle_group === 'recovery'), 'Saunen gehören zum Studio');
+  eq(studioRecords('Solo').rows.length, 0);
 });
 
 // Abgleich gegen simulierten Server (asynchron)

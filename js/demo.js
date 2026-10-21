@@ -1,29 +1,10 @@
-// Beispieldaten für den Demo-Modus: ca. 10 Wochen Training in drei Studios plus Körperwerte.
+// Beispieldaten für den Demo-Modus: ca. 10 Wochen Training in drei Beispielstudios plus Körperwerte.
 import * as db from './db.js';
 import { addDays, dayKey } from './stats.js';
 
-export const DEFAULT_GYMS = ['Bellevue', 'Archhöfe', 'Win4'];
+export const DEMO_GYMS = ['City Gym', 'Seeblick', 'Parkclub'];
 /** Erhöhen, wenn sich die Demo-Daten ändern: bestehende Demos werden dann neu erzeugt. */
-export const DEMO_VERSION = 3;
-export const WIN4_SAUNAS = ['Bio-Sauna', 'Dampfbad', 'Hot-Sauna'];
-
-/** Legt die drei Saunen im Win4 einmalig an (auch bei bestehenden Tagebüchern). */
-export async function ensureDefaultSaunas() {
-  if (await db.getMeta('saunasSeeded')) return;
-  const win = db.all('gyms').find(g => g.name.trim().toLowerCase() === 'win4');
-  if (!win) return;
-  const existing = new Set(db.all('exercises').filter(e => e.gym_id === win.id).map(e => e.name.toLowerCase()));
-  const rows = WIN4_SAUNAS.filter(n => !existing.has(n.toLowerCase()))
-    .map(name => ({ id: db.uuid(), gym_id: win.id, name, kind: 'sauna', muscle_group: 'recovery', photo_path: null, notes: '', settings: [], sort_order: null, archived: false }));
-  if (rows.length) await db.bulkPut('exercises', rows);
-  await db.setMeta('saunasSeeded', true);
-}
-
-/** Legt für einen neuen Benutzer die drei Studios an (falls noch keine existieren). */
-export async function ensureDefaultGyms() {
-  if (db.all('gyms').length) return;
-  await db.bulkPut('gyms', DEFAULT_GYMS.map((name, i) => ({ id: db.uuid(), name, sort: i, lat: null, lng: null })));
-}
+export const DEMO_VERSION = 4;
 
 function rng(seed) {
   return () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
@@ -31,8 +12,8 @@ function rng(seed) {
 
 export async function seedDemo() {
   const R = rng(42);
-  const gyms = DEFAULT_GYMS.map((name, i) => ({ id: db.uuid(), name, sort: i, lat: null, lng: null }));
-  const [bel, arc, win] = gyms;
+  const gyms = DEMO_GYMS.map((name, i) => ({ id: db.uuid(), name, sort: i, lat: null, lng: null }));
+  const [bel, arc, park] = gyms;
   const E = (gym, name, kind, muscle, start, inc, settings = [], extra = {}) => ({
     id: db.uuid(), gym_id: gym ? gym.id : null, name, kind, muscle_group: muscle, photo_path: null,
     notes: extra.notes || '', settings, sort_order: extra.sort ?? null, archived: false, step: extra.step,
@@ -52,13 +33,13 @@ export async function seedDemo() {
     E(arc, 'Kabelzug Trizeps', 'machine', 'push', 15, 3, []),
     E(arc, 'Bizeps-Curls', 'free', 'pull', 8, 2, [], { step: 1 }),
     E(arc, 'Ruderergometer', 'cardio', 'cardio', 10, 0, []),
-    E(win, 'Beinpresse', 'machine', 'legs', 60, 10, [{ label: 'Sitz', value: '3' }], { notes: 'Gewichte anders als im Bellevue' }),
-    E(win, 'Latzug', 'machine', 'pull', 35, 5, []),
-    E(win, 'Rückenstrecker', 'machine', 'core', 30, 4, [], { reps: 15 }),
-    E(win, 'Crosstrainer', 'cardio', 'cardio', 20, 0, []),
-    E(win, 'Bio-Sauna', 'sauna', 'recovery', 0, 0, []),
-    E(win, 'Dampfbad', 'sauna', 'recovery', 0, 0, []),
-    E(win, 'Hot-Sauna', 'sauna', 'recovery', 0, 0, []),
+    E(park, 'Beinpresse', 'machine', 'legs', 60, 10, [{ label: 'Sitz', value: '3' }], { notes: 'Gewichte anders als im City Gym' }),
+    E(park, 'Latzug', 'machine', 'pull', 35, 5, []),
+    E(park, 'Rückenstrecker', 'machine', 'core', 30, 4, [], { reps: 15 }),
+    E(park, 'Crosstrainer', 'cardio', 'cardio', 20, 0, []),
+    E(park, 'Bio-Sauna', 'sauna', 'recovery', 0, 0, []),
+    E(park, 'Dampfbad', 'sauna', 'recovery', 0, 0, []),
+    E(park, 'Finnische Sauna', 'sauna', 'recovery', 0, 0, []),
     E(null, 'Liegestütze', 'bodyweight', 'push', 0, 0, [], { reps: 15 }),
     E(null, 'Klimmzüge', 'bodyweight', 'pull', 0, 0, [], { reps: 4 }),
   ];
@@ -77,7 +58,7 @@ export async function seedDemo() {
     if (daysAgo <= 52 && daysAgo >= 37) continue;
     const trainDay = (wd === 2 || wd === 4 || wd === 6) && R() < 0.85;
     if (!trainDay || daysAgo === 0) continue;
-    const gym = wd === 2 ? bel : wd === 4 ? (R() < 0.6 ? arc : bel) : win;
+    const gym = wd === 2 ? bel : wd === 4 ? (R() < 0.6 ? arc : bel) : park;
     const t0 = new Date(d); t0.setHours(wd === 6 ? 10 : 18, Math.floor(R() * 40), 0, 0);
     if (R() < 0.08) t0.setHours(6, 30);
     let ts = t0.getTime();
@@ -111,7 +92,7 @@ export async function seedDemo() {
       }
       ts += 120000;
     }
-    if (gym === win && R() < 0.75) {
+    if (gym === park && R() < 0.75) {
       ts += 15 * 60000;
       const saunas = exercises.filter(e => e.kind === 'sauna');
       const n = 2 + Math.floor(R() * 2);
@@ -142,7 +123,7 @@ export async function seedDemo() {
   for (const e of exercises) { delete e._start; delete e._inc; delete e._reps; }
   await db.bulkPut('gyms', gyms);
   // neutrale Studio-Abzeichen (keine fremden Logos)
-  const badgeColors = { Bellevue: ['#1e3a8a', '#3b82f6'], 'Archhöfe': ['#0f172a', '#22d3ee'], Win4: ['#334155', '#60a5fa'] };
+  const badgeColors = { 'City Gym': ['#1e3a8a', '#3b82f6'], Seeblick: ['#0f172a', '#22d3ee'], Parkclub: ['#334155', '#60a5fa'] };
   for (const g of gyms) {
     const blob = await studioBadge(g.name, ...(badgeColors[g.name] || ['#0f172a', '#3b82f6']));
     if (!blob) continue;
@@ -156,7 +137,6 @@ export async function seedDemo() {
   await db.bulkPut('day_checks', checks);
   await db.bulkPut('body_metrics', body);
   await db.bulkPut('daily_steps', steps);
-  await db.setMeta('saunasSeeded', true);
 }
 
 /** Schlichtes Studio-Abzeichen als Bild (Verlauf + Kürzel), nur für die Demo. */
@@ -173,7 +153,7 @@ function studioBadge(name, c1, c2) {
     g.fillStyle = '#fff';
     g.font = '700 120px "IBM Plex Sans", system-ui, sans-serif';
     g.textAlign = 'center'; g.textBaseline = 'middle';
-    const short = name === 'Win4' ? 'W4' : name.slice(0, 2).toUpperCase();
+    const short = name.slice(0, 2).toUpperCase();
     g.fillText(short, 300, 150);
     g.font = '500 44px "IBM Plex Sans", system-ui, sans-serif';
     g.fillText(name, 300, 255);

@@ -20,7 +20,7 @@ export default {
     el.innerHTML = `
       <div class="card">
         <div class="card-title"><h3>Profil</h3></div>
-        <label class="field"><span>Name</span><input class="input" data-name value="${esc(p.display_name || '')}" placeholder="z. B. Maurice"></label>
+        <label class="field"><span>Name</span><input class="input" data-name value="${esc(p.display_name || '')}" placeholder="z. B. Alex"></label>
         <label class="field"><span>Schritte-Ziel pro Tag</span><input class="input" data-step-goal type="number" inputmode="numeric" min="1000" max="50000" step="500" value="${stepGoal()}"></label>
         <p class="muted small" style="margin-top:-4px">Zählt für die Serie „Tage in Folge“ und die Schritte-Abzeichen. Standard: 10 000.</p>
         <button class="btn primary" data-save>Speichern</button>
