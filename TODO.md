@@ -16,8 +16,7 @@ BENA Fit soll später in den Google Play Store und den Apple App Store, ist also
 | 2 | 1 | Feedback einarbeiten | Anpassungen nach dem Studio-Test | Claude | Sonnet | 60 | hoch | laufend | 1 |
 | 3 | 1 | Sabine und Remy anmelden | Sabine ist angemeldet (Name fehlt noch), Remy hat sich angemeldet; Claude prüft danach in der Datenbank | Sabine, Remy | – | 10 | hoch | in Arbeit | – |
 | 19 | 1 | Withings für Sabine | Sabine verbindet unter Mehr → Withings ihr eigenes Konto (Uhr und Waage); Werte ab 11.10.2026 | Sabine | – | 5 | hoch | offen | 3 |
-| 26 | 2 | Anmeldung für Freunde | Heute keine Registrierung (Konten von Hand). Neu: Registrierung mit E-Mail-Bestätigung oder Einladungscode (analog Roundabout Hunter), «Passwort vergessen», «Konto löschen» in der App (Store-Pflicht) | Claude | Opus | 90 | hoch | in Arbeit | – |
-| 27 | 2 | Datenschutz und Impressum | Seite in der App und im Repo: welche Daten (Gesundheit, Fotos, Standort, Withings), wo gespeichert (Supabase EU/Irland), Löschen; Impressum. Entwurf Claude, Maurice prüft. Seite `datenschutz.html` fertig im Zweig `claude/datenschutz-f3f355`; fehlt Postadresse und Kontakt-E-Mail | Claude + Maurice | Sonnet | 45 | hoch | wartet auf Adresse | – |
+| 26 | 2 | Anmeldung für Freunde | Gebaut und online (Einladungscode unter Mehr, Registrierung mit Code, Passwort vergessen, Konto löschen; `docs/ANMELDUNG.md`). In Supabase erledigt: `invites.sql`, Function `delete-account`, Site- und Redirect-URLs. Offen: Brevo-SMTP (Maurice trägt SMTP-Schlüssel ein, Absender info@benaapps.ch wie Roundabout Hunter), dann Mail-Vorlagen deutsch, Registrierung mit E-Mail-Bestätigung einschalten, Durchtest | Maurice + Claude | Opus | 30 | hoch | wartet auf Brevo | – |
 | 28 | 2 | Withings auf Production | Entwickler-App «BENA Fit» von Development auf Production stellen; Bedingungen für neue Konten (Withings+, Nutzerzahl) prüfen | Maurice + Claude | Sonnet | 20 | mittel | offen | – |
 | 6 | 3 | Push einschalten | Schlüssel-Seite, VAPID-Secrets, Edge Function `notify`, Zeitplan (pg_cron, CRON_SECRET über Vault), VAPID_PUBLIC_KEY in `js/config.js`, Test; dann auch nächtlicher Withings-Abruf. Maurice einverstanden (20.10.) | Claude + Maurice | Opus | 45 | mittel | offen | – |
 | 29 | 3 | Freundes-Challenge | Paar-Challenge verallgemeinern: mehrere Personen per Einladungscode, sichtbar nur Kennzahlen (keine Sätze, Fotos oder Körperwerte im Detail) | Claude | Opus | 60 | mittel | offen | 26 |
@@ -38,7 +37,8 @@ BENA Fit soll später in den Google Play Store und den Apple App Store, ist also
 
 | Nr | Thema | Details | Erledigt am |
 |---|---|---|---|
-| E47 | Tagesspruch | Statt «Hallo …» oben jeden Tag ein anderer motivierender Spruch (60 eigene Sprüche, für alle gleich pro Tag, `js/sprueche.js`) (Idee Maurice 21.10.). Version 2026.10.21-3 | 21.10.2026 |
+| E48 | Datenschutz und Impressum | Öffentliche Seite `datenschutz.html` (revDSG/DSGVO, Gesundheitsdaten, Fremddienste, Rechte), Angaben wie Roundabout Hunter: Maurice Bena (Privatperson), 8405 Winterthur, info@benaapps.ch; verlinkt im Login, Willkommen und unter Mehr (Nr. 27). Version 2026.10.21-4 | 21.10.2026 |
+| E47 | Tagesspruch | Statt «Hallo …» oben jeden Tag ein anderer motivierender Spruch (200 eigene Sprüche, höchstens 2 Zeilen, für alle gleich pro Tag, `js/sprueche.js`) (Idee Maurice 21.10.). Version 2026.10.21-3 | 21.10.2026 |
 | E46 | Schritte-Ziel auf der Startseite | Knopf «Ziel» neben «Eintragen» in der Schritte-Karte mit Schnellwahl 6'000–15'000 und eigenem Wert; Feld unter Mehr → Profil entfällt (Nr. 31, Wunsch Maurice 21.10.). Version 2026.10.21-2 | 21.10.2026 |
 | E45 | App generisch gemacht | Familien-Funktionen entfernt («Aus Familien-Geräten wählen», gemeinsame Studio-Bilder; in Supabase Policy «Familie darf Fotos lesen» und RPCs `family_exercises`, `family_gym_photos` gelöscht), keine fest eingebauten Studios mehr: neue Nutzer legen beim Erststart ihr Studio an (optional mit Saunen), Demo mit City Gym, Seeblick, Parkclub, neutrale Texte (Nr. 23–25, Arbeitssitzung Sonnet). Version 2026.10.21-2 | 21.10.2026 |
 | E44 | «Seit Beginn» richtig | Körper-Kachel und Abzeichen −1 … −10 kg rechnen jetzt erste gegen letzte Messung (Maurice: 93.4 → 88.5 = −4.9 kg statt −1.3 kg mit Wochenschnitten); Withings-Hinweis auf der Körper-Seite aktualisiert. Version 2026.10.21-1 | 21.10.2026 |
@@ -90,7 +90,7 @@ BENA Fit soll später in den Google Play Store und den Apple App Store, ist also
 
 ## Rückfragen
 
-- Anmeldung für Freunde: offene Registrierung oder nur mit Einladungscode?
+- App-Name für die Stores: «BENA Fit», «BenaFit» oder «BENAFIT»? (Frage Maurice 21.10.; Vorschlag Leitstelle: «BenaFit»)
 - App-Name «BENA Fit» auch für die Stores?
 - PIN für die App und «Passwort ändern» in der App gewünscht?
 
