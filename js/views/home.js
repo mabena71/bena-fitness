@@ -5,15 +5,15 @@ import { setTop, esc, n1, n0, signed, ago, tons, modal, toast, setText } from '.
 import { openBodyEntry, openStepsEntry } from './body.js';
 import { gymPhotoKey } from './gym.js';
 import { icon, globeIcon } from '../icons.js';
+import { spruchFuer } from '../sprueche.js';
 import { getMode } from '../app.js';
 import { permissionState, currentPosition, nearestGym } from '../geo.js';
 
 export default {
   render(el, _p, ctx) {
     const data = snapshot();
-    const prof = profile();
     const r = rewards();
-    setTop({ title: prof.display_name ? `Hallo ${prof.display_name}` : 'BENA Fit' });
+    setTop({ title: spruchFuer(), quote: true });
 
     const exById = new Map(data.exercises.map(e => [e.id, e]));
     const sess = sessions(data.sets, exById);
