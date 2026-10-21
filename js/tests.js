@@ -9,6 +9,7 @@ import * as fun from './fun.js';
 import { categoryOf } from './ui.js';
 import { distanceM, nearestGym } from './geo.js';
 import { studioRecords } from './data.js';
+import { SPRUECHE, spruchFuer } from './sprueche.js';
 
 const results = [];
 function test(name, fn) {
@@ -276,6 +277,14 @@ test('Eigenes Studio: Name getrimmt, Saunen ohne Leere und Doppelte', () => {
   eq(rows.map(r => r.name), ['Dampfbad', 'Finnische Sauna']);
   ok(rows.every(r => r.gym_id === gym.id && r.kind === 'sauna' && r.muscle_group === 'recovery'), 'Saunen gehören zum Studio');
   eq(studioRecords('Solo').rows.length, 0);
+});
+
+test('Tagessprüche: mindestens 200, keine doppelten, höchstens 60 Zeichen, ss statt ß', () => {
+  ok(SPRUECHE.length >= 200, String(SPRUECHE.length));
+  eq(new Set(SPRUECHE.map(s => s.toLowerCase())).size, SPRUECHE.length);
+  ok(SPRUECHE.every(s => s.length <= 60 && !s.includes('ß')), SPRUECHE.find(s => s.length > 60 || s.includes('ß')));
+  eq(spruchFuer(new Date(2026, 9, 21, 8)), spruchFuer(new Date(2026, 9, 21, 23)), 'gleicher Tag, gleicher Spruch');
+  ok(spruchFuer(new Date(2026, 9, 21)) !== spruchFuer(new Date(2026, 9, 22)), 'nächster Tag, anderer Spruch');
 });
 
 // Abgleich gegen simulierten Server (asynchron)
