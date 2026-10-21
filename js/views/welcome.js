@@ -17,6 +17,7 @@ export default {
           <p class="muted small">Leer, du legst dein Studio selbst an. Die Daten bleiben nur auf diesem Gerät. Du kannst sie später beim Anmelden ins Konto übernehmen.</p>
           ${cloudConfigured() ? '<a class="btn primary big block" href="#/login">Mit Konto anmelden</a><p class="muted small">Gleiche Daten auf Handy und PC.</p>' : '<button class="btn big block" disabled>Mit Konto anmelden (bald)</button>'}
         </div>
+        <p class="muted small" style="margin-top:16px"><a href="datenschutz.html">Datenschutz und Impressum</a></p>
       </div>`;
     el.querySelectorAll('[data-m]').forEach(b => b.onclick = async () => {
       if (b.dataset.m === 'local') {
