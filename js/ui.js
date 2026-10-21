@@ -111,7 +111,7 @@ export function parseNum(v) {
 /** Kopfzeile: Titel, optionaler Zurück-Link und Aktionen (HTML). */
 export function setTop({ title = '', back = null, actions = '', logo = true, quote = false } = {}) {
   const tb = document.getElementById('topbar');
-  tb.innerHTML = `${back ? `<a class="icon-btn" href="${back}" aria-label="Zurück">←</a>` : logo ? '<img class="top-logo" src="icons/icon-192.png" alt="BENA Fit">' : ''}
+  tb.innerHTML = `${back ? `<a class="icon-btn" href="${back}" aria-label="Zurück">←</a>` : logo ? '<img class="top-logo" src="icons/icon-192.png" alt="BenaFit">' : ''}
     <div class="title${quote ? ' quote' : ''}">${esc(title)}</div>${actions}`;
 }
 

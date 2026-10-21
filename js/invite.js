@@ -47,7 +47,7 @@ export function daysLeft(expiresAt, now = new Date()) {
 
 /** Text zum Teilen per WhatsApp & Co. */
 export function shareText(code, name = '') {
-  return `${name ? `${name} lädt dich` : 'Ich lade dich'} zu BENA Fit ein, dem Trainingstagebuch fürs Fitnessstudio. ` +
+  return `${name ? `${name} lädt dich` : 'Ich lade dich'} zu BenaFit ein, dem Trainingstagebuch fürs Fitnessstudio. ` +
     `Mit diesem Link kannst du dich registrieren (Code ${formatCode(code)}, ${INVITE_DAYS} Tage gültig):\n${inviteLink(code)}`;
 }
 

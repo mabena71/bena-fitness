@@ -1,6 +1,6 @@
 {
-  "name": "BENA Fit",
-  "short_name": "BENA Fit",
+  "name": "BenaFit",
+  "short_name": "BenaFit",
   "description": "Trainingstagebuch für Studios, Geräte, Körpergewicht und Fortschritt",
   "start_url": "./",
   "scope": "./",

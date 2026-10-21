@@ -1,7 +1,7 @@
 // Service Worker: App läuft auch ohne Netz.
 // Eigene Dateien: zuerst Netz (damit Updates sofort ankommen), sonst Cache.
 // Bibliotheken vom CDN: zuerst Cache (Versionen sind fest).
-const CACHE = 'fitness-v42';
+const CACHE = 'fitness-v43';
 const SHELL = [
   './', 'index.html', 'styles.css', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon.png',
@@ -49,7 +49,7 @@ self.addEventListener('fetch', e => {
 self.addEventListener('push', e => {
   let data = {};
   try { data = e.data ? e.data.json() : {}; } catch { data = { body: e.data && e.data.text() }; }
-  e.waitUntil(self.registration.showNotification(data.title || 'BENA Fitness', {
+  e.waitUntil(self.registration.showNotification(data.title || 'BenaFit', {
     body: data.body || '',
     icon: 'icons/icon-192.png',
     badge: 'icons/icon-192.png',

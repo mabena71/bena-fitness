@@ -8,7 +8,7 @@ export default {
     el.innerHTML = `
       <div class="welcome">
         <img src="icons/icon-192.png" alt="">
-        <h1>BENA Fit</h1>
+        <h1>BenaFit</h1>
         <p class="muted">Geräte, Gewichte und Wiederholungen im Fitnessstudio festhalten und die Fortschritte sehen.</p>
         <div class="stack">
           <button class="btn primary big block" data-m="demo">▶ Demo ausprobieren</button>

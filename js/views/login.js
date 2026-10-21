@@ -47,14 +47,14 @@ export default {
 
         <div class="card" data-panel="sent" hidden>
           <p data-sent-text></p>
-          <p class="muted small">Keine Mail? Auch im Spam-Ordner nachsehen. Den Link am besten auf dem Gerät öffnen, auf dem du BENA Fit nutzt.</p>
+          <p class="muted small">Keine Mail? Auch im Spam-Ordner nachsehen. Den Link am besten auf dem Gerät öffnen, auf dem du BenaFit nutzt.</p>
           <button class="btn block" type="button" data-show="login">Zum Anmelden</button>
         </div>
       </div>`;
 
     const TEXT = {
       login: ['Mit Konto anmelden', 'Dann sind deine Daten auf Handy und PC gleich. Jede Person hat ihr eigenes Konto.'],
-      signup: ['Konto erstellen', 'Du wurdest zu BENA Fit eingeladen. Gib den Code ein, den du bekommen hast.'],
+      signup: ['Konto erstellen', 'Du wurdest zu BenaFit eingeladen. Gib den Code ein, den du bekommen hast.'],
       forgot: ['Passwort vergessen', 'Wir schicken dir einen Link, mit dem du ein neues Passwort setzen kannst.'],
       sent: ['Mail ist unterwegs', ''],
     };

@@ -1,4 +1,4 @@
-# BENA Fitness-Tagebuch
+# BenaFit – Fitness-Tagebuch
 
 Web-App (PWA): Geräte, Gewichte und Wiederholungen im eigenen Fitnessstudio festhalten, dazu Körpergewicht, Fett, Schritte, Statistik,
 Rekorde, Level und Rückblicke. Sie läuft im Browser am PC und auf Android (auf den

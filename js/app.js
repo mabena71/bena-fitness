@@ -69,7 +69,7 @@ export async function setMode(m, hash = '#/') {
 function renderNav(path) {
   const nav = document.getElementById('nav');
   nav.hidden = !mode;
-  nav.innerHTML = `<div class="brand"><img src="icons/icon-192.png" alt="">BENA Fit</div>` +
+  nav.innerHTML = `<div class="brand"><img src="icons/icon-192.png" alt="">BenaFit</div>` +
     NAV.map(([href, ico, label, re]) => `<a href="${href}" class="${re.test(path) ? 'active' : ''}"><span class="ico">${icon(ico, 22)}</span>${label}</a>`).join('');
 }
 
@@ -168,7 +168,7 @@ async function checkForUpdate() {
     try { (await navigator.serviceWorker?.getRegistration())?.update(); } catch { /* egal */ }
     const bar = document.createElement('div');
     bar.className = 'update-bar';
-    bar.innerHTML = `<span>Neue Version von BENA Fit verfügbar.</span><button class="btn sm primary">Jetzt aktualisieren</button>`;
+    bar.innerHTML = `<span>Neue Version von BenaFit verfügbar.</span><button class="btn sm primary">Jetzt aktualisieren</button>`;
     bar.querySelector('button').onclick = () => reloadApp();
     document.body.appendChild(bar);
   } catch { /* offline o. ä. */ }
@@ -214,7 +214,7 @@ async function handleAuthRedirect() {
     await sync.adoptAuthRedirect(link);
     localStorage.setItem(MODE_KEY, 'cloud');
     const recovery = link.type === 'recovery';
-    try { sessionStorage.setItem('fitness.flash', recovery ? 'Bitte jetzt ein neues Passwort wählen.' : 'E-Mail bestätigt. Willkommen bei BENA Fit!'); } catch { /* egal */ }
+    try { sessionStorage.setItem('fitness.flash', recovery ? 'Bitte jetzt ein neues Passwort wählen.' : 'E-Mail bestätigt. Willkommen bei BenaFit!'); } catch { /* egal */ }
     clean(recovery ? '#/password' : '#/');
   } catch (e) {
     try { sessionStorage.setItem('fitness.flash', e.message); } catch { /* egal */ }

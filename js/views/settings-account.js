@@ -42,7 +42,7 @@ export function invitesHtml(list, now = new Date()) {
 async function share(code) {
   const text = shareText(code, profile().display_name || '');
   if (navigator.share) {
-    try { await navigator.share({ title: 'Einladung zu BENA Fit', text }); return; }
+    try { await navigator.share({ title: 'Einladung zu BenaFit', text }); return; }
     catch (e) { if (e.name === 'AbortError') return; }
   }
   try { await navigator.clipboard.writeText(text); toast('Einladung kopiert – jetzt z. B. in WhatsApp einfügen', '', 3500); }

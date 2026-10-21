@@ -64,7 +64,7 @@ export default {
           <li><span class="emoji">${icon('bell', 18)}</span><div class="grow"><b>Benachrichtigungen</b><div class="muted small">Wochenbilanz am Sonntag und Erinnerungen</div></div></li>
         </ul>
       </div>`}
-      <div class="center" style="margin-top:10px"><button class="btn sm" data-reload>App neu laden</button><p class="muted small">BENA Fit · Version ${APP_VERSION} · <a href="datenschutz.html">Datenschutz und Impressum</a></p></div>`;
+      <div class="center" style="margin-top:10px"><button class="btn sm" data-reload>App neu laden</button><p class="muted small">BenaFit · Version ${APP_VERSION} · <a href="datenschutz.html">Datenschutz und Impressum</a></p></div>`;
 
     el.querySelector('[data-save]').onclick = async () => {
       await saveProfile({ display_name: el.querySelector('[data-name]').value.trim() });
