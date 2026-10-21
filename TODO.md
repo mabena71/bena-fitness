@@ -16,7 +16,7 @@ BENA Fit soll später in den Google Play Store und den Apple App Store, ist also
 | 2 | 1 | Feedback einarbeiten | Anpassungen nach dem Studio-Test | Claude | Sonnet | 60 | hoch | laufend | 1 |
 | 3 | 1 | Sabine und Remy anmelden | Sabine ist angemeldet (Name fehlt noch), Remy hat sich angemeldet; Claude prüft danach in der Datenbank | Sabine, Remy | – | 10 | hoch | in Arbeit | – |
 | 19 | 1 | Withings für Sabine | Sabine verbindet unter Mehr → Withings ihr eigenes Konto (Uhr und Waage); Werte ab 11.10.2026 | Sabine | – | 5 | hoch | offen | 3 |
-| 26 | 2 | Anmeldung für Freunde | Gebaut und online (Einladungscode unter Mehr, Registrierung mit Code, Passwort vergessen, Konto löschen; `docs/ANMELDUNG.md`). In Supabase erledigt: `invites.sql`, Function `delete-account`, Site- und Redirect-URLs. Offen: Brevo-SMTP (Maurice trägt SMTP-Schlüssel ein, Absender info@benaapps.ch wie Roundabout Hunter), dann Mail-Vorlagen deutsch, Registrierung mit E-Mail-Bestätigung einschalten, Durchtest | Maurice + Claude | Opus | 30 | hoch | wartet auf Brevo | – |
+| 26 | 2 | Anmeldung für Freunde: Durchtest | Alles eingerichtet (Einladungscode, Registrierung mit E-Mail-Bestätigung, deutsche Mails über Brevo von info@benaapps.ch, Passwort vergessen, Konto löschen). Maurice testet einmal mit einer Zweitadresse: Code unter Mehr erstellen → Link im privaten Fenster → registrieren → Mail bestätigen; danach «Passwort vergessen» und mit dem Testkonto «Konto löschen» | Maurice | – | 15 | hoch | offen | – |
 | 28 | 2 | Withings auf Production | Entwickler-App «BENA Fit» von Development auf Production stellen; Bedingungen für neue Konten (Withings+, Nutzerzahl) prüfen | Maurice + Claude | Sonnet | 20 | mittel | offen | – |
 | 6 | 3 | Push einschalten | Schlüssel-Seite, VAPID-Secrets, Edge Function `notify`, Zeitplan (pg_cron, CRON_SECRET über Vault), VAPID_PUBLIC_KEY in `js/config.js`, Test; dann auch nächtlicher Withings-Abruf. Maurice einverstanden (20.10.) | Claude + Maurice | Opus | 45 | mittel | offen | – |
 | 29 | 3 | Freundes-Challenge | Paar-Challenge verallgemeinern: mehrere Personen per Einladungscode, sichtbar nur Kennzahlen (keine Sätze, Fotos oder Körperwerte im Detail) | Claude | Opus | 60 | mittel | offen | 26 |
@@ -29,7 +29,7 @@ BENA Fit soll später in den Google Play Store und den Apple App Store, ist also
 | 13 | 3 | Freundes-Feed | Umgedeutet (vorher Familien-Feed): freiwillig Rekorde/Abzeichen der Challenge-Freunde, «Daumen hoch» | Claude | Opus | 90 | niedrig | Idee | 29 |
 | 17 | 4 | Sprachauswahl D/E/F/I | App auf Deutsch, Englisch, Französisch und Italienisch; Wahl pro Person unter Mehr → Profil; alle Texte in Sprachdateien auslagern, Datums- und Zahlenformate pro Sprache (Wunsch Maurice 19.10.; wegen Stores höher priorisiert 20.10.) | Claude | Sonnet | 120 | mittel | Idee | 25 |
 | 30 | 4 | Store-Paket | App für Google Play und Apple App Store verpacken (z. B. Capacitor wie Roundabout Hunter Nr. 43/44), Store-Einträge, Bilder, Konten bei Google (25 USD einmalig) und Apple (99 USD/Jahr) | Claude + Maurice | Opus | 240 | niedrig | Idee | 26, 27 |
-| 16 | 4 | Weitere Ideen | Pausen-Timer, Steigerungs-Vorschlag, Ziele, Trainingspläne, Sprach-Eingabe, Fortschrittsfotos, PIN, «Passwort ändern», «bester Schritte-Tag» anzeigen | – | Sonnet | – | niedrig | Idee | – |
+| 16 | 4 | Weitere Ideen | Pausen-Timer, Steigerungs-Vorschlag, Ziele, Trainingspläne, Sprach-Eingabe, Fortschrittsfotos, PIN, «bester Schritte-Tag» anzeigen | – | Sonnet | – | niedrig | Idee | – |
 
 **Gestrichen am 20.10.2026** (Grundsatzentscheid, familienspezifisch): Nr. 4 Familien-Geräte testen, Nr. 14 Ins-Studio-Meldung an die Familie, Nr. 15 Gerät defekt melden (nur mit gemeinsamen Geräten sinnvoll). Nr. 13 umgedeutet zum Freundes-Feed.
 
@@ -37,6 +37,8 @@ BENA Fit soll später in den Google Play Store und den Apple App Store, ist also
 
 | Nr | Thema | Details | Erledigt am |
 |---|---|---|---|
+| E50 | Name BenaFit | App heisst jetzt «BenaFit» (Entscheid Maurice 22.10.): Titel, Handy-Symbol (Manifest), Texte, Datenschutz, Absender der Mails; Logo mit «BENA FIT» bleibt. Version 2026.10.22-1 | 22.10.2026 |
+| E49 | Anmeldung für Freunde eingerichtet | Registrierung nur mit Einladungscode (Trigger `invites_redeem`, Probelauf ohne Code abgelehnt), Mehr → Freunde einladen, Passwort vergessen/ändern, Konto löschen (Function `delete-account`); Supabase: Site-/Redirect-URLs, Brevo-SMTP (info@benaapps.ch, Name BenaFit, Schlüssel «Supabase BenaFit» bis 22.10.2027), Mails «E-Mail bestätigen» und «Neues Passwort» auf Deutsch, Registrierung mit E-Mail-Bestätigung EIN (Nr. 26, Arbeitssitzung Opus) | 22.10.2026 |
 | E48 | Datenschutz und Impressum | Öffentliche Seite `datenschutz.html` (revDSG/DSGVO, Gesundheitsdaten, Fremddienste, Rechte), Angaben wie Roundabout Hunter: Maurice Bena (Privatperson), 8405 Winterthur, info@benaapps.ch; verlinkt im Login, Willkommen und unter Mehr (Nr. 27). Version 2026.10.21-4 | 21.10.2026 |
 | E47 | Tagesspruch | Statt «Hallo …» oben jeden Tag ein anderer motivierender Spruch (200 eigene Sprüche, höchstens 2 Zeilen, für alle gleich pro Tag, `js/sprueche.js`) (Idee Maurice 21.10.). Version 2026.10.21-3 | 21.10.2026 |
 | E46 | Schritte-Ziel auf der Startseite | Knopf «Ziel» neben «Eintragen» in der Schritte-Karte mit Schnellwahl 6'000–15'000 und eigenem Wert; Feld unter Mehr → Profil entfällt (Nr. 31, Wunsch Maurice 21.10.). Version 2026.10.21-2 | 21.10.2026 |
@@ -90,9 +92,8 @@ BENA Fit soll später in den Google Play Store und den Apple App Store, ist also
 
 ## Rückfragen
 
-- App-Name für die Stores: «BENA Fit», «BenaFit» oder «BENAFIT»? (Frage Maurice 21.10.; Vorschlag Leitstelle: «BenaFit»)
 - App-Name «BENA Fit» auch für die Stores?
-- PIN für die App und «Passwort ändern» in der App gewünscht?
+- PIN für die App gewünscht? («Passwort ändern» gibt es seit 22.10. unter Mehr → Konto)
 
 ## Kosten (ohne Claude)
 
@@ -101,6 +102,7 @@ BENA Fit soll später in den Google Play Store und den Apple App Store, ist also
 | GitHub | Code und Hosting (GitHub Pages) | Free | CHF 0 | 0 | – |
 | Supabase | Datenbank, Login, Fotos, Edge Functions (Irland) | Free | CHF 0 | 0 (Pro 25 USD/Monat, falls nötig) | – |
 | Withings | Schnittstelle für Gewicht, Fett, Schritte | Public API, gratis | CHF 0 | 0 | – |
+| Brevo | Mails für Bestätigung und Passwort (gleiches Konto wie Roundabout Hunter) | Free (300 Mails/Tag) | CHF 0 | 0 | – |
 | Schriften und Bibliotheken | IBM Plex Sans (Google Fonts), Chart.js, supabase-js | frei | CHF 0 | 0 | – |
 | Google Play | Store-Konto (geplant, Nr. 30) | einmalig | CHF 0 | 25 USD einmalig | – |
 | Apple Developer | Store-Konto (geplant, Nr. 30) | jährlich | CHF 0 | 99 USD/Jahr | – |
