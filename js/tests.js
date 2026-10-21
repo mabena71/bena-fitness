@@ -9,6 +9,7 @@ import * as fun from './fun.js';
 import { categoryOf } from './ui.js';
 import { distanceM, nearestGym } from './geo.js';
 import { studioRecords } from './data.js';
+import * as inv from './invite.js';
 
 const results = [];
 function test(name, fn) {
@@ -276,6 +277,57 @@ test('Eigenes Studio: Name getrimmt, Saunen ohne Leere und Doppelte', () => {
   eq(rows.map(r => r.name), ['Dampfbad', 'Finnische Sauna']);
   ok(rows.every(r => r.gym_id === gym.id && r.kind === 'sauna' && r.muscle_group === 'recovery'), 'Saunen gehören zum Studio');
   eq(studioRecords('Solo').rows.length, 0);
+});
+
+test('Einladungscode: Alphabet ohne verwechselbare Zeichen, 8 Stellen', () => {
+  eq(inv.CODE_ALPHABET.length, 32);
+  ok(!/[IO01]/.test(inv.CODE_ALPHABET), 'kein I, O, 0, 1');
+  eq(new Set(inv.CODE_ALPHABET).size, 32, 'keine Doppelten');
+  ok(inv.isValidCode('ABCD2345'));
+  ok(inv.isValidCode(' abcd-2345 '), 'Kleinbuchstaben, Bindestrich und Leerzeichen erlaubt');
+  ok(!inv.isValidCode('ABCD234'), 'zu kurz');
+  ok(!inv.isValidCode('ABCD2340'), 'Null ist nicht im Alphabet');
+  ok(!inv.isValidCode('OBCD2345'), 'O ist nicht im Alphabet');
+  eq(inv.formatCode('abcd2345'), 'ABCD-2345');
+  eq(inv.normalizeCode('ab cd-23_45'), 'ABCD2345');
+});
+
+test('Einladungslink: Code im Hash hin und zurück', () => {
+  const link = inv.inviteLink('abcd-2345');
+  eq(link, 'https://mabena71.github.io/bena-fitness/#/login?code=ABCD2345');
+  eq(inv.codeFromHash(link.slice(link.indexOf('#'))), 'ABCD2345');
+  eq(inv.codeFromHash('#/login'), '');
+  ok(inv.shareText('ABCD2345', 'Alex').includes('Alex lädt dich') && inv.shareText('ABCD2345').includes('ABCD-2345'), 'Text');
+});
+
+test('Einladung: offen, abgelaufen, verwendet und Resttage', () => {
+  const now = new Date('2026-10-21T12:00:00Z');
+  eq(inv.inviteState({ expires_at: '2026-11-04T12:00:00Z' }, now), 'offen');
+  eq(inv.inviteState({ expires_at: '2026-10-21T12:00:00Z' }, now), 'abgelaufen', 'genau am Ablauf');
+  eq(inv.inviteState({ expires_at: '2026-10-01T00:00:00Z', used_at: '2026-09-25T00:00:00Z' }, now), 'verwendet', 'verwendet vor abgelaufen');
+  eq(inv.daysLeft('2026-11-04T12:00:00Z', now), 14);
+  eq(inv.daysLeft('2026-10-21T13:00:00Z', now), 1, 'angebrochener Tag zählt');
+  eq(inv.daysLeft('2026-10-20T00:00:00Z', now), 0);
+});
+
+test('Mail-Rücksprung: Sitzung, Token-Hash, Fehler, normaler Hash', () => {
+  eq(inv.parseAuthRedirect('#access_token=a&expires_in=3600&refresh_token=r&token_type=bearer&type=recovery', ''),
+    { kind: 'session', type: 'recovery', access_token: 'a', refresh_token: 'r' });
+  eq(inv.parseAuthRedirect('', '?token_hash=h&type=signup'), { kind: 'otp', type: 'signup', token_hash: 'h' });
+  const err = inv.parseAuthRedirect('#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid', '');
+  eq([err.kind, err.code], ['error', 'otp_expired']);
+  ok(/abgelaufen/.test(err.message), err.message);
+  eq(inv.parseAuthRedirect('#/settings?withings=ok', ''), null);
+  eq(inv.parseAuthRedirect('#/login?code=ABCD2345', '?demo'), null);
+});
+
+test('Anmeldefehler auf Deutsch', () => {
+  ok(/Einladungscode/.test(inv.authErrorText('Database error saving new user')));
+  ok(/schon ein Konto/.test(inv.authErrorText('User already registered')));
+  ok(/E-Mail oder Passwort/.test(inv.authErrorText('Invalid login credentials')));
+  eq(inv.authErrorText('etwas anderes'), 'etwas anderes');
+  eq(inv.inviteCheckText('ok'), null);
+  ok(/abgelaufen/.test(inv.inviteCheckText('abgelaufen')));
 });
 
 // Abgleich gegen simulierten Server (asynchron)
