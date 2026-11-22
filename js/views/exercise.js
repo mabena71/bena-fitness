@@ -2,7 +2,7 @@ import * as db from '../db.js';
 import { gymName, exerciseSets, announceRewards } from '../data.js';
 import {
   setTop, esc, n1, n0, n2, KINDS, MUSCLES, categoryOf, FEEL, ENERGY, setText, fmtDay, fmtTime, ago, toast, confetti, vibrate,
-  modal, confirmDialog, parseNum, localInput,
+  modal, confirmDialog, parseNum, localInput, tons,
 } from '../ui.js';
 import { prefill, ghost, ghostCompare, isRecord, best, dayKey, byTime, working, volume, groupBy, roundStep } from '../stats.js';
 import { orderedExercises } from './gym.js';
@@ -76,26 +76,28 @@ export default {
               </div>
               ${showNote || entry.note ? `<input class="input" data-note placeholder="Notiz zu diesem ${unit}" value="${esc(entry.note)}" style="margin-top:6px">` : ''}
               ${entry.at ? `<label class="field" style="margin-top:10px"><span>Zeitpunkt</span><input class="input" type="datetime-local" data-at value="${localInput(entry.at)}"></label>` : ''}
-              <button class="btn gold-tile block" style="margin-top:12px" data-save>${icon('check', 22)} ${unit} speichern</button>
-              ${!entry.at ? '<button class="btn ghost sm block" style="margin-top:6px" data-at-toggle>Für einen anderen Tag nachtragen</button>' : ''}
+              <div class="save-row">
+                <button class="gold-tile" data-save>${icon('check', 30)}<span>${unit}<br>speichern</span></button>
+                ${!entry.at ? `<button class="btn later-btn" data-at-toggle>${icon('history', 20)}<span>Für einen anderen Tag nachtragen</span></button>` : ''}
+              </div>
             </div>
 
+            <div class="card">
+              <div class="card-title"><h3>Verlauf</h3></div>
+              ${historyHtml(sets, ex, today, historyLimit)}
+            </div>
+          </div>
+
+          <div>
             <div class="card">
               <div class="card-title"><h3>Heute</h3>${g && !isSauna ? `<span class="muted small">${icon('history', 14)} letztes Mal: ${fmtDay(dayFromKeyLocal(g.day))}</span>` : ''}</div>
               ${todaysList(todays, isSauna ? null : g, ex)}
             </div>
             ${next ? `<a class="next-link" href="#/ex/${next.id}"><span>Weiter: ${esc(next.name)}</span><span>→</span></a>` : ''}
-          </div>
-
-          <div>
             <div class="card">
               <div class="card-title"><h3>Entwicklung</h3><span class="muted small">${sets.length ? `${new Set(sets.map(s => dayKey(s.performed_at))).size} ${isSauna ? 'Saunatage' : 'Trainingstage'}` : ''}</span></div>
               ${sets.length >= 2 ? `<div class="chips" data-modes>${chartModes(ex, sets).map(([k, l]) => `<button class="chip ${k === chartMode(ex, sets) ? 'on' : ''}" data-mode="${k}">${l}</button>`).join('')}</div>` : ''}
               <div class="chart-box" data-chart>${sets.length < 2 ? '<p class="muted small center" style="padding-top:80px">Ab dem zweiten Training siehst du hier deine Entwicklung.</p>' : ''}</div>
-            </div>
-            <div class="card">
-              <div class="card-title"><h3>Verlauf</h3></div>
-              ${historyHtml(sets, ex, today, historyLimit)}
             </div>
           </div>
         </div>`;
@@ -207,6 +209,12 @@ export default {
   },
 };
 
+const WD_SHORT = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+/** Kurzes Datum für den Verlauf: «Sa 21.11.», ältere Jahre «21.11.25». */
+function histDay(k) {
+  const d = dayFromKeyLocal(k);
+  return d.getFullYear() === new Date().getFullYear() ? `${WD_SHORT[d.getDay()]} ${d.getDate()}.${d.getMonth() + 1}.` : `${d.getDate()}.${d.getMonth() + 1}.${String(d.getFullYear()).slice(2)}`;
+}
 function dayFromKeyLocal(k) { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); }
 function fmtInput(v) { return v == null ? '' : String(v); }
 
@@ -245,14 +253,21 @@ function historyHtml(sets, ex, today, limit) {
   if (!past.length) return '<p class="muted small">Noch kein früheres Training.</p>';
   const byDay = [...groupBy(past, s => dayKey(s.performed_at)).entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1));
   const shown = byDay.slice(0, limit);
+  const withWeight = !['cardio', 'sauna'].includes(ex.kind) && past.some(s => s.weight_kg);
   return shown.map(([d, list]) => {
     const w = working(list);
     const vol = w.reduce((a, s) => a + volume(s), 0);
-    return `<div class="history-day">
-      <div class="row spread"><span class="d">${fmtDay(dayFromKeyLocal(d))}</span><span class="muted small">${vol ? `${n0(vol)} kg Volumen` : ''}</span></div>
-      <div class="s">${list.map(s => `<span data-set="${s.id}" style="cursor:pointer;${s.is_warmup ? 'opacity:.5' : ''}">${setText(s, ex.kind)}</span>`).join(' · ')}</div>
-      ${list.filter(s => s.note).map(s => `<div class="muted small">${icon('note', 14)} ${esc(s.note)}</div>`).join('')}
-    </div>`;
+    const notes = list.filter(s => s.note).map(s => `<div class="muted small">${icon('note', 14)} ${esc(s.note)}</div>`).join('');
+    const set = (s, txt) => `<span data-set="${s.id}" class="${s.is_warmup ? 'warm' : ''}">${txt}</span>`;
+    if (!withWeight) {
+      return `<div class="history-day line"><span class="d">${histDay(d)}</span><span class="s">${list.map(s => set(s, setText(s, ex.kind))).join(' · ')}</span>${notes}</div>`;
+    }
+    // eine Zeile: Datum · Gewicht · Wiederholungen der Arbeitssätze · Volumen (Aufwärmsätze nur, wenn es keine Arbeitssätze gab)
+    const kgs = w.map(s => s.weight_kg || 0);
+    const lo = Math.min(...kgs), hi = Math.max(...kgs);
+    const kg = !w.length ? '' : lo === hi ? `${n1(hi)} kg` : `${n1(lo)}–${n1(hi)}`;
+    const reps = (w.length ? w : list).map(s => set(s, lo === hi || !w.length ? n0(s.reps) : `${n0(s.reps)}<small>×${n1(s.weight_kg)}</small>`)).join(' · ');
+    return `<div class="history-day line hist-grid"><span class="d">${histDay(d)}</span><span class="kg">${kg}</span><span class="s">${reps}</span><span class="v">${vol ? tons(vol) : ''}</span>${notes}</div>`;
   }).join('') + (byDay.length > limit ? '<button class="btn sm block" style="margin-top:8px" data-more>Mehr anzeigen</button>' : '');
 }
 

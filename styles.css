@@ -183,8 +183,10 @@ textarea.input { min-height: 70px; resize: vertical; }
 .stepper .ctl button { height: 64px; }
 .ex-divider { height: 1px; background: var(--line); margin: 14px -16px; }
 /* «Satz speichern» als goldene Kachel (Goldton wie Kreisel-Detektiv) */
-.btn.gold-tile { --gold: #f4b324; min-height: 60px; font-size: 1.15rem; font-weight: 800; border-radius: 16px; background: var(--gold); border-color: var(--gold); color: #3d2a00; box-shadow: 0 4px 14px rgba(244,179,36,.35); }
-.btn.gold-tile:active { filter: brightness(.95); transform: translateY(1px); }
+.save-row { display: flex; gap: 12px; margin-top: 12px; align-items: stretch; }
+.gold-tile { --gold: #f4b324; flex: 0 0 auto; width: 116px; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 0; border-radius: 18px; background: var(--gold); color: #3d2a00; font: inherit; font-size: 1.05rem; font-weight: 800; line-height: 1.15; text-align: center; cursor: pointer; box-shadow: 0 4px 14px rgba(244,179,36,.35); }
+.gold-tile:active { filter: brightness(.95); transform: translateY(1px); }
+.save-row .later-btn { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 18px; font-weight: 700; text-align: center; white-space: normal; line-height: 1.25; color: var(--muted); }
 
 .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
 .seg button { min-height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; cursor: pointer; font-size: .9rem; }
@@ -210,6 +212,18 @@ textarea.input { min-height: 70px; resize: vertical; }
 .history-day:last-child { border-bottom: 0; }
 .history-day .d { font-weight: 700; font-size: .9rem; }
 .history-day .s { color: var(--muted); font-size: .9rem; font-variant-numeric: tabular-nums; }
+.history-day.line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.history-day .s [data-set] { cursor: pointer; }
+.history-day .s .warm { opacity: .5; }
+/* Verlauf in einer Zeile: Datum | Gewicht | Wiederholungen | Volumen */
+.history-day.hist-grid { display: grid; grid-template-columns: 5em 4.3em minmax(0, 1fr) 2.8em; column-gap: 8px; align-items: baseline; font-size: .9rem; }
+.history-day.hist-grid .d { font-size: .9rem; }
+.history-day.hist-grid .d { white-space: nowrap; }
+.history-day.hist-grid .kg { font-weight: 700; font-size: .9rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.history-day.hist-grid .s { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.history-day.hist-grid .s small { color: var(--muted); font-size: .72rem; }
+.history-day.hist-grid .v { color: var(--muted); font-size: .82rem; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
+.history-day.hist-grid > div { grid-column: 1 / -1; }
 
 .next-link { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding: 14px 16px; border-radius: var(--radius); background: var(--primary); color: #fff; text-decoration: none; font-weight: 700; }
 
