@@ -176,6 +176,15 @@ textarea.input { min-height: 70px; resize: vertical; }
 .stepper input { width: 100%; min-width: 0; padding: 0; height: 58px; border: 0; background: transparent; text-align: center; font-size: clamp(1.25rem, 5.6vw, 1.6rem); font-weight: 800; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
 .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .stepper input:focus { outline: none; }
+/* Beschriftung im Feld unter der Zahl (spart die Zeile darüber) */
+.stepper .val { margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 64px; min-width: 0; cursor: text; }
+.stepper .val input { height: auto; line-height: 1.1; }
+.stepper .val .unit { font-size: .7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-top: 1px; }
+.stepper .ctl button { height: 64px; }
+.ex-divider { height: 1px; background: var(--line); margin: 14px -16px; }
+/* «Satz speichern» als goldene Kachel (Goldton wie Kreisel-Detektiv) */
+.btn.gold-tile { --gold: #f4b324; min-height: 60px; font-size: 1.15rem; font-weight: 800; border-radius: 16px; background: var(--gold); border-color: var(--gold); color: #3d2a00; box-shadow: 0 4px 14px rgba(244,179,36,.35); }
+.btn.gold-tile:active { filter: brightness(.95); transform: translateY(1px); }
 
 .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
 .seg button { min-height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; cursor: pointer; font-size: .9rem; }

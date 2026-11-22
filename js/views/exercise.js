@@ -61,9 +61,7 @@ export default {
                 </div>
               </div>
               ${ex.notes ? `<p class="small" style="margin:12px 0 0;white-space:pre-wrap">${icon('note', 16)} ${esc(ex.notes)}</p>` : ''}
-            </div>
-
-            <div class="card">
+              <div class="ex-divider"></div>
               ${comebackInfo && !todays.length ? `<div class="notice warn">${icon('sprout', 16)} <b>Sanfter Wiedereinstieg:</b> ${comebackInfo.days} Tage Pause. Gewicht um ${Math.round((1 - comebackInfo.factor) * 100)} % reduziert vorgeschlagen.</div>` : ''}
               <div class="entry" ${isSauna ? 'style="grid-template-columns:1fr"' : ''}>
                 ${isSauna ? stepperHtml('duration_min', 'Minuten', entry.duration_min) : isCardio ? stepperHtml('duration_min', 'Minuten', entry.duration_min) + stepperHtml('distance_km', 'km', entry.distance_km, 'decimal')
@@ -78,7 +76,7 @@ export default {
               </div>
               ${showNote || entry.note ? `<input class="input" data-note placeholder="Notiz zu diesem ${unit}" value="${esc(entry.note)}" style="margin-top:6px">` : ''}
               ${entry.at ? `<label class="field" style="margin-top:10px"><span>Zeitpunkt</span><input class="input" type="datetime-local" data-at value="${localInput(entry.at)}"></label>` : ''}
-              <button class="btn primary big block" style="margin-top:12px" data-save>${icon('check', 22)} ${unit} speichern</button>
+              <button class="btn gold-tile block" style="margin-top:12px" data-save>${icon('check', 22)} ${unit} speichern</button>
               ${!entry.at ? '<button class="btn ghost sm block" style="margin-top:6px" data-at-toggle>Für einen anderen Tag nachtragen</button>' : ''}
             </div>
 
@@ -213,9 +211,9 @@ function dayFromKeyLocal(k) { const [y, m, d] = k.split('-').map(Number); return
 function fmtInput(v) { return v == null ? '' : String(v); }
 
 function stepperHtml(key, label, value, mode = 'numeric') {
-  return `<div class="stepper"><label>${label}</label><div class="ctl">
+  return `<div class="stepper"><div class="ctl">
     <button type="button" data-step="${key}" data-dir="-1" aria-label="weniger">−</button>
-    <input data-in="${key}" inputmode="${mode}" value="${fmtInput(value)}" aria-label="${label}">
+    <label class="val"><input data-in="${key}" inputmode="${mode}" value="${fmtInput(value)}" aria-label="${label}"><span class="unit">${label}</span></label>
     <button type="button" data-step="${key}" data-dir="1" aria-label="mehr">+</button></div></div>`;
 }
 

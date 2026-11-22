@@ -37,6 +37,7 @@ BENA Fit soll später in den Google Play Store und den Apple App Store, ist also
 
 | Nr | Thema | Details | Erledigt am |
 |---|---|---|---|
+| E51 | Geräte-Ansicht kompakter | Bild und Erfassung in einer Karte; «KG» und «WDH.» stehen im Eingabefeld unter der Zahl statt darüber; «Satz speichern» als goldene Kachel im Goldton von Kreisel-Detektiv (#f4b324) (Wunsch Maurice 22.11.). Version 2026.11.22-1 | 22.11.2026 |
 | E50 | Name BenaFit | App heisst jetzt «BenaFit» (Entscheid Maurice 22.10.): Titel, Handy-Symbol (Manifest), Texte, Datenschutz, Absender der Mails; Logo mit «BENA FIT» bleibt. Version 2026.10.22-1 | 22.10.2026 |
 | E49 | Anmeldung für Freunde eingerichtet | Registrierung nur mit Einladungscode (Trigger `invites_redeem`, Probelauf ohne Code abgelehnt), Mehr → Freunde einladen, Passwort vergessen/ändern, Konto löschen (Function `delete-account`); Supabase: Site-/Redirect-URLs, Brevo-SMTP (info@benaapps.ch, Name BenaFit, Schlüssel «Supabase BenaFit» bis 22.10.2027), Mails «E-Mail bestätigen» und «Neues Passwort» auf Deutsch, Registrierung mit E-Mail-Bestätigung EIN (Nr. 26, Arbeitssitzung Opus) | 22.10.2026 |
 | E48 | Datenschutz und Impressum | Öffentliche Seite `datenschutz.html` (revDSG/DSGVO, Gesundheitsdaten, Fremddienste, Rechte), Angaben wie Roundabout Hunter: Maurice Bena (Privatperson), 8405 Winterthur, info@benaapps.ch; verlinkt im Login, Willkommen und unter Mehr (Nr. 27). Version 2026.10.21-4 | 21.10.2026 |
