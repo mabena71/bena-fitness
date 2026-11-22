@@ -77,7 +77,7 @@ export default {
               ${showNote || entry.note ? `<input class="input" data-note placeholder="Notiz zu diesem ${unit}" value="${esc(entry.note)}" style="margin-top:6px">` : ''}
               ${entry.at ? `<label class="field" style="margin-top:10px"><span>Zeitpunkt</span><input class="input" type="datetime-local" data-at value="${localInput(entry.at)}"></label>` : ''}
               <div class="save-row">
-                <button class="gold-tile" data-save>${icon('check', 30)}<span>${unit}<br>speichern</span></button>
+                <button class="gold-tile" data-save>${icon('check', 24)}<span>${unit}<br>speichern</span></button>
                 ${!entry.at ? `<button class="btn later-btn" data-at-toggle>${icon('history', 20)}<span>Für einen anderen Tag nachtragen</span></button>` : ''}
               </div>
             </div>
