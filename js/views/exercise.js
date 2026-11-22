@@ -248,26 +248,32 @@ function todaysList(todays, g, ex) {
   return `<ul class="sets">${rows.join('')}${open.join('')}</ul>`;
 }
 
+/** Verlauf pro Tag auf einer Zeile, neueste zuoberst; der heutige Tag (sobald gespeichert) blau. */
 function historyHtml(sets, ex, today, limit) {
-  const past = sets.filter(s => dayKey(s.performed_at) !== today);
-  if (!past.length) return '<p class="muted small">Noch kein früheres Training.</p>';
-  const byDay = [...groupBy(past, s => dayKey(s.performed_at)).entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1));
+  if (!sets.length) return '<p class="muted small">Noch kein Training.</p>';
+  const byDay = [...groupBy(sets, s => dayKey(s.performed_at)).entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1));
   const shown = byDay.slice(0, limit);
-  const withWeight = !['cardio', 'sauna'].includes(ex.kind) && past.some(s => s.weight_kg);
+  const withWeight = !['cardio', 'sauna'].includes(ex.kind) && sets.some(s => s.weight_kg);
   return shown.map(([d, list]) => {
+    const cls = d === today ? ' today' : '';
     const w = working(list);
     const vol = w.reduce((a, s) => a + volume(s), 0);
     const notes = list.filter(s => s.note).map(s => `<div class="muted small">${icon('note', 14)} ${esc(s.note)}</div>`).join('');
     const set = (s, txt) => `<span data-set="${s.id}" class="${s.is_warmup ? 'warm' : ''}">${txt}</span>`;
     if (!withWeight) {
-      return `<div class="history-day line"><span class="d">${histDay(d)}</span><span class="s">${list.map(s => set(s, setText(s, ex.kind))).join(' · ')}</span>${notes}</div>`;
+      return `<div class="history-day line${cls}"><span class="d">${d === today ? 'Heute' : histDay(d)}</span><span class="s">${list.map(s => set(s, setText(s, ex.kind))).join(' · ')}</span>${notes}</div>`;
     }
-    // eine Zeile: Datum · Gewicht · Wiederholungen der Arbeitssätze · Volumen (Aufwärmsätze nur, wenn es keine Arbeitssätze gab)
-    const kgs = w.map(s => s.weight_kg || 0);
-    const lo = Math.min(...kgs), hi = Math.max(...kgs);
-    const kg = !w.length ? '' : lo === hi ? `${n1(hi)} kg` : `${n1(lo)}–${n1(hi)}`;
-    const reps = (w.length ? w : list).map(s => set(s, lo === hi || !w.length ? n0(s.reps) : `${n0(s.reps)}<small>×${n1(s.weight_kg)}</small>`)).join(' · ');
-    return `<div class="history-day line hist-grid"><span class="d">${histDay(d)}</span><span class="kg">${kg}</span><span class="s">${reps}</span><span class="v">${vol ? tons(vol) : ''}</span>${notes}</div>`;
+    // eine Zeile: Datum · Gewicht · Wiederholungen der Arbeitssätze · Volumen (Aufwärmsätze nur, wenn es keine Arbeitssätze gab).
+    // Gleiches Gewicht: «40 kg | 11 · 10 · 10»; verschiedene Gewichte: «12×70 · 8×80» über beide Spalten.
+    const shownSets = w.length ? w : list;
+    const same = new Set(shownSets.map(s => s.weight_kg || 0)).size === 1;
+    const day = `<span class="d">${d === today ? 'Heute' : histDay(d)}</span>`;
+    const vols = `<span class="v">${vol ? tons(vol) : ''}</span>`;
+    if (same) {
+      const kg = shownSets[0].weight_kg ? `${n1(shownSets[0].weight_kg)} kg` : '';
+      return `<div class="history-day line hist-grid${cls}">${day}<span class="kg">${kg}</span><span class="s">${shownSets.map(s => set(s, n0(s.reps))).join(' · ')}</span>${vols}${notes}</div>`;
+    }
+    return `<div class="history-day line hist-grid mixed${cls}">${day}<span class="s">${shownSets.map(s => set(s, `${n0(s.reps)}×${n1(s.weight_kg || 0)}`)).join(' · ')}</span>${vols}${notes}</div>`;
   }).join('') + (byDay.length > limit ? '<button class="btn sm block" style="margin-top:8px" data-more>Mehr anzeigen</button>' : '');
 }
 

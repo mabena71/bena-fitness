@@ -224,6 +224,9 @@ textarea.input { min-height: 70px; resize: vertical; }
 .history-day.hist-grid .s small { color: var(--muted); font-size: .72rem; }
 .history-day.hist-grid .v { color: var(--muted); font-size: .82rem; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
 .history-day.hist-grid > div { grid-column: 1 / -1; }
+.history-day.hist-grid.mixed .s { grid-column: 2 / 4; }
+/* heutiger Tag im Verlauf blau */
+.history-day.today .d, .history-day.today .kg, .history-day.today .s, .history-day.today .v { color: var(--primary); }
 
 .next-link { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding: 14px 16px; border-radius: var(--radius); background: var(--primary); color: #fff; text-decoration: none; font-weight: 700; }
 
